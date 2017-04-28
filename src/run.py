@@ -3,6 +3,7 @@ import config
 import pygame
 from pygame.locals import *
 from player import Player
+from bgmap import BgMap
 from pygame.time import Clock
 
 
@@ -19,14 +20,15 @@ def main():
     screen = pygame.display.set_mode(config.DISPLAY)
     pygame.display.set_caption('Hello World Play!')
 
-    bg_img = pygame.image.load('../res/global/map.jpg')
-    bg = pygame.Surface((config.WIN_WIDTH, config.WIN_HEIGHT))
+    # bg_img = pygame.image.load('../res/global/map.jpg')
+    # bg = pygame.Surface((config.WIN_WIDTH, config.WIN_HEIGHT))
     # bg.fill(pygame.Color(config.BACKGROUND_COLOR))
-    bg.blit(bg_img, (0, 0))
+    # bg.blit(bg_img, (0, 0))
+    bg = BgMap(0, 0)
 
     timer = Clock()
 
-    hero = Player(10, 10)
+    hero = Player(400, 320)
     xvel = yvel = 0
 
     while True:
@@ -35,9 +37,12 @@ def main():
             event_exit(event)
             xvel, yvel = event_move(event, xvel, yvel)
 
-        screen.blit(bg, (0, 0))
+        # screen.blit(bg, (0, 0))
 
-        hero.update(xvel, yvel)
+        bg.update(xvel, yvel)
+        bg.draw(screen)
+
+        # hero.update(xvel, yvel)
         hero.draw(screen)
 
         pygame.display.update()
