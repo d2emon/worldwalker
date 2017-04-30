@@ -1,10 +1,9 @@
 #! /usr/bin/python
 import config
-# import resources
 import pygame
-# from pygame.locals import *
 from player import Player
 from bgmap import BgMap
+from background import Background
 from grid import MapGrid
 from pygame.time import Clock
 
@@ -25,8 +24,7 @@ def main():
     pygame.font.init()
     myfont = pygame.font.SysFont('Sans', 16)
 
-    bg = pygame.Surface((config.WIN_WIDTH, config.WIN_HEIGHT))
-    bg.fill(pygame.Color(config.BACKGROUND_COLOR))
+    bg = Background((config.WIN_WIDTH, config.WIN_HEIGHT))
 
     game_map = BgMap(*config.MAP_POS)
     hero = Player(*config.PLAYER_POS)
@@ -38,7 +36,6 @@ def main():
     timer = Clock()
 
     while True:
-        # xvel = yvel = 0
         for event in pygame.event.get():
             event_exit(event)
             xvel, yvel = event_move(event, xvel, yvel)
@@ -48,13 +45,13 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
                 show_grid = not show_grid
 
-        screen.blit(bg, (0, 0))
+        bg.draw(screen)
 
         game_map.update(xvel, yvel)
         game_map.draw(screen)
 
         if show_grid:
-            screen.blit(map_grid, (0, 0))
+            map_grid.draw(screen)
 
         hero.draw(screen)
 

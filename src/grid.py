@@ -12,9 +12,11 @@ class MapGrid(Surface):
         self.fill(TRANSPARENT)
         xsize = self.get_width() / grid_size
         ysize = self.get_height() / grid_size
-        print(xsize, ysize)
         for i in range(xsize):
             for j in range(ysize):
                 rect = Rect(i * grid_size, j * grid_size, grid_size, grid_size)
                 pygame.draw.rect(self, GRID_COLOR, rect, 1)
         self.set_colorkey(TRANSPARENT, RLEACCEL)
+
+    def draw(self, screen):
+        screen.blit(self, (0, 0))
