@@ -21,6 +21,9 @@ def main():
     screen = pygame.display.set_mode(config.DISPLAY)
     pygame.display.set_caption(config.TITLE)
 
+    pygame.font.init()
+    myfont = pygame.font.SysFont('Sans', 30)
+
     bg = pygame.Surface((config.WIN_WIDTH, config.WIN_HEIGHT))
     bg.fill(pygame.Color(config.BACKGROUND_COLOR))
 
@@ -42,6 +45,9 @@ def main():
         game_map.draw(screen)
 
         hero.draw(screen)
+
+        text_surface = myfont.render(str((game_map.rect.x, game_map.rect.y)), False, (0, 0, 0))
+        screen.blit(text_surface, (0, 0))
 
         pygame.display.update()
 

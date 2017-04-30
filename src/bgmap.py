@@ -1,10 +1,11 @@
-from pygame import image, sprite, Surface, Rect
+import resources
+from pygame import image, sprite
 
 
 MOVE_SPEED = 7
 WIDTH = 800
 HEIGHT = 600
-CONSTS = ((10, 758), (10, 588))
+CONSTS = ((-1600, 1600), (-1200, 1200))
 
 
 class BgMap(sprite.Sprite):
@@ -14,11 +15,8 @@ class BgMap(sprite.Sprite):
         self.yvel = 0
         self.startX = x
         self.startY = y
-        self.image = image.load('../res/global/map.jpg')
-        # self.image = Surface((WIDTH, HEIGHT))
-        # self.image.blit(bg_img, (0, 0))
+        self.image = image.load(resources.MAPFILE)
         self.rect = self.image.get_rect()
-        # Rect(x, y, WIDTH, HEIGHT)
 
     def update(self, xvel, yvel):
         self.xvel = xvel * MOVE_SPEED
@@ -28,14 +26,17 @@ class BgMap(sprite.Sprite):
             self.yvel = 0
         self.rect.x += self.xvel
         self.rect.y += self.yvel
-        # if self.rect.x <= CONSTS[0][0]:
-        #     self.rect.x = CONSTS[0][0] + 1
-        # if self.rect.x >= CONSTS[0][1]:
-        #     self.rect.x = CONSTS[0][1] - 1
-        # if self.rect.y <= CONSTS[1][0]:
-        #     self.rect.y = CONSTS[1][0] + 1
-        # if self.rect.y >= CONSTS[1][1]:
-        #     self.rect.y = CONSTS[1][1] - 1
+        self.testBounds()
+
+    def testBounds(self):
+        if self.rect.x <= CONSTS[0][0]:
+            self.rect.x = CONSTS[0][0] + 1
+        if self.rect.x >= CONSTS[0][1]:
+            self.rect.x = CONSTS[0][1] - 1
+        if self.rect.y <= CONSTS[1][0]:
+            self.rect.y = CONSTS[1][0] + 1
+        if self.rect.y >= CONSTS[1][1]:
+            self.rect.y = CONSTS[1][1] - 1
 
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
