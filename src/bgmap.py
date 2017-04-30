@@ -1,5 +1,5 @@
 import resources
-from pygame import image, sprite
+from pygame import image, sprite, transform
 
 
 MOVE_SPEED = 32
@@ -8,6 +8,7 @@ HEIGHT = 600
 # CONSTS = ((-1600, 1600), (-1280, 1280))
 LENGTH = 3200 * MOVE_SPEED
 CONSTS = ((-LENGTH, LENGTH), (-LENGTH, LENGTH))
+SCALE = 2
 
 
 class BgMap(sprite.Sprite):
@@ -19,7 +20,9 @@ class BgMap(sprite.Sprite):
         self.startY = y
         self.x = self.startX
         self.y = self.startY
-        self.image = image.load(resources.MAPFILE)
+        img = image.load(resources.MAPFILE)
+        size = img.get_size()
+        self.image = transform.scale(img, (size[0] * SCALE, size[1] * SCALE))
         self.rect = self.image.get_rect()
         self.moveTo(self.x, self.y)
 
