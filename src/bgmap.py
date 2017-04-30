@@ -1,5 +1,5 @@
 import resources
-from pygame import image, sprite, transform
+from pygame import image, sprite, draw, transform, Surface, Color, Rect
 
 
 MOVE_SPEED = 32
@@ -8,6 +8,26 @@ HEIGHT = 600
 # CONSTS = ((-1600, 1600), (-1280, 1280))
 LENGTH = 3200 * MOVE_SPEED
 CONSTS = ((-LENGTH, LENGTH), (-LENGTH, LENGTH))
+POINTS = (
+    (17, 0),
+    (17, 1),
+    (18, 1),
+    (18, 3),
+    (17, 3),
+    (17, 4),
+    (18, 4),
+    (18, 5),
+    (20, 5),
+    (20, 6),
+    (22, 6),
+    (22, 4),
+    (20, 4),
+    (20, 3),
+    (19, 3),
+    (19, 2),
+    (20, 2),
+    (20, 0),
+)
 
 
 class BgMap(sprite.Sprite):
@@ -29,6 +49,49 @@ class BgMap(sprite.Sprite):
         self.image.set_alpha(128)
         self.rect = self.image.get_rect()
         self.moveTo(self.x, self.y)
+        fg = Surface((self.rect.width, self.rect.height))
+        fg.set_alpha(128)
+        # fg.fill(Color(0, 255, 0))
+        points = BgMap.by_points(POINTS)
+        for p in points:
+            rect = Rect(p[0] * MOVE_SPEED, p[1] * MOVE_SPEED, 32, 32)
+            draw.rect(fg, Color(0, 255, 0), rect)
+        self.image.blit(fg, (0, 0))
+
+    @staticmethod
+    def by_points(points):
+        lines = dict()
+        for i in range(32):
+            lines[i] = []
+        edges = [(p, points[i-1]) for i, p in enumerate(points)]
+        for edge in edges:
+            if edge[0][0] > edge[1][0]:
+                maxx = edge[0][0]
+                minx = edge[1][0]
+            else:
+                maxx = edge[1][0]
+                minx = edge[0][0]
+
+            if edge[0][1] > edge[1][1]:
+                maxy = edge[0][1]
+                miny = edge[1][1]
+            else:
+                maxy = edge[1][1]
+                miny = edge[0][1]
+
+            for x in range(minx, maxx):
+                lines[maxy].append(x)
+            for y in range(miny, maxy):
+                lines[y].append(maxx)
+
+        p = []
+        for j in range(32):
+            line = lines.get(j)
+            if line is None:
+                continue
+            for i in line:
+                p.append((i, j))
+        return p
 
     def update(self, xvel, yvel):
         self.xvel = xvel
