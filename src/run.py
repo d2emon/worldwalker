@@ -1,35 +1,34 @@
 #! /usr/bin/python
 import config
+# import resources
 import pygame
-from pygame.locals import *
+# from pygame.locals import *
 from player import Player
 from bgmap import BgMap
 from pygame.time import Clock
 
 
 CONTROLS = {
-    K_LEFT: (-1, None),
-    K_RIGHT: (1, None),
-    K_UP: (None, -1),
-    K_DOWN: (None, 1),
+    pygame.K_LEFT: (1, None),
+    pygame.K_RIGHT: (-1, None),
+    pygame.K_UP: (None, 1),
+    pygame.K_DOWN: (None, -1),
 }
 
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode(config.DISPLAY)
-    pygame.display.set_caption('Hello World Play!')
+    pygame.display.set_caption(config.TITLE)
 
-    # bg_img = pygame.image.load('../res/global/map.jpg')
-    # bg = pygame.Surface((config.WIN_WIDTH, config.WIN_HEIGHT))
-    # bg.fill(pygame.Color(config.BACKGROUND_COLOR))
-    # bg.blit(bg_img, (0, 0))
-    bg = BgMap(0, 0)
+    bg = pygame.Surface((config.WIN_WIDTH, config.WIN_HEIGHT))
+    bg.fill(pygame.Color(config.BACKGROUND_COLOR))
+
+    game_map = BgMap(*config.MAP_POS)
+    hero = Player(*config.PLAYER_POS)
+    xvel = yvel = 0
 
     timer = Clock()
-
-    hero = Player(400, 320)
-    xvel = yvel = 0
 
     while True:
         timer.tick(60)
@@ -37,34 +36,33 @@ def main():
             event_exit(event)
             xvel, yvel = event_move(event, xvel, yvel)
 
-        # screen.blit(bg, (0, 0))
+        screen.blit(bg, (0, 0))
 
-        bg.update(xvel, yvel)
-        bg.draw(screen)
+        game_map.update(xvel, yvel)
+        game_map.draw(screen)
 
-        # hero.update(xvel, yvel)
         hero.draw(screen)
 
         pygame.display.update()
 
 
 def event_exit(event):
-    if event.type == QUIT:
+    if event.type == pygame.QUIT:
         pygame.quit()
         raise SystemExit("QUIT")
-    if event.type == KEYDOWN and event.key == K_ESCAPE:
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
         raise SystemExit("QUIT")
 
 
 def event_move(event, xvel, yvel):
-    if event.type == KEYDOWN and event.key in CONTROLS.keys():
+    if event.type == pygame.KEYDOWN and event.key in CONTROLS.keys():
         c = CONTROLS[event.key]
         if c[0] is not None:
             xvel = c[0]
         if c[1] is not None:
             yvel = c[1]
 
-    if event.type == KEYUP and event.key in CONTROLS.keys():
+    if event.type == pygame.KEYUP and event.key in CONTROLS.keys():
         c = CONTROLS[event.key]
         if c[0] is not None:
             xvel = 0
