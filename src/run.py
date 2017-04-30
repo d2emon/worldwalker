@@ -5,6 +5,7 @@ import pygame
 # from pygame.locals import *
 from player import Player
 from bgmap import BgMap
+from grid import MapGrid
 from pygame.time import Clock
 
 
@@ -31,10 +32,12 @@ def main():
     hero = Player(*config.PLAYER_POS)
     xvel = yvel = 0
 
+    map_grid = MapGrid(game_map.rect.width, game_map.rect.height, config.GRID_SIZE)
+
     timer = Clock()
 
     while True:
-        timer.tick(60)
+        # xvel = yvel = 0
         for event in pygame.event.get():
             event_exit(event)
             xvel, yvel = event_move(event, xvel, yvel)
@@ -44,13 +47,16 @@ def main():
         game_map.update(xvel, yvel)
         game_map.draw(screen)
 
+        screen.blit(map_grid, (0, 0))
+
         hero.draw(screen)
 
-        coords = "{}, {}: {}, {}".format(game_map.x, game_map.y, game_map.rect.x, game_map.rect.y)
+        coords = "{}, {}".format(game_map.x, game_map.y)
         text_surface = myfont.render(coords, False, (0, 0, 0))
         screen.blit(text_surface, (0, 0))
 
         pygame.display.update()
+        timer.tick(24)
 
 
 def event_exit(event):

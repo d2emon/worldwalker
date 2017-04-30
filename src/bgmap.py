@@ -5,7 +5,9 @@ from pygame import image, sprite
 MOVE_SPEED = 32
 WIDTH = 800
 HEIGHT = 600
-CONSTS = ((-1600, 1600), (-1200, 1200))
+# CONSTS = ((-1600, 1600), (-1280, 1280))
+LENGTH = 3200 * MOVE_SPEED
+CONSTS = ((-LENGTH, LENGTH), (-LENGTH, LENGTH))
 
 
 class BgMap(sprite.Sprite):
