@@ -34,8 +34,8 @@ class BgMap(sprite.Sprite):
         self.moveTo(self.x, self.y)
 
     def moveTo(self, x, y):
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.x = x + 32 * 12
+        self.rect.y = y + 32 * 9
         self.testBounds()
 
     def testBounds(self):
