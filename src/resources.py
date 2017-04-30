@@ -1,2 +1,2 @@
 MAPFILE = '../res/global/map.jpg'
-FlYFILE = ""
+FLYFILE = '../res/player/eagle128.png'

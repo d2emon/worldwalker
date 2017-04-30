@@ -46,7 +46,8 @@ def main():
 
         hero.draw(screen)
 
-        text_surface = myfont.render(str((game_map.rect.x, game_map.rect.y)), False, (0, 0, 0))
+        coords = "{}, {}: {}, {}".format(game_map.x, game_map.y, game_map.rect.x, game_map.rect.y)
+        text_surface = myfont.render(coords, False, (0, 0, 0))
         screen.blit(text_surface, (0, 0))
 
         pygame.display.update()
