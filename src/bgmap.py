@@ -22,7 +22,8 @@ class BgMap(sprite.Sprite):
         self.y = self.startY
         img = image.load(resources.MAPFILE)
         size = img.get_size()
-        self.image = transform.scale(img, (size[0] * SCALE, size[1] * SCALE))
+        print(size[0], size[0] * SCALE)
+        self.image = transform.scale(img, (int(size[0] * SCALE), int(size[1] * SCALE)))
         self.rect = self.image.get_rect()
         self.moveTo(self.x, self.y)
 
