@@ -8,7 +8,6 @@ HEIGHT = 600
 # CONSTS = ((-1600, 1600), (-1280, 1280))
 LENGTH = 3200 * MOVE_SPEED
 CONSTS = ((-LENGTH, LENGTH), (-LENGTH, LENGTH))
-SCALE = 2
 
 
 class BgMap(sprite.Sprite):
@@ -22,8 +21,11 @@ class BgMap(sprite.Sprite):
         self.y = self.startY
         img = image.load(resources.MAPFILE)
         size = img.get_size()
-        print(size[0], size[0] * SCALE)
-        self.image = transform.scale(img, (int(size[0] * SCALE), int(size[1] * SCALE)))
+        new_size = (
+            int(size[0] * resources.MAPFILE_SCALE),
+            int(size[1] * resources.MAPFILE_SCALE),
+        )
+        self.image = transform.scale(img, new_size)
         self.rect = self.image.get_rect()
         self.moveTo(self.x, self.y)
 

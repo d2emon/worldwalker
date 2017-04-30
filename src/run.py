@@ -23,7 +23,7 @@ def main():
     pygame.display.set_caption(config.TITLE)
 
     pygame.font.init()
-    myfont = pygame.font.SysFont('Sans', 30)
+    myfont = pygame.font.SysFont('Sans', 16)
 
     bg = pygame.Surface((config.WIN_WIDTH, config.WIN_HEIGHT))
     bg.fill(pygame.Color(config.BACKGROUND_COLOR))
