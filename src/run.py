@@ -32,6 +32,7 @@ def main():
     hero = Player(*config.PLAYER_POS)
     xvel = yvel = 0
 
+    show_grid = False
     map_grid = MapGrid(game_map.rect.width, game_map.rect.height, config.GRID_SIZE)
 
     timer = Clock()
@@ -41,13 +42,19 @@ def main():
         for event in pygame.event.get():
             event_exit(event)
             xvel, yvel = event_move(event, xvel, yvel)
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_h:
+                game_map.x = config.MAP_POS[0]
+                game_map.y = config.MAP_POS[1]
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+                show_grid = not show_grid
 
         screen.blit(bg, (0, 0))
 
         game_map.update(xvel, yvel)
         game_map.draw(screen)
 
-        screen.blit(map_grid, (0, 0))
+        if show_grid:
+            screen.blit(map_grid, (0, 0))
 
         hero.draw(screen)
 
