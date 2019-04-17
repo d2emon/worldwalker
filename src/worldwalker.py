@@ -9,14 +9,20 @@ def listNames(items):
     for itemId, item in enumerate(items):
         print(itemId + 1, str(item))
 
+
+def generateList(title, item_class, *args):
+    print("\n{}".format(title))
+    listNames([item_class.generate(*args) for _ in range(10)])
+
+
 def main():
     print('World Walker')
-    print("\nYeti")
-    listNames(Yeti.generate())
-    print("\nZaratan")
-    listNames(Zaratan.generate())
-    print("\nZombie")
-    listNames(Zombie.generate())
+
+    generateList("Yeti (m)", Yeti, Yeti.MALE)
+    generateList("Yeti (f)", Yeti, Yeti.FEMALE)
+    generateList("Yeti (n)", Yeti, Yeti.NEUTRAL)
+    generateList("Zaratan", Zaratan)
+    generateList("Zombie", Zombie)
 
     print("\nRealm")
     realm = Realm()

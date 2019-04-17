@@ -1,48 +1,8 @@
-from genelib import DataProvider, NameGenerator, Named
+from ..database import db_data_provider
+from genelib import SyllablicGenerator, Named
 
 
-class Nm1(DataProvider):
-    data = [
-        "", "", "", "", "b", "d", "g", "h", "m", "n", "r", "s", "sh", "w", "y", "z"
-    ]
-
-
-class Nm2(DataProvider):
-    data = [
-        "a", "o", "u", "a", "o", "u", "a", "o", "u", "a", "o", "u", "a", "o", "u", "a", "o", "u", "a", "o", "u", "a",
-        "o", "u", "a", "o", "u", "a", "o", "u", "i", "i", "e", "e", "e", "e", "e", "e", "ae", "aa", "ao", "au", "oa",
-        "oo", "ou", "ua", "uo", "uu"
-    ]
-
-
-class Nm3(DataProvider):
-    data = [
-        "b", "bb", "bd", "bl", "bn", "g", "gg", "gn", "gy", "gt", "h", "hn", "hl", "l", "ll", "lm", "lfr", "ln", "lb",
-        "m", "mn", "mm", "ml", "md", "my", "n", "nn", "nb", "ng", "nl", "nt", "nsh", "nth", "ny", "st", "ss", "sl",
-        "sz", "zl", "zy", "zn"
-    ]
-
-
-class Nm4(DataProvider):
-    data = [
-        "a", "o", "u", "a", "o", "u", "a", "o", "u", "a", "o", "u", "a", "o", "u", "i", "i", "e", "e", "e", "e", "e",
-        "e", "ao", "ie", "ia", "iu", "ua", "ue"
-    ]
-
-
-class Nm5(DataProvider):
-    data = [
-        "b", "bb", "c", "d", "f", "g", "h", "l", "ld", "ll", "n", "nd", "ndr", "ng", "ns", "nz", "r", "s", "ss", "v"
-    ]
-
-
-class Nm6(DataProvider):
-    data = [
-        "", "", "", "", "d", "h", "l", "m", "n", "r", "s"
-    ]
-
-
-class BaseZaratanNameGenerator(NameGenerator):
+class BaseZaratanNameGenerator(SyllablicGenerator):
     """
     Zaratan are giant sea turtles, big enough to support a small island ecosystem on their shells. As a result they're
     often mistaken for islands, especially when they're in the middle of the ocean, and their movement is difficult to
@@ -58,31 +18,40 @@ class BaseZaratanNameGenerator(NameGenerator):
     generally still have the same large and docile feel to them, but there's plenty to pick from on both ends of the
     spectrum.
     """
-    providers = [
-        Nm1,
-        Nm2,
-        Nm3,
-        Nm4,
-        Nm5,
-        Nm6,
-    ]
+    default_providers = {
+        'nm1': db_data_provider('zaratan', 'nm1'),
+        'nm2': db_data_provider('zaratan', 'nm2'),
+        'nm3': db_data_provider('zaratan', 'nm3'),
+        'nm4': db_data_provider('zaratan', 'nm4'),
+        'nm5': db_data_provider('zaratan', 'nm5'),
+        'nm6': db_data_provider('zaratan', 'nm6'),
+    }
+    syllable_providers = {
+        1: db_data_provider('zaratan', 'nm1'),
+        2: db_data_provider('zaratan', 'nm2'),
+        3: db_data_provider('zaratan', 'nm3'),
+        4: db_data_provider('zaratan', 'nm4'),
+        5: db_data_provider('zaratan', 'nm6'),
 
-    def name_all(self):
-        names = [
-            next(self.data[0]),
-            next(self.data[1]),
-            next(self.data[2]),
-            next(self.data[3]),
-            next(self.data[5]),
-        ]
+        6: db_data_provider('zaratan', 'nm5'),
+        7: db_data_provider('zaratan', 'nm2'),
+    }
 
-        while names[2].text in (names[0].text, names[4].text):
-            names[2] = next(self.data[2])
+    def rules(self, syllables):
+        while str(syllables[3]) in (str(syllables[1]), str(syllables[5])):
+            syllables[3] = next(self.syllable_generators[3])
+        return syllables
 
-        return names
-
-    def name(self):
-        return "".join([name.text for name in self.name_all()])
+    @classmethod
+    def join_syllables(cls, syllables, inner=(), *args):
+        return cls.GLUE.join([
+            str(syllables[1]),
+            str(syllables[2]),
+            str(syllables[3]),
+            str(syllables[4]),
+            cls.GLUE.join([str(s) for s in inner]),
+            str(syllables[5]),
+        ])
 
 
 class ZaratanNameGenerator1(BaseZaratanNameGenerator):
@@ -90,22 +59,17 @@ class ZaratanNameGenerator1(BaseZaratanNameGenerator):
 
 
 class ZaratanNameGenerator2(BaseZaratanNameGenerator):
+    def rules(self, syllables):
+        syllables = super().rules(syllables)
+        while str(syllables[5]) in (str(syllables[2]), str(syllables[4])):
+            syllables[5] = next(self.syllable_generators[5])
+        return syllables
+
     def name(self):
-        names = self.name_all()
-        names.append(next(self.data[4]))
-        names.append(next(self.data[1]))
-
-        while names[5].text in (names[2].text, names[4].text):
-            names[5] = next(self.data[4])
-
-        return "".join([
-            names[0].text,
-            names[1].text,
-            names[2].text,
-            names[3].text,
-            names[5].text,
-            names[6].text,
-            names[4].text,
+        syllables = self.syllables()
+        return self.join_syllables(syllables, [
+            syllables[6],
+            syllables[7],
         ])
 
 
