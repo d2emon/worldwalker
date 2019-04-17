@@ -20,17 +20,17 @@ class BaseWyvernNameGenerator(SyllablicGenerator):
         'nm1': db_data_provider('wyvern', 'nm1'),
         'nm2': db_data_provider('wyvern', 'nm2'),
         'nm3': db_data_provider('wyvern', 'nm3'),
-        'nm4': db_data_provider('wyvern', 'nm4'),  #
+        'nm4': db_data_provider('wyvern', 'nm4'),
         'nm5': db_data_provider('wyvern', 'nm5'),
         'nm6': db_data_provider('wyvern', 'nm6'),
         'nm7': db_data_provider('wyvern', 'nm7'),
         'nm8': db_data_provider('wyvern', 'nm8'),
-        'nm9': db_data_provider('wyvern', 'nm9'),  #
+        'nm9': db_data_provider('wyvern', 'nm9'),
         'nm10': db_data_provider('wyvern', 'nm10'),
         'nm11': db_data_provider('wyvern', 'nm11'),
         'nm12': db_data_provider('wyvern', 'nm12'),
         'nm13': db_data_provider('wyvern', 'nm13'),
-        'nm14': db_data_provider('wyvern', 'nm14'),  #
+        'nm14': db_data_provider('wyvern', 'nm14'),
         'nm15': db_data_provider('wyvern', 'nm15'),
     }
     name_type = NAME_V1
