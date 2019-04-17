@@ -1,0 +1,2 @@
+def crapup(message):
+    pass

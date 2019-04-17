@@ -1,0 +1,2 @@
+def syslog(args):
+    pass
