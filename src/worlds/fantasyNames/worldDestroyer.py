@@ -19,11 +19,7 @@ class WorldDestroyerNameGenerator1(BaseWorldDestroyerNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "The {} {}".format(
-            names[1],
-            names[2],
-        )
+        return "The {name[1]} {name[2]}".format(name=self.names())
 
 
 class WorldDestroyerNameGenerator2(BaseWorldDestroyerNameGenerator):
@@ -34,11 +30,7 @@ class WorldDestroyerNameGenerator2(BaseWorldDestroyerNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "{} of {}".format(
-            names[2],
-            names[1],
-        )
+        return "{name[2]} of {name[1]}".format(name=self.names())
 
 
 class WorldDestroyerNameGenerator3(BaseWorldDestroyerNameGenerator):
@@ -49,11 +41,7 @@ class WorldDestroyerNameGenerator3(BaseWorldDestroyerNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "The {} {}".format(
-            names[1],
-            names[2],
-        )
+        return "The {name[1]} of {name[2]}".format(name=self.names())
 
 
 class WorldDestroyerNameGenerator4(BaseWorldDestroyerNameGenerator):
@@ -65,12 +53,7 @@ class WorldDestroyerNameGenerator4(BaseWorldDestroyerNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "The {} {} {}".format(
-            names[1],
-            names[3],
-            names[2],
-        )
+        return "The {name[1]} {name[3]} {name[2]}".format(name=self.names())
 
 
 class WorldDestroyer(Named):

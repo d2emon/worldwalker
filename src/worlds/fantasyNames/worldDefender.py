@@ -19,11 +19,7 @@ class WorldDefenderNameGenerator1(BaseWorldDefenderNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "The {} {}".format(
-            names[1],
-            names[2],
-        )
+        return "The {name[1]} {name[2]}".format(name=self.names())
 
 
 class WorldDefenderNameGenerator2(BaseWorldDefenderNameGenerator):
@@ -34,11 +30,7 @@ class WorldDefenderNameGenerator2(BaseWorldDefenderNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "{} of {}".format(
-            names[2],
-            names[1],
-        )
+        return "{name[2]} of {name[1]}".format(name=self.names())
 
 
 class WorldDefenderNameGenerator3(BaseWorldDefenderNameGenerator):
@@ -49,11 +41,7 @@ class WorldDefenderNameGenerator3(BaseWorldDefenderNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "The {} {}".format(
-            names[1],
-            names[2],
-        )
+        return "The {name[1]} of {name[2]}".format(name=self.names())
 
 
 class WorldDefenderNameGenerator4(BaseWorldDefenderNameGenerator):
@@ -65,12 +53,7 @@ class WorldDefenderNameGenerator4(BaseWorldDefenderNameGenerator):
         }
 
     def name(self):
-        names = self.names()
-        return "The {} {} {}".format(
-            names[1],
-            names[3],
-            names[2],
-        )
+        return "The {name[1]} {name[3]} {name[2]}".format(name=self.names())
 
 
 class WorldDefender(Named):
