@@ -1,3 +1,4 @@
+from worlds.fantasyNames.wyvern import Wyvern
 from worlds.fantasyNames.yeti import Yeti
 from worlds.fantasyNames.zaratan import Zaratan
 from worlds.fantasyNames.zombie import Zombie
@@ -18,9 +19,14 @@ def generateList(title, item_class, *args):
 def main():
     print('World Walker')
 
+    generateList("Wyvern (m)", Wyvern, Wyvern.MALE)
+    generateList("Wyvern (f)", Wyvern, Wyvern.FEMALE)
+    generateList("Wyvern (n)", Wyvern, Wyvern.NEUTRAL)
+
     generateList("Yeti (m)", Yeti, Yeti.MALE)
     generateList("Yeti (f)", Yeti, Yeti.FEMALE)
     generateList("Yeti (n)", Yeti, Yeti.NEUTRAL)
+
     generateList("Zaratan", Zaratan)
     generateList("Zombie", Zombie)
 
