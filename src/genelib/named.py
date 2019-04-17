@@ -1,9 +1,9 @@
 import random
-from .name_generator import NameGenerator
+from .name_generator import ComplexNameGenerator, GenderedNameGenerator
 
 
 class Named:
-    name_generators = [NameGenerator()]
+    name_generator = ComplexNameGenerator([])
 
     def __init__(self, name=''):
         self.name = name
@@ -12,16 +12,21 @@ class Named:
         return self.name
 
     @classmethod
-    def name_generator(cls, *args):
-        return random.choice(cls.name_generators)
+    def generate_name(cls, *args):
+        return str(next(cls.name_generator)).title()
 
     @classmethod
     def generate(cls, *args):
-        return str(next(cls.name_generator(*args))).title()
+        return cls(cls.generate_name(*args))
 
 
 class Gendered(Named):
-    name_generators = dict()
+    name_generator = GenderedNameGenerator()
+
+    @classmethod
+    def generate_name(cls, gender, *args):
+        cls.name_generator.gender = gender
+        return str(next(cls.name_generator)).title()
 
     @classmethod
     def name_generator(cls, gender, *args):

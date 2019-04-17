@@ -1,19 +1,9 @@
 from ..database import db_data_provider
-from genelib import SyllablicGenerator, Gendered
+from genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator
+from genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
 class BaseYetiNameGenerator(SyllablicGenerator):
-    """
-    Yetis are ape-like humanoids who supposedly inhabit the Himalayan regions and are part of popular folklore,
-    religion and mythologies. There are many variants in other regions too, like Bigfoot, the Yeren, the Yowie and so
-    on.
-
-    Yetis and similar creatures aren't often given personal names, in many cases because they're the only specimen
-    believed to exist. This made creating a name generator a little tricky, but since these creatures do inhabit
-    specific regions of the world I decided to take inspiration from those regions to create naming conventions. I
-    focused primarily on the Himalayan regions, but also took some inspiration for some of the lesser known variants of
-    'yeti' out there, like the before mentioned Yeren and Yowie.
-    """
     NAME_V1 = 1
     NAME_V2 = 2
     NAME_V3 = 3
@@ -176,46 +166,35 @@ class YetiNameGenerator3(BaseNeutralYetiNameGenerator):
 
 
 class Yeti(Gendered):
-    MALE = 1
-    FEMALE = 2
-    NEUTRAL = 3
+    """
+    Yetis are ape-like humanoids who supposedly inhabit the Himalayan regions and are part of popular folklore,
+    religion and mythologies. There are many variants in other regions too, like Bigfoot, the Yeren, the Yowie and so
+    on.
 
-    name_generators = {
-        MALE: [
-            MaleYetiNameGenerator1(),
-            MaleYetiNameGenerator1(),
-            MaleYetiNameGenerator1(),
-            MaleYetiNameGenerator1(),
-            MaleYetiNameGenerator1(),
-            MaleYetiNameGenerator1(),
-            MaleYetiNameGenerator2(),
-            MaleYetiNameGenerator2(),
-            MaleYetiNameGenerator3(),
-            MaleYetiNameGenerator3(),
-        ],
-        FEMALE: [
-            FemaleYetiNameGenerator1(),
-            FemaleYetiNameGenerator1(),
-            FemaleYetiNameGenerator1(),
-            FemaleYetiNameGenerator1(),
-            FemaleYetiNameGenerator1(),
-            FemaleYetiNameGenerator1(),
-            FemaleYetiNameGenerator2(),
-            FemaleYetiNameGenerator2(),
-            FemaleYetiNameGenerator3(),
-            FemaleYetiNameGenerator3(),
-        ],
-        NEUTRAL: [
-            YetiNameGenerator1(),
-            YetiNameGenerator1(),
-            YetiNameGenerator1(),
-            YetiNameGenerator1(),
-            YetiNameGenerator1(),
-            YetiNameGenerator1(),
-            YetiNameGenerator2(),
-            YetiNameGenerator2(),
-            YetiNameGenerator3(),
-            YetiNameGenerator3(),
-        ],
+    Yetis and similar creatures aren't often given personal names, in many cases because they're the only specimen
+    believed to exist. This made creating a name generator a little tricky, but since these creatures do inhabit
+    specific regions of the world I decided to take inspiration from those regions to create naming conventions. I
+    focused primarily on the Himalayan regions, but also took some inspiration for some of the lesser known variants of
+    'yeti' out there, like the before mentioned Yeren and Yowie.
+    """
+    MALE = GENDER_MALE
+    FEMALE = GENDER_FEMALE
+    NEUTRAL = GENDER_NEUTRAL
 
-    }
+    name_generator = GenderedNameGenerator({
+        MALE: build_name_generator(
+            (MaleYetiNameGenerator1, 0, 6),
+            (MaleYetiNameGenerator2, 6, 8),
+            (MaleYetiNameGenerator3, 8, 10),
+        ),
+        FEMALE: build_name_generator(
+            (FemaleYetiNameGenerator1, 0, 6),
+            (FemaleYetiNameGenerator2, 6, 8),
+            (FemaleYetiNameGenerator3, 8, 10),
+        ),
+        NEUTRAL: build_name_generator(
+            (YetiNameGenerator1, 0, 6),
+            (YetiNameGenerator2, 6, 8),
+            (YetiNameGenerator3, 8, 10),
+        ),
+    })

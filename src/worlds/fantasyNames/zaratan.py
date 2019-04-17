@@ -1,23 +1,8 @@
 from ..database import db_data_provider
-from genelib import SyllablicGenerator, Named
+from genelib import SyllablicGenerator, Named, build_name_generator
 
 
 class BaseZaratanNameGenerator(SyllablicGenerator):
-    """
-    Zaratan are giant sea turtles, big enough to support a small island ecosystem on their shells. As a result they're
-    often mistaken for islands, especially when they're in the middle of the ocean, and their movement is difficult to
-    detect.
-
-    Zaratan are common in many works of fiction, but vary a lot in terms of personality, purpose, and any meaning they
-    may have. In some cases they're wise, in some they're aggressive, and in others they might simply be docile beings
-    swimming across the oceans. Unfortunately there wasn't much to work with in terms of names, but the term zaratan
-    does seem to come from Spanish.
-
-    For this generator I mostly focused on bigger sounding names, often with more melodic and gentle tones. But I also
-    included Spanish influences, as well as some other influences for a wider variety of possible names. The names will
-    generally still have the same large and docile feel to them, but there's plenty to pick from on both ends of the
-    spectrum.
-    """
     default_providers = {
         'nm1': db_data_provider('zaratan', 'nm1'),
         'nm2': db_data_provider('zaratan', 'nm2'),
@@ -74,7 +59,22 @@ class ZaratanNameGenerator2(BaseZaratanNameGenerator):
 
 
 class Zaratan(Named):
-    name_generators = [
-        ZaratanNameGenerator1(),
-        ZaratanNameGenerator2(),
-    ]
+    """
+    Zaratan are giant sea turtles, big enough to support a small island ecosystem on their shells. As a result they're
+    often mistaken for islands, especially when they're in the middle of the ocean, and their movement is difficult to
+    detect.
+
+    Zaratan are common in many works of fiction, but vary a lot in terms of personality, purpose, and any meaning they
+    may have. In some cases they're wise, in some they're aggressive, and in others they might simply be docile beings
+    swimming across the oceans. Unfortunately there wasn't much to work with in terms of names, but the term zaratan
+    does seem to come from Spanish.
+
+    For this generator I mostly focused on bigger sounding names, often with more melodic and gentle tones. But I also
+    included Spanish influences, as well as some other influences for a wider variety of possible names. The names will
+    generally still have the same large and docile feel to them, but there's plenty to pick from on both ends of the
+    spectrum.
+    """
+    name_generator = build_name_generator(
+        (ZaratanNameGenerator1, 0, 5),
+        (ZaratanNameGenerator2, 5, 10),
+    )

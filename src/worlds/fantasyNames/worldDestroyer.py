@@ -1,17 +1,8 @@
 from ..database import db_data_provider
-from genelib import NameGenerator, Named
+from genelib import NameGenerator, Named, build_name_generator
 
 
 class BaseWorldDestroyerNameGenerator(NameGenerator):
-    """
-    World destroyers come in many different shapes and sizes, from a relatively small creature with (un)godly powers to
-    massive, planet-sized beings who consume entire galaxies. This name generator is aimed at all of those and anything
-    in between, though, to some extent, you could see the names in this generator as titles, rather than as names.
-    You'll find results like 'Ruiner of Realms', 'The Grand Consumer' and 'Undoer of Life'.
-
-    If you combine them you could end up with a long sequence of titles, similar to how royalty sometimes has multiple
-    titles, but in a more gruesome way when it comes to world destroyers.
-    """
     default_providers = {
         'nm1': db_data_provider('world-destroyer', 'nm1'),
         'nm2': db_data_provider('world-destroyer', 'nm2'),
@@ -83,16 +74,18 @@ class WorldDestroyerNameGenerator4(BaseWorldDestroyerNameGenerator):
 
 
 class WorldDestroyer(Named):
-    name_generators = [
-        WorldDestroyerNameGenerator1(),
-        WorldDestroyerNameGenerator1(),
-        WorldDestroyerNameGenerator1(),
-        WorldDestroyerNameGenerator2(),
-        WorldDestroyerNameGenerator2(),
-        WorldDestroyerNameGenerator2(),
-        WorldDestroyerNameGenerator3(),
-        WorldDestroyerNameGenerator3(),
-        WorldDestroyerNameGenerator4(),
-        WorldDestroyerNameGenerator4(),
-        WorldDestroyerNameGenerator4(),
-    ]
+    """
+    World destroyers come in many different shapes and sizes, from a relatively small creature with (un)godly powers to
+    massive, planet-sized beings who consume entire galaxies. This name generator is aimed at all of those and anything
+    in between, though, to some extent, you could see the names in this generator as titles, rather than as names.
+    You'll find results like 'Ruiner of Realms', 'The Grand Consumer' and 'Undoer of Life'.
+
+    If you combine them you could end up with a long sequence of titles, similar to how royalty sometimes has multiple
+    titles, but in a more gruesome way when it comes to world destroyers.
+    """
+    name_generator = build_name_generator(
+        (WorldDestroyerNameGenerator1, 0, 3),
+        (WorldDestroyerNameGenerator2, 3, 6),
+        (WorldDestroyerNameGenerator3, 6, 8),
+        (WorldDestroyerNameGenerator4, 8, 10),
+    )

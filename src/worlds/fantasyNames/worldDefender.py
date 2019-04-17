@@ -1,17 +1,8 @@
 from ..database import db_data_provider
-from genelib import NameGenerator, Named
+from genelib import NameGenerator, Named, build_name_generator
 
 
 class BaseWorldDefenderNameGenerator(NameGenerator):
-    """
-    World defenders come in many different shapes and sizes, from a relatively small creature with (un)godly powers to
-    massive, planet-sized beings who consume entire galaxies. This name generator is aimed at all of those and anything
-    in between, though, to some extent, you could see the names in this generator as titles, rather than as names.
-    You'll find results like 'Ruiner of Realms', 'The Grand Consumer' and 'Undoer of Life'.
-
-    If you combine them you could end up with a long sequence of titles, similar to how royalty sometimes has multiple
-    titles, but in a more gruesome way when it comes to world defenders.
-    """
     default_providers = {
         'nm1': db_data_provider('world-defender', 'nm1'),
         'nm2': db_data_provider('world-defender', 'nm2'),
@@ -83,23 +74,19 @@ class WorldDefenderNameGenerator4(BaseWorldDefenderNameGenerator):
 
 
 class WorldDefender(Named):
-    name_generators = [
-        WorldDefenderNameGenerator1(),
-        WorldDefenderNameGenerator1(),
-        WorldDefenderNameGenerator1(),
-        WorldDefenderNameGenerator2(),
-        WorldDefenderNameGenerator2(),
-        WorldDefenderNameGenerator2(),
-        WorldDefenderNameGenerator3(),
-        WorldDefenderNameGenerator3(),
-        WorldDefenderNameGenerator4(),
-        WorldDefenderNameGenerator4(),
-        WorldDefenderNameGenerator4(),
-    ]
+    """
+    There are all sorts of world defenders of course. Godly beings with vast powers, fighters who've sworn to protect
+    all life, or even just a humble activist trying to make the world a better place. While this generator generally
+     focuses more on the fantasy themed world defenders, the names in this generator could fit every kind of world
+      defender.
 
-"""
-	var nm1 = [];
-	var nm2 = [];
-	var nm3 = [];
-	var nm4 = [];
-"""
+    The names in this generator, which could arguably simply be called titles, come in the forms of names like 'The
+    World Warden', 'Keeper of Life', and 'The Ancient Shepherd'. Some names will fit certain types of defenders better
+    than others, but there's plenty to pick from, so you're bound to find a name that suits your needs.
+    """
+    name_generator = build_name_generator(
+        (WorldDefenderNameGenerator1, 0, 3),
+        (WorldDefenderNameGenerator2, 3, 6),
+        (WorldDefenderNameGenerator3, 6, 8),
+        (WorldDefenderNameGenerator4, 8, 10),
+    )

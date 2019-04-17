@@ -1,18 +1,9 @@
 from ..database import db_data_provider
-from genelib import SyllablicGenerator, Gendered
+from genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator
+from genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
 class BaseWyvernNameGenerator(SyllablicGenerator):
-    """
-    Wyverns are creatures similar to dragons, except they only have 2 legs and usually a barbed tail. Wyverns usually
-    also don't breathe fire either, but their bite is venemous. However, all these details vary from work of fiction to
-    work of fiction.
-
-    As far as names go, wyvern names tend to be far more vicious sounding than their dragon counterparts, perhaps
-    because wyverns are often depicted as less intelligent and more animalistic and aggressive or perhaps for a
-    different reason entirely. Either way I focused on these kinds of names in this generator. If you are looking for
-    more melodic names the dragon name generator is a great place to start.
-    """
     NAME_V1 = 1
     NAME_V2 = 2
 
@@ -156,46 +147,31 @@ class WyvernNameGenerator2(BaseNeutralWyvernNameGenerator):
 
 
 class Wyvern(Gendered):
-    MALE = 1
-    FEMALE = 2
-    NEUTRAL = 3
+    """
+    Wyverns are creatures similar to dragons, except they only have 2 legs and usually a barbed tail. Wyverns usually
+    also don't breathe fire either, but their bite is venemous. However, all these details vary from work of fiction to
+    work of fiction.
 
-    name_generators = {
-        MALE: [
-            MaleWyvernNameGenerator1(),
-            MaleWyvernNameGenerator1(),
-            MaleWyvernNameGenerator1(),
-            MaleWyvernNameGenerator1(),
-            MaleWyvernNameGenerator1(),
-            MaleWyvernNameGenerator1(),
-            MaleWyvernNameGenerator1(),
-            MaleWyvernNameGenerator2(),
-            MaleWyvernNameGenerator2(),
-            MaleWyvernNameGenerator2(),
-        ],
-        FEMALE: [
-            FemaleWyvernNameGenerator1(),
-            FemaleWyvernNameGenerator1(),
-            FemaleWyvernNameGenerator1(),
-            FemaleWyvernNameGenerator1(),
-            FemaleWyvernNameGenerator1(),
-            FemaleWyvernNameGenerator1(),
-            FemaleWyvernNameGenerator1(),
-            FemaleWyvernNameGenerator2(),
-            FemaleWyvernNameGenerator2(),
-            FemaleWyvernNameGenerator2(),
-        ],
-        NEUTRAL: [
-            WyvernNameGenerator1(),
-            WyvernNameGenerator1(),
-            WyvernNameGenerator1(),
-            WyvernNameGenerator1(),
-            WyvernNameGenerator1(),
-            WyvernNameGenerator1(),
-            WyvernNameGenerator1(),
-            WyvernNameGenerator2(),
-            WyvernNameGenerator2(),
-            WyvernNameGenerator2(),
-        ],
+    As far as names go, wyvern names tend to be far more vicious sounding than their dragon counterparts, perhaps
+    because wyverns are often depicted as less intelligent and more animalistic and aggressive or perhaps for a
+    different reason entirely. Either way I focused on these kinds of names in this generator. If you are looking for
+    more melodic names the dragon name generator is a great place to start.
+    """
+    MALE = GENDER_MALE
+    FEMALE = GENDER_FEMALE
+    NEUTRAL = GENDER_NEUTRAL
 
-    }
+    name_generator = GenderedNameGenerator({
+        MALE: build_name_generator(
+            (MaleWyvernNameGenerator1, 0, 7),
+            (MaleWyvernNameGenerator2, 7, 10),
+        ),
+        FEMALE: build_name_generator(
+            (FemaleWyvernNameGenerator1, 0, 7),
+            (FemaleWyvernNameGenerator2, 7, 10),
+        ),
+        NEUTRAL: build_name_generator(
+            (WyvernNameGenerator1, 0, 7),
+            (WyvernNameGenerator2, 7, 10),
+        ),
+    })
