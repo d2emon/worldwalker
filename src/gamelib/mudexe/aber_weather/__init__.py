@@ -4,3 +4,7 @@ def isdark():
 
 def showname(loc):
     pass
+
+
+def longwthr():
+    pass

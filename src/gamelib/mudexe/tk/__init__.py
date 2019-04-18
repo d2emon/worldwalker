@@ -6,18 +6,18 @@ This game systems, its code scenario and design are (C) 1987/88  Alan Cox,Jim Fi
 This file holds the basic communications routines
 """
 from .dummies import DummyGlobals
-from ..aber_blib import sec_read, sec_write
+from ..aber_blib import sec_read, sec_write, scan
 from ..aber_gamego import crapup
-from ..aber_objsys import fpbns
-from ..aber_opensys.world import World
-from ..aber_support import syslog
+from ..aber_objsys import fpbns, dumpstuff
+from ..aber_support import syslog, pname, ppos, ploc
+from ..aber_weather import longwthr
+
+from ..database.world import World
 
 from .tkGlobals import TkGlobals
 from .filelock import fcloselock
-from .find import findstart, findend
 from .loseme import loseme
-from .putmeon import putmeon
-from .rte import mstoout, readmsg, rte, update
+from .rte import mstoout, rte
 from .sendmsg import sendmsg
 from .special import special
 from .sysctrl import sysctrl
@@ -42,6 +42,28 @@ Sectors 1-n  in pairs ie [128 words]
 """
 
 
+def putmeon(user):
+    return user.put_on()
+
+
+def readmsg(message_id):
+    return World.load_message(message_id)
+
+
+def update(user):
+    return user.update()
+
+
+def findstart():
+    return World.database.load_start
+
+
+def findend():
+    return World.database.load_end
+
+# =======================================
+
+
 def vcpy(dest, offd, source, offs, len__):
     # dest, offd, source, offs, len__
     for c in range(len__):
@@ -50,7 +72,7 @@ def vcpy(dest, offd, source, offs, len__):
 
 
 def send2(block):
-    unit = World.openworld()
+    unit = World.open()
     if unit is None:
         loseme()
         crapup("\nAberMUD: FILE_ACCESS : Access failed\n")
@@ -70,7 +92,7 @@ def send2(block):
 
 
 def cleanup(inpbk):
-    unit = World.openworld()
+    unit = World.open()
 
     for i in range(1, 100, 20):
         bk = sec_read(unit, i + 100, 1280)
@@ -106,7 +128,7 @@ def split(block, nam1, nam2, work, user):
 
 
 def revise(cutoff):
-    unit = World.openworld()
+    unit = World.open()
     for ct in range(16):
         if not pname(ct) and ppos(ct) < cutoff / 2 and ppos(ct) != -2:
             mess = "{} has been timed out\n".format(pname(ct))

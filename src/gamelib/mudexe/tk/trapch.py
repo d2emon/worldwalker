@@ -1,4 +1,4 @@
-from .dummies import DummyGlobals, setploc
+from .dummies import DummyGlobals
 from .tkGlobals import TkGlobals
 from .loseme import loseme
 from ..aber_blib import getstr
@@ -8,8 +8,8 @@ from ..aber_mobile import onlook
 from ..aber_new1 import ail_blind
 from ..aber_newuaf1 import my_lev
 from ..aber_objsys import lisobs, lispeople
-from ..aber_opensys.world import World
 from ..aber_parse import openroom
+from ..aber_support import setploc
 from ..aber_weather import isdark, showname
 from ..aber_zones import lodex
 

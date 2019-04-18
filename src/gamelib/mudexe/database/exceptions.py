@@ -2,7 +2,11 @@ class LockFileException(IOError):
     pass
 
 
-class NoWorldFileException(IOError):
+class NoDatabaseException(IOError):
+    pass
+
+
+class NoWorldFileException(NoDatabaseException):
     def __init__(self):
         super().__init__("Cannot find World file")
 

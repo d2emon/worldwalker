@@ -1,10 +1,11 @@
-from .dummies import DummyGlobals, pbfr, pname, ploc, pvis, gamecom, btmscr, topscr, set_progname, sig_alon,\
-    sig_aloff, key_input
+from .dummies import DummyGlobals, gamecom, btmscr, topscr, set_progname, sig_alon, sig_aloff, key_input
 from .tkGlobals import TkGlobals
 from .rte import rte
 from .special import special
-from ..aber_opensys.world import World
+from ..aber_bprintf import pbfr
 from ..aber_newuaf1 import my_lev
+from ..aber_support import pname, ploc, pvis
+from ..database.world import World
 
 
 def __test_fight():

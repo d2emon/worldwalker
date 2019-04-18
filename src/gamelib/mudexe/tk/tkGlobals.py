@@ -1,7 +1,9 @@
+from ..database.world import World
+
+
 class TkGlobals:
     __user = None
 
-    i_setup = 0
     # oddcat = 0
     # talkfl = 0
 
@@ -10,8 +12,6 @@ class TkGlobals:
 
     # gurum = 0
     convflg = 0
-
-    fl_com = None
 
     rd_qd = 0
 
@@ -22,8 +22,6 @@ class TkGlobals:
     # tmpimu = 0
     # echoback = "*e"
     # tmpwiz = "."  # Illegal name so natural immunes are ungettable!
-
-    lasup = 0
 
     @classmethod
     def set_user(cls, user):
@@ -48,3 +46,15 @@ class TkGlobals:
     @classmethod
     def globme(cls):
         return cls.__user.name
+
+    @classmethod
+    def fl_com(cls):
+        return World.database
+
+    @classmethod
+    def lasup(cls):
+        return cls.__user.last_update
+
+    @classmethod
+    def i_setup(cls):
+        return cls.__user.in_setup

@@ -1,9 +1,8 @@
-from .dummies import DummyGlobals, initme, setpstr, setplev, setpvis, setpwpn, setpsexall, setphelping, cuserid,\
-    sendsys, randperc
+from .dummies import DummyGlobals, initme, cuserid, sendsys, randperc
 from .tkGlobals import TkGlobals
 from .rte import rte
 from .trapch import trapch
-from ..aber_opensys.world import World
+from ..aber_support import setpstr, setplev, setpvis, setpwpn, setpsexall, setphelping
 
 
 def __g(user):

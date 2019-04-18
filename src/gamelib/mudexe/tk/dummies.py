@@ -1,10 +1,5 @@
-SIZEOF__LONG = 0
-
-
 # TODO
-
 class DummyGlobals:
-    maxu = 0  # None
     zapped = None
     debug_mode = None
     fighting = None
@@ -20,14 +15,6 @@ class DummyGlobals:
     my_sex = None
 
 
-def makebfr():
-    pass
-
-
-def pbfr():
-    pass
-
-
 def sig_alon():
     pass
 
@@ -37,54 +24,6 @@ def sig_aloff():
 
 
 def dumpitems():
-    pass
-
-
-def pname(user_id):
-    return None
-
-
-def pvis(user_id):
-    return 0
-
-
-def ploc(user_id):
-    return 0
-
-
-def setpstr(user_id, value):
-    pass
-
-
-def setplev(user_id, value):
-    pass
-
-
-def setploc(user_id, value):
-    pass
-
-
-def setppos(user_id, value):
-    pass
-
-
-def setpsex(user_id, value):
-    pass
-
-
-def setpvis(user_id, value):
-    pass
-
-
-def setpwpn(user_id, value):
-    pass
-
-
-def setpsexall(user_id, value):
-    pass
-
-
-def setphelping(user_id, value):
     pass
 
 

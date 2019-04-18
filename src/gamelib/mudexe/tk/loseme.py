@@ -1,6 +1,6 @@
-from .dummies import DummyGlobals, sig_aloff, dumpitems, pname, pvis, sendsys, saveme, chksnp
+from .dummies import DummyGlobals, sig_aloff, dumpitems, sendsys, saveme, chksnp
 from .tkGlobals import TkGlobals
-from ..aber_opensys.world import World
+from ..aber_support import pname, pvis
 
 
 def loseme(user=None):
