@@ -1,0 +1,2 @@
+class CrapupException(Exception):
+    pass
