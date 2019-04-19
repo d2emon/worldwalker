@@ -1,5 +1,5 @@
-from ..database import db_data_provider
-from genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator
+from ..database import get_data_providers, get_syllable_providers
+from genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator, unique_with
 from genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
@@ -7,162 +7,149 @@ class BaseYetiNameGenerator(SyllablicGenerator):
     NAME_V1 = 1
     NAME_V2 = 2
     NAME_V3 = 3
-
-    default_providers = {
-        'nm1': db_data_provider('yeti', 'nm1'),
-        'nm2': db_data_provider('yeti', 'nm2'),
-        'nm3': db_data_provider('yeti', 'nm3'),
-        'nm4': db_data_provider('yeti', 'nm4'),
-        'nm4b': db_data_provider('yeti', 'nm4b'),
-        'nm5': db_data_provider('yeti', 'nm5'),
-        'nm6': db_data_provider('yeti', 'nm6'),
-        'nm7': db_data_provider('yeti', 'nm7'),
-        'nm8': db_data_provider('yeti', 'nm8'),
-        'nm9': db_data_provider('yeti', 'nm9'),
-        'nm10': db_data_provider('yeti', 'nm10'),
-        'nm11': db_data_provider('yeti', 'nm11'),
-        'nm12': db_data_provider('yeti', 'nm12'),
-        'nm13': db_data_provider('yeti', 'nm13'),
-        'nm14': db_data_provider('yeti', 'nm14'),
-    }
     name_type = NAME_V1
+    default_providers = get_data_providers('yeti', [
+        'nm1',
+        'nm2',
+        'nm3',
+        'nm4',
+        'nm4b',
+        'nm5',
+        'nm6',
+        'nm7',
+        'nm8',
+        'nm9',
+        'nm10',
+        'nm11',
+        'nm12',
+        'nm13',
+        'nm14',
+    ])
+    templates = {
+        NAME_V1: (1, 2, 3, 4, 5),
+        NAME_V2: (1, 2, 3, 4, 6, 7, 5),
+        NAME_V3: (1, 2, 6, 7, 3, 4, 5),
+    }
 
-    def unique_syllables(self, syllables, syllable1, syllable2):
-        syllables[syllable1] = self.unique(
-            syllables[syllable1],
-            syllables[syllable2],
-            self.syllable_generators[syllable1]
-        )
-        return syllables
-
-    def unique_5_3(self, syllables, min1, min5):
-        if syllables[1].item_id < min1:
-            while syllables[5].item_id < min5 or str(syllables[3]) == str(syllables[5]):
-                syllables[5] = next(self.syllable_generators[5])
-        return syllables
+    min1 = 5
+    min2 = 15
 
     @classmethod
-    def join_syllables(cls, syllables, inner1=(), inner2=(), *args):
-        return cls.GLUE.join([
-            str(syllables[1]),
-            str(syllables[2]),
-            cls.GLUE.join([str(s) for s in inner1]),
-            str(syllables[3]),
-            str(syllables[4]),
-            cls.GLUE.join([str(s) for s in inner2]),
-            str(syllables[5]),
-        ])
+    def template(cls):
+        return cls.templates[cls.name_type]
 
-    def rules(self, syllables):
-        syllables = self.unique_syllables(syllables, 3, 1)
-        syllables = self.unique_syllables(syllables, 5, 6)
-        syllables = self.unique_syllables(syllables, 6, 3)
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        if self.name_type == self.NAME_V2:
-            return self.join_syllables(
-                syllables,
-                [],
-                [syllables[6], syllables[7]]
-            )
-        elif self.name_type == self.NAME_V3:
-            return self.join_syllables(
-                syllables,
-                [syllables[6], syllables[7]]
-            )
-        return self.join_syllables(syllables)
+    def name_rules(self):
+        return {
+            3: unique_with(1),
+            5: unique_with(6),
+            6: unique_with(3),
+        }
 
 
-class BaseFemaleYetiNameGenerator(BaseYetiNameGenerator):
-    syllable_providers = {
-        1: db_data_provider('yeti', 'nm5'),
-        2: db_data_provider('yeti', 'nm6'),
-        3: db_data_provider('yeti', 'nm7'),
-        4: db_data_provider('yeti', 'nm6'),
-        5: db_data_provider('yeti', 'nm8'),
+class YetiNameRulesV1(BaseYetiNameGenerator):
+    name_type = BaseYetiNameGenerator.NAME_V1
 
-        6: db_data_provider('yeti', 'nm9'),
-        7: db_data_provider('yeti', 'nm6'),
-    }
+    def name_rules(self):
+        def unique_3_5(syllable, syllables):
+            if syllables[1].item_id >= self.min1:
+                return True
+            if syllable.item_id < self.min2:
+                return False
+            return str(syllable) != str(syllables[3])
+
+        return {
+            3: unique_with(1),
+            5: unique_3_5,
+        }
+
+
+class YetiNameRulesV2(YetiNameRulesV1):
+    name_type = BaseYetiNameGenerator.NAME_V2
+
+
+
+class YetiNameRulesV3(YetiNameRulesV2):
+    name_type = BaseYetiNameGenerator.NAME_V3
 
 
 class BaseMaleYetiNameGenerator(BaseYetiNameGenerator):
-    syllable_providers = {
-        1: db_data_provider('yeti', 'nm1'),
-        2: db_data_provider('yeti', 'nm2'),
-        3: db_data_provider('yeti', 'nm3'),
-        4: db_data_provider('yeti', 'nm2'),
-        5: db_data_provider('yeti', 'nm4'),
+    gender = GENDER_MALE
+    syllable_providers = get_syllable_providers('yeti', {
+        1: 'nm1',
+        2: 'nm2',
+        3: 'nm3',
+        4: 'nm2',
+        5: 'nm4',
 
-        6: db_data_provider('yeti', 'nm4b'),
-        7: db_data_provider('yeti', 'nm2'),
-    }
+        6: 'nm4b',
+        7: 'nm2',
+    })
+    min1 = 5
+    min2 = 2
+
+
+class BaseFemaleYetiNameGenerator(BaseYetiNameGenerator):
+    gender = GENDER_FEMALE
+    syllable_providers = get_syllable_providers('yeti', {
+        1: 'nm5',
+        2: 'nm6',
+        3: 'nm7',
+        4: 'nm6',
+        5: 'nm8',
+
+        6: 'nm9',
+        7: 'nm6',
+    })
 
 
 class BaseNeutralYetiNameGenerator(BaseYetiNameGenerator):
-    syllable_providers = {
-        1: db_data_provider('yeti', 'nm10'),
-        2: db_data_provider('yeti', 'nm11'),
-        3: db_data_provider('yeti', 'nm12'),
-        4: db_data_provider('yeti', 'nm11'),
-        5: db_data_provider('yeti', 'nm13'),
+    gender = GENDER_NEUTRAL
+    syllable_providers = get_syllable_providers('yeti', {
+        1: 'nm10',
+        2: 'nm11',
+        3: 'nm12',
+        4: 'nm11',
+        5: 'nm13',
 
-        6: db_data_provider('yeti', 'nm14'),
-        7: db_data_provider('yeti', 'nm11'),
-    }
-
-
-class FemaleYetiNameGenerator1(BaseFemaleYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V1
-
-    def rules(self, syllables):
-        syllables = self.unique_syllables(syllables, 3, 1)
-        syllables = self.unique_5_3(syllables, 5, 15)
-        return syllables
+        6: 'nm14',
+        7: 'nm11',
+    })
 
 
-class FemaleYetiNameGenerator2(BaseFemaleYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V2
+class MaleYetiNameGenerator1(YetiNameRulesV1, BaseMaleYetiNameGenerator):
+    pass
 
 
-class FemaleYetiNameGenerator3(BaseFemaleYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V3
+class MaleYetiNameGenerator2(YetiNameRulesV2, BaseMaleYetiNameGenerator):
+    pass
 
 
-class MaleYetiNameGenerator1(BaseMaleYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V1
-
-    def rules(self, syllables):
-        syllables = self.unique_syllables(syllables, 3, 1)
-        syllables = self.unique_5_3(syllables, 5, 2)
-        return syllables
+class MaleYetiNameGenerator3(YetiNameRulesV3, BaseMaleYetiNameGenerator):
+    pass
 
 
-class MaleYetiNameGenerator2(BaseMaleYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V2
+class FemaleYetiNameGenerator1(YetiNameRulesV1, BaseFemaleYetiNameGenerator):
+    pass
 
 
-class MaleYetiNameGenerator3(BaseMaleYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V3
+class FemaleYetiNameGenerator2(YetiNameRulesV2, BaseFemaleYetiNameGenerator):
+    pass
 
 
-class YetiNameGenerator1(BaseNeutralYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V1
-
-    def rules(self, syllables):
-        syllables = self.unique_syllables(syllables, 3, 1)
-        syllables = self.unique_5_3(syllables, 5, 15)
-        return syllables
+class FemaleYetiNameGenerator3(YetiNameRulesV3, BaseFemaleYetiNameGenerator):
+    pass
 
 
-class YetiNameGenerator2(BaseNeutralYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V2
+class YetiNameGenerator1(YetiNameRulesV1, BaseNeutralYetiNameGenerator):
+    pass
 
 
-class YetiNameGenerator3(BaseNeutralYetiNameGenerator):
-    name_type = BaseYetiNameGenerator.NAME_V3
+class YetiNameGenerator2(YetiNameRulesV2, BaseNeutralYetiNameGenerator):
+    pass
+
+
+class YetiNameGenerator3(YetiNameRulesV3, BaseNeutralYetiNameGenerator):
+    pass
 
 
 class Yeti(Gendered):

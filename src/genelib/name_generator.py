@@ -1,10 +1,13 @@
 import random
 from .swear import test_swear
 from .data_provider import DataProvider
+from .genders import GENDER_NEUTRAL
 
 
 class NameGenerator:
     default_providers = dict()
+    gender = GENDER_NEUTRAL
+    name_type = 0
 
     def __init__(self, providers=None):
         self.providers = providers or self.default_providers
@@ -29,12 +32,6 @@ class NameGenerator:
 
     def name(self):
         return "Name"
-
-    @classmethod
-    def unique(cls, item, unique_with, data):
-        while str(item) == str(unique_with):
-            item = next(data)
-        return item
 
 
 class ListNameGenerator(NameGenerator):
@@ -61,13 +58,26 @@ class SyllablicGenerator(NameGenerator):
         super().__init__(providers)
         self.syllable_generators = self.prepare_syllable_generators()
 
+    def template(self):
+        return ()
+
     def prepare_syllable_generators(self):
         return {
             syllable_id: SyllableGenerator(syllable_provider)
             for syllable_id, syllable_provider in self.syllable_providers.items()
         }
 
+    def name_rules(self):
+        return dict()
+
     def rules(self, syllables):
+        for syllable_id in syllables.keys():
+            rule = self.name_rules().get(syllable_id)
+            if rule is None:
+                continue
+            while not rule(syllables[syllable_id], syllables):
+                print(rule, syllables[syllable_id])
+                syllables[syllable_id] = next(self.syllable_generators[syllable_id])
         return syllables
 
     def syllables(self):
@@ -80,9 +90,17 @@ class SyllablicGenerator(NameGenerator):
     def join_syllables(cls, syllables, *args):
         return cls.GLUE.join(syllables)
 
+    @classmethod
+    def from_syllables(cls, syllables, order):
+        return cls.GLUE.join([
+            str(syllables[syllable_id]) for syllable_id in order
+        ])
+
     def name(self):
-        syllables = self.syllables()
-        return self.join_syllables(syllables)
+        # syllables = self.syllables()
+        # return self.join_syllables(syllables)
+        return self.from_syllables(self.syllables(), self.template())\
+               + ".{}".format(self.name_type) + ".{}".format(self.gender)
 
 
 class ComplexNameGenerator:

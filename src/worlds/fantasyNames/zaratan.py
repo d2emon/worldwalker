@@ -1,42 +1,42 @@
-from ..database import db_data_provider
-from genelib import SyllablicGenerator, Named, build_name_generator
+from ..database import get_data_providers, get_syllable_providers
+from genelib import SyllablicGenerator, Named, build_name_generator, unique_with
 
 
 class BaseZaratanNameGenerator(SyllablicGenerator):
-    default_providers = {
-        'nm1': db_data_provider('zaratan', 'nm1'),
-        'nm2': db_data_provider('zaratan', 'nm2'),
-        'nm3': db_data_provider('zaratan', 'nm3'),
-        'nm4': db_data_provider('zaratan', 'nm4'),
-        'nm5': db_data_provider('zaratan', 'nm5'),
-        'nm6': db_data_provider('zaratan', 'nm6'),
-    }
-    syllable_providers = {
-        1: db_data_provider('zaratan', 'nm1'),
-        2: db_data_provider('zaratan', 'nm2'),
-        3: db_data_provider('zaratan', 'nm3'),
-        4: db_data_provider('zaratan', 'nm4'),
-        5: db_data_provider('zaratan', 'nm6'),
+    NAME_V1 = 1
+    NAME_V2 = 2
+    name_type = NAME_V1
+    default_providers = get_data_providers('zaratan', [
+        'nm1',
+        'nm2',
+        'nm3',
+        'nm4',
+        'nm5',
+        'nm6',
+    ])
+    syllable_providers = get_syllable_providers('zaratan', {
+        1: 'nm1',
+        2: 'nm2',
+        3: 'nm3',
+        4: 'nm4',
+        5: 'nm6',
 
-        6: db_data_provider('zaratan', 'nm5'),
-        7: db_data_provider('zaratan', 'nm2'),
+        6: 'nm5',
+        7: 'nm2',
+    })
+    templates = {
+        NAME_V1: (1, 2, 3, 4, 5),
+        NAME_V2: (1, 2, 3, 4, 6, 7, 5),
     }
-
-    def rules(self, syllables):
-        while str(syllables[3]) in (str(syllables[1]), str(syllables[5])):
-            syllables[3] = next(self.syllable_generators[3])
-        return syllables
 
     @classmethod
-    def join_syllables(cls, syllables, inner=(), *args):
-        return cls.GLUE.join([
-            str(syllables[1]),
-            str(syllables[2]),
-            str(syllables[3]),
-            str(syllables[4]),
-            cls.GLUE.join([str(s) for s in inner]),
-            str(syllables[5]),
-        ])
+    def template(cls):
+        return cls.templates[cls.name_type]
+
+    def name_rules(self):
+        return {
+            3: unique_with(1, 5),
+        }
 
 
 class ZaratanNameGenerator1(BaseZaratanNameGenerator):
@@ -44,18 +44,10 @@ class ZaratanNameGenerator1(BaseZaratanNameGenerator):
 
 
 class ZaratanNameGenerator2(BaseZaratanNameGenerator):
-    def rules(self, syllables):
-        syllables = super().rules(syllables)
-        while str(syllables[5]) in (str(syllables[2]), str(syllables[4])):
-            syllables[5] = next(self.syllable_generators[5])
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables(syllables, [
-            syllables[6],
-            syllables[7],
-        ])
+    def name_rules(self):
+        rules = super().name_rules()
+        rules[5] = unique_with(2, 4)
+        return rules
 
 
 class Zaratan(Named):

@@ -1,14 +1,14 @@
-from ..database import db_data_provider
+from ..database import get_data_providers
 from genelib import NameGenerator, Named, build_name_generator
 
 
 class BaseWorldDefenderNameGenerator(NameGenerator):
-    default_providers = {
-        'nm1': db_data_provider('world-defender', 'nm1'),
-        'nm2': db_data_provider('world-defender', 'nm2'),
-        'nm3': db_data_provider('world-defender', 'nm3'),
-        'nm4': db_data_provider('world-defender', 'nm4'),
-    }
+    default_providers = get_data_providers('world-defender', [
+        'nm1',
+        'nm2',
+        'nm3',
+        'nm4',
+    ])
 
 
 class WorldDefenderNameGenerator1(BaseWorldDefenderNameGenerator):

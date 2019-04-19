@@ -25,3 +25,11 @@ def get_data(key, group_id):
 
 def db_data_provider(key, group_id):
     return DataProvider(get_data(key, group_id))
+
+
+def get_data_providers(key, items):
+    return {item: db_data_provider(key, item) for item in items}
+
+
+def get_syllable_providers(key, items):
+    return {item_id: db_data_provider(key, item_key) for item_id, item_key in items.items()}

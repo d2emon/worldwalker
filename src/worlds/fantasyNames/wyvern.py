@@ -1,149 +1,118 @@
-from ..database import db_data_provider
-from genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator
+from ..database import get_data_providers, get_syllable_providers
+from genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator, unique_with
 from genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
 class BaseWyvernNameGenerator(SyllablicGenerator):
     NAME_V1 = 1
     NAME_V2 = 2
-
-    default_providers = {
-        'nm1': db_data_provider('wyvern', 'nm1'),
-        'nm2': db_data_provider('wyvern', 'nm2'),
-        'nm3': db_data_provider('wyvern', 'nm3'),
-        'nm4': db_data_provider('wyvern', 'nm4'),
-        'nm5': db_data_provider('wyvern', 'nm5'),
-        'nm6': db_data_provider('wyvern', 'nm6'),
-        'nm7': db_data_provider('wyvern', 'nm7'),
-        'nm8': db_data_provider('wyvern', 'nm8'),
-        'nm9': db_data_provider('wyvern', 'nm9'),
-        'nm10': db_data_provider('wyvern', 'nm10'),
-        'nm11': db_data_provider('wyvern', 'nm11'),
-        'nm12': db_data_provider('wyvern', 'nm12'),
-        'nm13': db_data_provider('wyvern', 'nm13'),
-        'nm14': db_data_provider('wyvern', 'nm14'),
-        'nm15': db_data_provider('wyvern', 'nm15'),
-    }
     name_type = NAME_V1
-
-    def unique_syllables(self, syllables, syllable1, syllable2):
-        syllables[syllable1] = self.unique(
-            syllables[syllable1],
-            syllables[syllable2],
-            self.syllable_generators[syllable1]
-        )
-        return syllables
-
-    def unique_5_3(self, syllables, min1, min5):
-        if syllables[1].item_id < min1:
-            while syllables[5].item_id < min5 or str(syllables[3]) == str(syllables[5]):
-                syllables[5] = next(self.syllable_generators[5])
-        return syllables
+    default_providers = get_data_providers('wyvern', [
+        'nm1',
+        'nm2',
+        'nm3',
+        'nm4',
+        'nm5',
+        'nm6',
+        'nm7',
+        'nm8',
+        'nm9',
+        'nm10',
+        'nm11',
+        'nm12',
+        'nm13',
+        'nm14',
+        'nm15',
+    ])
+    templates = {
+        NAME_V1: (1, 2, 3, 4, 5),
+        NAME_V2: (1, 2, 3, 4, 6, 7, 5),
+    }
 
     @classmethod
-    def join_syllables(cls, syllables, inner1=(), inner2=(), *args):
-        return cls.GLUE.join([
-            str(syllables[1]),
-            str(syllables[2]),
-            cls.GLUE.join([str(s) for s in inner1]),
-            str(syllables[3]),
-            str(syllables[4]),
-            cls.GLUE.join([str(s) for s in inner2]),
-            str(syllables[5]),
-        ])
+    def template(cls):
+        return cls.templates[cls.name_type]
 
-    def rules(self, syllables):
-        syllables = self.unique_syllables(syllables, 3, 1)
-        syllables = self.unique_syllables(syllables, 5, 3)
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        if self.name_type == self.NAME_V2:
-            return self.join_syllables(
-                syllables,
-                [],
-                [syllables[6], syllables[7]]
-            )
-        return self.join_syllables(syllables)
+    def name_rules(self):
+        return {
+            3: unique_with(1),
+            5: unique_with(3),
+            6: unique_with(3),
+        }
 
 
-class BaseFemaleWyvernNameGenerator(BaseWyvernNameGenerator):
-    syllable_providers = {
-        1: db_data_provider('wyvern', 'nm6'),
-        2: db_data_provider('wyvern', 'nm7'),
-        3: db_data_provider('wyvern', 'nm8'),
-        4: db_data_provider('wyvern', 'nm7'),
-        5: db_data_provider('wyvern', 'nm10'),
+class WyvernNameRulesV1(BaseWyvernNameGenerator):
+    name_type = BaseWyvernNameGenerator.NAME_V1
 
-        6: db_data_provider('wyvern', 'nm9'),
-        7: db_data_provider('wyvern', 'nm7'),
-    }
+
+class WyvernNameRulesV2(WyvernNameRulesV1):
+    name_type = BaseWyvernNameGenerator.NAME_V2
 
 
 class BaseMaleWyvernNameGenerator(BaseWyvernNameGenerator):
-    syllable_providers = {
-        1: db_data_provider('wyvern', 'nm1'),
-        2: db_data_provider('wyvern', 'nm2'),
-        3: db_data_provider('wyvern', 'nm3'),
-        4: db_data_provider('wyvern', 'nm2'),
-        5: db_data_provider('wyvern', 'nm5'),
+    gender = GENDER_MALE
+    syllable_providers = get_syllable_providers('wyvern', {
+        1: 'nm1',
+        2: 'nm2',
+        3: 'nm3',
+        4: 'nm2',
+        5: 'nm5',
 
-        6: db_data_provider('wyvern', 'nm4'),
-        7: db_data_provider('wyvern', 'nm2'),
-    }
+        6: 'nm4',
+        7: 'nm2',
+    })
+
+
+class BaseFemaleWyvernNameGenerator(BaseWyvernNameGenerator):
+    gender = GENDER_FEMALE
+    syllable_providers = get_syllable_providers('wyvern', {
+        1: 'nm6',
+        2: 'nm7',
+        3: 'nm8',
+        4: 'nm7',
+        5: 'nm10',
+
+        6: 'nm9',
+        7: 'nm7',
+    })
 
 
 class BaseNeutralWyvernNameGenerator(BaseWyvernNameGenerator):
-    syllable_providers = {
-        1: db_data_provider('wyvern', 'nm11'),
-        2: db_data_provider('wyvern', 'nm12'),
-        3: db_data_provider('wyvern', 'nm13'),
-        4: db_data_provider('wyvern', 'nm12'),
-        5: db_data_provider('wyvern', 'nm15'),
+    gender = GENDER_NEUTRAL
+    syllable_providers = get_syllable_providers('wyvern', {
+        1: 'nm11',
+        2: 'nm12',
+        3: 'nm13',
+        4: 'nm12',
+        5: 'nm15',
 
-        6: db_data_provider('wyvern', 'nm14'),
-        7: db_data_provider('wyvern', 'nm12'),
-    }
+        6: 'nm14',
+        7: 'nm12',
+    })
 
 
-class FemaleWyvernNameGenerator1(BaseFemaleWyvernNameGenerator):
+class MaleWyvernNameGenerator1(WyvernNameRulesV1, BaseMaleWyvernNameGenerator):
     pass
 
 
-class FemaleWyvernNameGenerator2(BaseFemaleWyvernNameGenerator):
-    name_type = BaseWyvernNameGenerator.NAME_V2
-
-    def rules(self, syllables):
-        syllables = super().rules(syllables)
-        syllables = self.unique_syllables(syllables, 6, 3)
-        return syllables
-
-
-class MaleWyvernNameGenerator1(BaseMaleWyvernNameGenerator):
+class MaleWyvernNameGenerator2(WyvernNameRulesV2, BaseMaleWyvernNameGenerator):
     pass
 
 
-class MaleWyvernNameGenerator2(BaseMaleWyvernNameGenerator):
-    name_type = BaseWyvernNameGenerator.NAME_V2
-
-    def rules(self, syllables):
-        syllables = super().rules(syllables)
-        syllables = self.unique_syllables(syllables, 6, 3)
-        return syllables
-
-
-class WyvernNameGenerator1(BaseNeutralWyvernNameGenerator):
+class FemaleWyvernNameGenerator1(WyvernNameRulesV1, BaseFemaleWyvernNameGenerator):
     pass
 
 
-class WyvernNameGenerator2(BaseNeutralWyvernNameGenerator):
-    name_type = BaseWyvernNameGenerator.NAME_V2
+class FemaleWyvernNameGenerator2(WyvernNameRulesV2, BaseFemaleWyvernNameGenerator):
+    pass
 
-    def rules(self, syllables):
-        syllables = super().rules(syllables)
-        syllables = self.unique_syllables(syllables, 6, 3)
-        return syllables
+
+class WyvernNameGenerator1(WyvernNameRulesV1, BaseNeutralWyvernNameGenerator):
+    pass
+
+
+class WyvernNameGenerator2(WyvernNameRulesV2, BaseNeutralWyvernNameGenerator):
+    pass
 
 
 class Wyvern(Gendered):

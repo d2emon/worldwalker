@@ -1,5 +1,5 @@
-from ..database import db_data_provider
-from genelib import SyllablicGenerator, GenderedNameGenerator, ComplexNameGenerator, Gendered, build_name_generator
+from ..database import get_data_providers, get_syllable_providers
+from genelib import SyllablicGenerator, GenderedNameGenerator, ComplexNameGenerator, Gendered
 from genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
@@ -7,223 +7,133 @@ class BaseWizardNameGenerator(SyllablicGenerator):
     NAME_V1 = 1
     NAME_V2 = 2
     NAME_V3 = 3
-
-    default_providers = {
-        'nm1': db_data_provider('wizard', 'nm1'),
-        'nm2': db_data_provider('wizard', 'nm2'),
-        'nm3': db_data_provider('wizard', 'nm3'),
-        'nm4': db_data_provider('wizard', 'nm4'),
-        'nm5': db_data_provider('wizard', 'nm5'),
-        'nm6': db_data_provider('wizard', 'nm6'),
-        'nm7': db_data_provider('wizard', 'nm7'),
-        'nm8': db_data_provider('wizard', 'nm8'),
-        'nm9': db_data_provider('wizard', 'nm9'),
-        'nm10': db_data_provider('wizard', 'nm10'),
-        'nm11': db_data_provider('wizard', 'nm11'),
-    }
     name_type = NAME_V1
+    default_providers = get_data_providers('wizard', [
+        'nm1',
+        'nm2',
+        'nm3',
+        'nm4',
+        'nm5',
+        'nm6',
+        'nm7',
+        'nm8',
+        'nm9',
+        'nm10',
+        'nm11',
+    ])
+    templates = {
+        NAME_V1: (5, 6),
+        NAME_V2: (2, 5, 6),
+        NAME_V3: (1, 2, 5, 6),
+    }
 
     @classmethod
-    def join_syllables(cls, syllables, inner1=(), inner2=(), *args):
-        return cls.GLUE.join([str(syllable) for syllable in syllables])
+    def template(cls):
+        return cls.templates[cls.name_type]
 
 
-class BaseFemaleWizardNameGenerator(BaseWizardNameGenerator):
-    pass
+class WizardNameRulesV1(BaseWizardNameGenerator):
+    name_type = BaseWizardNameGenerator.NAME_V1
+
+    def name_rules(self):
+        return dict()
+
+
+class WizardNameRulesV2(WizardNameRulesV1):
+    name_type = BaseWizardNameGenerator.NAME_V2
+
+    def name_rules(self):
+        def unique_with_6(syllable, syllables):
+            return str(syllable) != str(syllables[6])[0]
+        return {2: unique_with_6}
+
+
+class WizardNameRulesV3(WizardNameRulesV2):
+    name_type = BaseWizardNameGenerator.NAME_V3
 
 
 class BaseMaleWizardNameGenerator(BaseWizardNameGenerator):
-    pass
+    gender = GENDER_MALE
 
 
 class BaseNeutralWizardNameGenerator(BaseWizardNameGenerator):
-    pass
+    gender = GENDER_NEUTRAL
 
 
-class FemaleWizardNameGenerator1(BaseFemaleWizardNameGenerator):
-    syllable_providers = {
-        3: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm8'),
-    }
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[3],
-            syllables[6],
-        ])
+class BaseFemaleWizardNameGenerator(BaseWizardNameGenerator):
+    gender = GENDER_FEMALE
 
 
-class FemaleWizardNameGenerator2(BaseFemaleWizardNameGenerator):
-    name_type = BaseWizardNameGenerator.NAME_V2
-
-    syllable_providers = {
-        2: db_data_provider('wizard', 'nm6'),
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm8'),
-    }
-
-    def rules(self, syllables):
-        while str(syllables[2]) == str(syllables[6]):
-            syllables[2] = next(self.syllable_generators[2])
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[2],
-            syllables[5],
-            syllables[6],
-        ])
+class MaleWizardNameGenerator1(WizardNameRulesV1, BaseMaleWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        5: 'nm3',
+        6: 'nm5',
+    })
 
 
-class FemaleWizardNameGenerator3(BaseFemaleWizardNameGenerator):
-    name_type = BaseWizardNameGenerator.NAME_V3
-
-    syllable_providers = {
-        1: db_data_provider('wizard', 'nm1'),
-        2: db_data_provider('wizard', 'nm7'),
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm8'),
-    }
-
-    def rules(self, syllables):
-        while str(syllables[2]) == str(syllables[6]):
-            syllables[2] = next(self.syllable_generators[2])
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[1],
-            syllables[2],
-            syllables[5],
-            syllables[6],
-        ])
+class MaleWizardNameGenerator2(WizardNameRulesV2, BaseMaleWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        2: 'nm2',
+        5: 'nm3',
+        6: 'nm5',
+    })
 
 
-class MaleWizardNameGenerator1(BaseMaleWizardNameGenerator):
-    syllable_providers = {
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm5'),
-    }
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[5],
-            syllables[6],
-        ])
+class MaleWizardNameGenerator3(WizardNameRulesV3, BaseMaleWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        1: 'nm1',
+        2: 'nm4',
+        5: 'nm3',
+        6: 'nm5',
+    })
 
 
-class MaleWizardNameGenerator2(BaseMaleWizardNameGenerator):
-    name_type = BaseWizardNameGenerator.NAME_V2
-
-    syllable_providers = {
-        2: db_data_provider('wizard', 'nm2'),
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm5'),
-    }
-
-    def rules(self, syllables):
-        while str(syllables[2]) == str(syllables[6]):
-            syllables[2] = next(self.syllable_generators[2])
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[2],
-            syllables[5],
-            syllables[6],
-        ])
+class FemaleWizardNameGenerator1(WizardNameRulesV1, BaseFemaleWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        5: 'nm3',
+        6: 'nm8',
+    })
 
 
-class MaleWizardNameGenerator3(BaseMaleWizardNameGenerator):
-    name_type = BaseWizardNameGenerator.NAME_V3
-
-    syllable_providers = {
-        1: db_data_provider('wizard', 'nm1'),
-        2: db_data_provider('wizard', 'nm4'),
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm5'),
-    }
-
-    def rules(self, syllables):
-        while str(syllables[2]) == str(syllables[6]):
-            syllables[2] = next(self.syllable_generators[2])
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[1],
-            syllables[2],
-            syllables[5],
-            syllables[6],
-        ])
+class FemaleWizardNameGenerator2(WizardNameRulesV2, BaseFemaleWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        2: 'nm6',
+        5: 'nm3',
+        6: 'nm8',
+    })
 
 
-class WizardNameGenerator1(BaseNeutralWizardNameGenerator):
-    syllable_providers = {
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm9'),
-    }
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[5],
-            syllables[6],
-        ])
+class FemaleWizardNameGenerator3(WizardNameRulesV3, BaseFemaleWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        1: 'nm1',
+        2: 'nm7',
+        5: 'nm3',
+        6: 'nm8',
+    })
 
 
-class WizardNameGenerator2(BaseNeutralWizardNameGenerator):
-    name_type = BaseWizardNameGenerator.NAME_V2
-
-    syllable_providers = {
-        2: db_data_provider('wizard', 'nm10'),
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm9'),
-    }
-
-    def rules(self, syllables):
-        while str(syllables[2]) == str(syllables[6]):
-            syllables[2] = next(self.syllable_generators[2])
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[2],
-            syllables[5],
-            syllables[6],
-        ])
+class WizardNameGenerator1(WizardNameRulesV1, BaseNeutralWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        5: 'nm3',
+        6: 'nm9',
+    })
 
 
-class WizardNameGenerator3(BaseNeutralWizardNameGenerator):
-    name_type = BaseWizardNameGenerator.NAME_V3
+class WizardNameGenerator2(WizardNameRulesV2, BaseNeutralWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        2: 'nm10',
+        5: 'nm3',
+        6: 'nm9',
+    })
 
-    syllable_providers = {
-        1: db_data_provider('wizard', 'nm1'),
-        2: db_data_provider('wizard', 'nm11'),
-        5: db_data_provider('wizard', 'nm3'),
-        6: db_data_provider('wizard', 'nm9'),
-    }
 
-    def rules(self, syllables):
-        while str(syllables[2]) == str(syllables[6]):
-            syllables[2] = next(self.syllable_generators[2])
-        return syllables
-
-    def name(self):
-        syllables = self.syllables()
-        return self.join_syllables([
-            syllables[1],
-            syllables[2],
-            syllables[5],
-            syllables[6],
-        ])
+class WizardNameGenerator3(WizardNameRulesV3, BaseNeutralWizardNameGenerator):
+    syllable_providers = get_syllable_providers('wizard', {
+        1: 'nm1',
+        2: 'nm11',
+        5: 'nm3',
+        6: 'nm9',
+    })
 
 
 class Wizard(Gendered):

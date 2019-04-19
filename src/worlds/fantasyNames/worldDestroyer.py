@@ -1,14 +1,14 @@
-from ..database import db_data_provider
+from ..database import get_data_providers
 from genelib import NameGenerator, Named, build_name_generator
 
 
 class BaseWorldDestroyerNameGenerator(NameGenerator):
-    default_providers = {
-        'nm1': db_data_provider('world-destroyer', 'nm1'),
-        'nm2': db_data_provider('world-destroyer', 'nm2'),
-        'nm3': db_data_provider('world-destroyer', 'nm3'),
-        'nm4': db_data_provider('world-destroyer', 'nm4'),
-    }
+    default_providers = get_data_providers('world-destroyer', [
+        'nm1',
+        'nm2',
+        'nm3',
+        'nm4',
+    ])
 
 
 class WorldDestroyerNameGenerator1(BaseWorldDestroyerNameGenerator):
