@@ -15,11 +15,7 @@ from ..aber_weather import longwthr
 from ..database.world import World
 
 from .tkGlobals import TkGlobals
-from .filelock import fcloselock
 from .loseme import loseme
-from .rte import mstoout, rte
-from .sendmsg import sendmsg
-from .special import special
 from .sysctrl import sysctrl
 from .talker import talker
 from .trapch import trapch, lookin
@@ -40,28 +36,6 @@ Sectors 1-n  in pairs ie [128 words]
 0 = Text
 - 1 = general request
 """
-
-
-def putmeon(user):
-    return user.put_on()
-
-
-def readmsg(message_id):
-    return World.load_message(message_id)
-
-
-def update(user):
-    return user.update()
-
-
-def findstart():
-    return World.database.load_start
-
-
-def findend():
-    return World.database.load_end
-
-# =======================================
 
 
 def vcpy(dest, offd, source, offs, len__):

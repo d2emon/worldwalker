@@ -7,11 +7,9 @@ class TkGlobals:
     # oddcat = 0
     # talkfl = 0
 
-    curmode = 0
     # meall = 0
 
     # gurum = 0
-    convflg = 0
 
     rd_qd = 0
 
@@ -26,6 +24,10 @@ class TkGlobals:
     @classmethod
     def set_user(cls, user):
         cls.__user = user
+
+    @classmethod
+    def get_user(cls):
+        return cls.__user
 
     @classmethod
     def cms(cls):
@@ -58,3 +60,7 @@ class TkGlobals:
     @classmethod
     def i_setup(cls):
         return cls.__user.in_setup
+
+    @classmethod
+    def curmode(cls):
+        return cls.__user.mode

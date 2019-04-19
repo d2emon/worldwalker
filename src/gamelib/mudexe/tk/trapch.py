@@ -12,6 +12,7 @@ from ..aber_parse import openroom
 from ..aber_support import setploc
 from ..aber_weather import isdark, showname
 from ..aber_zones import lodex
+from ..database.world import World
 
 
 def lookin(room):
@@ -22,7 +23,7 @@ def lookin(room):
         if isdark():
             un1.close()
             bprintf("It is dark\n")
-            World.openworld()
+            World.open()
             onlook()
             return True
 
@@ -49,7 +50,7 @@ def lookin(room):
                 xxx = brmode
 
     # Lords ????
-    World.closeworld()
+    World.close()
 
     if ail_blind:
         bprintf("You are blind... you can't see a thing!\n")
@@ -74,13 +75,14 @@ def lookin(room):
     onlook()
 
 
-def __ndie(chan):
-    World.openworld()
-    setploc(TkGlobals.mynum, chan)
+def __ndie(user, chan):
+    World.open()
+    user.person.location = chan
     lookin(chan)
 
 
 def trapch(chan):
-    if DummyGlobals.my_lev > 9:
-        return __ndie(chan)
-    return __ndie(chan)
+    user = TkGlobals.get_user()
+    if user.level > 9:
+        return __ndie(user, chan)
+    return __ndie(user, chan)

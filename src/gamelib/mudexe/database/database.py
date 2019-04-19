@@ -30,7 +30,7 @@ class Database:
         return sec_read(self, pos, max_len)
 
     def write(self, block, pos, max_len):
-        sec_write(self, pos, max_len)
+        sec_write(self, block, pos, max_len)
 
 
 class Lockable(Database):

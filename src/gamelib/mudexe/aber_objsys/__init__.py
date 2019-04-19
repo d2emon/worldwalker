@@ -34,6 +34,9 @@ def dumpstuff(*args):
     pass
 
 
+def dumpitems():
+    pass
+
 """
  inventory()
     {

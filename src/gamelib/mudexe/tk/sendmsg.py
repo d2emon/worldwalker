@@ -1,10 +1,10 @@
-from .dummies import DummyGlobals, gamecom, btmscr, topscr, set_progname, sig_alon, sig_aloff, key_input
+from .dummies import DummyGlobals
 from .tkGlobals import TkGlobals
-from .rte import rte
-from .special import special
+from ..bbc import BBC
 from ..aber_bprintf import pbfr
-from ..aber_newuaf1 import my_lev
-from ..aber_support import pname, ploc, pvis
+from ..aber_gamego import sig_alon, sig_aloff, set_progname
+from ..aber_key import key_input
+from ..aber_parse import gamecom
 from ..database.world import World
 
 
@@ -25,13 +25,12 @@ def __test_fight():
 def __get_prompt():
     prompt = "\r"
 
-    if pvis(TkGlobals.mynum):
-        prompt += "("
+    user = TkGlobals.get_user()
 
     if DummyGlobals.debug_mode:
         prompt += "#"
 
-    if my_lev > 9:
+    if user.level > 9:
         prompt += "----"
 
     if TkGlobals.convflg == 0:
@@ -43,8 +42,8 @@ def __get_prompt():
     else:
         prompt += "?"
 
-    if pvis(TkGlobals.mynum):
-        prompt += ")"
+    if user.person.vis:
+        prompt = "({})".format(prompt)
 
     return prompt
 
@@ -67,15 +66,15 @@ def __prepare_work(work, flag=0):
 
 def sendmsg(user):
     pbfr()
-    if DummyGlobals.tty == 4:
-        btmscr()
+    BBC.bottom_screen()
 
     prompt = __get_prompt()
     pbfr()
 
-    if pvis(TkGlobals.mynum) > 9999:
+    user = TkGlobals.get_user()
+    if user.person.vis > 9999:
         set_progname(0, "-csh")
-    elif pvis(TkGlobals.mynum) == 0:
+    elif user.person.vis == 0:
         work = "   --}}----- ABERMUD -----{{--     Playing as {}".format(str(user))
         set_progname(0, work)
 
@@ -84,15 +83,14 @@ def sendmsg(user):
     sig_aloff()
     work = DummyGlobals.key_buff
 
-    if DummyGlobals.tty == 4:
-        topscr()
+    BBC.top_screen()
 
     DummyGlobals.sysbuf += "\001l"
     DummyGlobals.sysbuf += work
     DummyGlobals.sysbuf += "\n\001"
 
     World.open()
-    rte(user)
+    user.rte()
     World.close()
 
     if TkGlobals.convflg and work == "**":
@@ -104,7 +102,7 @@ def sendmsg(user):
     if TkGlobals.curmode == 1:
         gamecom(work)
     elif work and work != ".Q" and work != ".q":
-        special(work, user)
+        user.special(work)
 
     __test_fight()
 

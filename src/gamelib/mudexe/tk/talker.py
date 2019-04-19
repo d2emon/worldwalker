@@ -1,39 +1,20 @@
-from .dummies import DummyGlobals
 from .tkGlobals import TkGlobals
-from .rte import rte
-from .sendmsg import sendmsg
-from .special import special
-from ..aber_bprintf import makebfr, pbfr
+from ..aber_bprintf import pbfr
 from ..aber_gamego import crapup
 
 from ..database.world import World
-from ..exceptions import CrapupException
+from ..exceptions import CrapupException, GameException
 from ..database.exceptions import WorldFullException, NoDatabaseException
-
-
-def __setup(user):
-    makebfr()  #
-
-    user.message_id = None
-    user.put_on()
-
-    World.open()
-    rte(user)
-    World.close()
-
-    user.message_id = None
-    special(".g", user)  #
-
-    user.in_setup = True
+from .get_input import get_input
 
 
 def __main_loop(user):
     pbfr()  #
-    sendmsg(user)  #
+    get_input(user)
     if TkGlobals.rd_qd:
-        rte(user)  #
+        user.rte()
     TkGlobals.rd_qd = 0  #
-    World.close()  #
+    World.close()
     pbfr()  #
 
 
@@ -42,7 +23,7 @@ def talker(user):
     TkGlobals.set_user(user)
 
     try:
-        __setup(user)
+        user.prepare()
     except NoDatabaseException:
         crapup("Sorry AberMUD is currently unavailable") #
     except CrapupException as message:
@@ -50,6 +31,10 @@ def talker(user):
     except WorldFullException as message:
         print(message)
         return 0
+    except GameException as message:
+        print(message)
 
-    while True:
+    # while True:
+    #     __main_loop(user)
+    for _ in range(5):
         __main_loop(user)

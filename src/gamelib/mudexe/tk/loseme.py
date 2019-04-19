@@ -1,5 +1,10 @@
-from .dummies import DummyGlobals, sig_aloff, dumpitems, sendsys, saveme, chksnp
+from .dummies import DummyGlobals
 from .tkGlobals import TkGlobals
+from ..aber_bprintf import chksnp
+from ..aber_gamego import sig_aloff
+from ..aber_newuaf1 import saveme
+from ..aber_objsys import dumpitems
+from ..aber_parse import sendsys
 from ..aber_support import pname, pvis
 
 

@@ -1,4 +1,4 @@
-from .dummies import gamrcv
+from ..aber_parse import gamrcv
 
 
 def sysctrl(block, user):

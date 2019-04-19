@@ -3,7 +3,7 @@ from gamelib.mudexe.tk.talker import talker
 
 
 def main():
-    user = User("username")
+    user = User(1, "username")
     talker(user)
 
 

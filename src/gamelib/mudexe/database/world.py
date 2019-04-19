@@ -1,9 +1,10 @@
-from ..aber_objsys import numobs
 from .database import Lockable
-from .models.message import Message
+from .models.message import Message as MessageModel
 from .models.object import MudObject
 from .models.person import Person
 from .exceptions import NoWorldFileException, NoDatabaseException, WorldFullException
+
+from gamelib.services.message import Message
 
 
 class WorldDatabase(Lockable):
@@ -20,17 +21,18 @@ class WorldDatabase(Lockable):
         self.write(model.items, model.offset, model.length)
 
     def load_start(self):
-        return self.read(0, 1)[0]
+        return Message.first_id
 
     def load_end(self):
-        return self.read(0, 2)[1]
+        return Message.last_id
+
 
 class World:
     database = None  # - = not open
 
     objects = MudObject
     persons = Person
-    messages = Message
+    messages = MessageModel
 
     @classmethod
     def is_open(cls):
@@ -69,4 +71,4 @@ class World:
 
     @classmethod
     def load_message(cls, message_id):
-        cls.messages.load_message(cls.database, message_id)
+        return Message.get(message_id)

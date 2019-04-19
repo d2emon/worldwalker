@@ -155,6 +155,8 @@ def pstr(person_id):
 
 
 def setpstr(person_id, value):
+    print(person_id, value)
+    print(Person.items)
     Person.items[16 * person_id + 7] = value
 
 
