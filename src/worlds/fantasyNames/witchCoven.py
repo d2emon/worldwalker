@@ -2,34 +2,30 @@ from ..database import get_data_providers
 from genelib import NameGenerator, Named, build_name_generator
 
 
+DATABASE = 'witch-coven'
+PARTS = [
+    'nm1',  # nm1.splice(rnd, 1)
+    'nm2',  # nm2.splice(rnd, 1)
+    'nm3',
+]
+
+
 class BaseWitchCovenNameGenerator(NameGenerator):
-    default_providers = get_data_providers('witch-coven', [
-        'nm1',
-        'nm2',
-        'nm3',
-    ])
+    NAME_V1 = 1
+    NAME_V2 = 2
+    name_type = NAME_V1
+    default_providers = get_data_providers(DATABASE, PARTS)
+    used_parts = PARTS
 
 
 class WitchCovenNameGenerator1(BaseWitchCovenNameGenerator):
-    def names(self):
-        return {
-            1: next(self.data['nm1']),  # nm1.splice(rnd, 1)
-            2: next(self.data['nm3']),
-        }
-
-    def name(self):
-        return "The {name[1]} {name[2]}".format(name=self.names())
+    name_type = BaseWitchCovenNameGenerator.NAME_V1
+    template = "The {nm1} {nm3}"
 
 
 class WitchCovenNameGenerator2(BaseWitchCovenNameGenerator):
-    def names(self):
-        return {
-            1: next(self.data['nm2']),  # nm2.splice(rnd, 1)
-            2: next(self.data['nm3']),
-        }
-
-    def name(self):
-        return "{name[2]} of {name[1]}".format(name=self.names())
+    name_type = BaseWitchCovenNameGenerator.NAME_V2
+    template = "{nm3} of {nm2}"
 
 
 class WitchCoven(Named):

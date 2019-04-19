@@ -2,58 +2,43 @@ from ..database import get_data_providers
 from genelib import NameGenerator, Named, build_name_generator
 
 
+DATABASE = 'world-destroyer'
+PARTS = [
+    'nm1',
+    'nm2',  # nm2.splice(rnd2, 1)
+    'nm3',  # nm3.splice(rnd, 1)
+    'nm4',
+]
+
+
 class BaseWorldDestroyerNameGenerator(NameGenerator):
-    default_providers = get_data_providers('world-destroyer', [
-        'nm1',
-        'nm2',
-        'nm3',
-        'nm4',
-    ])
+    NAME_V1 = 1
+    NAME_V2 = 2
+    NAME_V3 = 3
+    NAME_V4 = 4
+    name_type = NAME_V1
+    default_providers = get_data_providers(DATABASE, PARTS)
+    used_parts = PARTS
 
 
 class WorldDestroyerNameGenerator1(BaseWorldDestroyerNameGenerator):
-    def names(self):
-        return {
-            1: next(self.data['nm1']),
-            2: next(self.data['nm2']),  # nm2.splice(rnd2, 1)
-        }
-
-    def name(self):
-        return "The {name[1]} {name[2]}".format(name=self.names())
+    name_type = BaseWorldDestroyerNameGenerator.NAME_V1
+    template = "The {nm1} {nm2}"
 
 
 class WorldDestroyerNameGenerator2(BaseWorldDestroyerNameGenerator):
-    def names(self):
-        return {
-            1: next(self.data['nm4']),
-            2: next(self.data['nm2']),  # nm2.splice(rnd2, 1)
-        }
-
-    def name(self):
-        return "{name[2]} of {name[1]}".format(name=self.names())
+    name_type = BaseWorldDestroyerNameGenerator.NAME_V2
+    template = "{nm2} of {nm4}"
 
 
 class WorldDestroyerNameGenerator3(BaseWorldDestroyerNameGenerator):
-    def names(self):
-        return {
-            1: next(self.data['nm3']),  # nm3.splice(rnd, 1)
-            2: next(self.data['nm2']),  # nm2.splice(rnd2, 1)
-        }
-
-    def name(self):
-        return "The {name[1]} of {name[2]}".format(name=self.names())
+    name_type = BaseWorldDestroyerNameGenerator.NAME_V3
+    template = "The {nm3} of {nm2}"
 
 
 class WorldDestroyerNameGenerator4(BaseWorldDestroyerNameGenerator):
-    def names(self):
-        return {
-            1: next(self.data['nm3']),  # nm3.splice(rnd, 1)
-            2: next(self.data['nm2']),  # nm2.splice(rnd2, 1)
-            3: next(self.data['nm1']),
-        }
-
-    def name(self):
-        return "The {name[1]} {name[3]} {name[2]}".format(name=self.names())
+    name_type = BaseWorldDestroyerNameGenerator.NAME_V4
+    template = "The {nm3} {nm1} {nm2}"
 
 
 class WorldDestroyer(Named):

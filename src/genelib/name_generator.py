@@ -9,6 +9,9 @@ class NameGenerator:
     gender = GENDER_NEUTRAL
     name_type = 0
 
+    template = ""
+    used_parts = []
+
     def __init__(self, providers=None):
         self.providers = providers or self.default_providers
         self.data = self.__ready_providers()
@@ -30,24 +33,30 @@ class NameGenerator:
     def reset(self):
         self.data = self.__ready_providers()
 
+    def name_parts(self):
+        return {part: next(self.data[part]) for part in self.used_parts}
+
     def name(self):
-        return "Name"
+        return self.template.format(**self.name_parts())
 
 
 class ListNameGenerator(NameGenerator):
     default_provider = DataProvider([])
 
+    template = "{provider}"
+    used_parts = ["provider"]
+
     def __init__(self, provider=None):
         provider = provider or self.default_provider
         super().__init__({'provider': provider})
-
-    def name(self):
-        return next(self.data['provider'])
 
 
 class SyllableGenerator(ListNameGenerator):
     def __init__(self, provider):
         super().__init__(provider)
+
+    def name(self):
+        return next(self.data['provider'])
 
 
 class SyllablicGenerator(NameGenerator):
