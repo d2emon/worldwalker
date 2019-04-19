@@ -1,3 +1,4 @@
+from worlds.fantasyNames.witchCoven import WitchCoven
 from worlds.fantasyNames.wizard import Wizard
 from worlds.fantasyNames.worldDefender import WorldDefender
 from worlds.fantasyNames.worldDestroyer import WorldDestroyer
@@ -21,6 +22,8 @@ def generateList(title, item_class, *args):
 
 def main():
     print('World Walker')
+
+    generateList("Witch Coven", WitchCoven)
 
     generateList("Wizard (m)", Wizard, Wizard.MALE)
     generateList("Wizard (f)", Wizard, Wizard.FEMALE)

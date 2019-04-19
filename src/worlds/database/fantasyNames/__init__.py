@@ -1,3 +1,4 @@
+from .witchCoven import WITCH_COVEN_DATA
 from .wizard import WIZARD_DATA
 from .worldDefender import WORLD_DEFENDER_DATA
 from .worldDestroyer import WORLD_DESTROYER_DATA
@@ -27,7 +28,7 @@ FANTASY_NAMES_DATA = {
     'werewolf': None,
     'werewolf-pack': None,
     'with': None,
-    'witch-coven': None,
+    'witch-coven': WITCH_COVEN_DATA,
     'wizard': WIZARD_DATA,
     'world-defender': WORLD_DEFENDER_DATA,
     'world-destroyer': WORLD_DESTROYER_DATA,
