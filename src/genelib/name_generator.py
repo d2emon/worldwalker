@@ -85,7 +85,6 @@ class SyllablicGenerator(NameGenerator):
             if rule is None:
                 continue
             while not rule(syllables[syllable_id], syllables):
-                print(rule, syllables[syllable_id])
                 syllables[syllable_id] = next(self.syllable_generators[syllable_id])
         return syllables
 
@@ -106,10 +105,7 @@ class SyllablicGenerator(NameGenerator):
         ])
 
     def name(self):
-        # syllables = self.syllables()
-        # return self.join_syllables(syllables)
-        return self.from_syllables(self.syllables(), self.template())\
-               + ".{}".format(self.name_type) + ".{}".format(self.gender)
+        return self.from_syllables(self.syllables(), self.template())
 
 
 class ComplexNameGenerator:
