@@ -48,10 +48,3 @@ class Witch(Gendered):
         MALE: MaleWitchNameGenerator,
         FEMALE: FemaleWitchNameGenerator,
     })
-
-
-"""
-var nm1 = [];
-var nm2 = [];
-var nm3 = [];
-"""
