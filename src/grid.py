@@ -10,8 +10,8 @@ class MapGrid(Surface):
     def __init__(self, width, height, grid_size):
         Surface.__init__(self, (width, height))
         self.fill(TRANSPARENT)
-        xsize = self.get_width() / grid_size
-        ysize = self.get_height() / grid_size
+        xsize = int(self.get_width() / grid_size)
+        ysize = int(self.get_height() / grid_size)
         for i in range(xsize):
             for j in range(ysize):
                 rect = Rect(i * grid_size, j * grid_size, grid_size, grid_size)
