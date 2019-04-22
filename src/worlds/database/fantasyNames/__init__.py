@@ -1,3 +1,5 @@
+from .fairy import FAIRY_DATA
+
 from .witch import WITCH_DATA
 from .witchCoven import WITCH_COVEN_DATA
 from .wizard import WIZARD_DATA
@@ -9,6 +11,8 @@ from .zaratan import ZARATAN_DATA
 from .zombie import ZOMBIE_DATA
 
 FANTASY_NAMES_DATA = {
+    'fairy': FAIRY_DATA,
+
     'siren': None,
     'slave': None,
     'species': None,
