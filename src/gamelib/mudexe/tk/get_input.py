@@ -5,15 +5,21 @@ from ..bbc import BBC
 from ..database.world import World
 
 
-
 class Program:
     program_id = 0
     name = None
 
     @classmethod
+    def update_name(cls, user):
+        if user.person.vis > 9999:
+            cls.name = "-csh"
+        elif user.person.vis == 0:
+            cls.name = "   --}}----- ABERMUD -----{{--     Playing as {}".format(user)
+        print("PROGRAM:", cls.name)
+
+    @classmethod
     def set_name(cls, name):
         cls.name = name
-        print(name)
 
 
 def __test_fight():
@@ -47,27 +53,25 @@ def __prepare_work(work, flag=0):
 
 
 def get_input(user):
+    # Clearing buffer
     user.io.show_output()
+
+    # Enter command block
     BBC.bottom_screen()
 
     user.io.show_output()
-
-    if user.person.vis > 9999:
-        Program.set_name("-csh")
-    elif user.person.vis == 0:
-        Program.set_name("   --}}----- ABERMUD -----{{--     Playing as {}".format(user))
+    Program.update_name(user)
 
     sig_alon()
     work = user.io.get_input(user.prompt, 80)
     sig_aloff()
 
-    BBC.top_screen()
-
     user.io.send_raw("\001l{}\n\001".format(work))
 
-    World.open()
-    user.rte()
-    World.close()
+    # New screen
+    BBC.top_screen()
+
+    user.rte(save=True)
 
     if user.input_mode and work == "**":
         user.input_mode = 0

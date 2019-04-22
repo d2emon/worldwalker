@@ -8,7 +8,10 @@ class Console:
         self.output_buffer = Buffer(user_id)
 
     def send_raw(self, text):
-        self.output_buffer.send_raw(text)
+        self.output_buffer.add_text(text)
+
+    def send(self, text):
+        self.output_buffer.bprintf(text)
 
     def show_output(self):
         print(self.output_buffer.fetch_buffer(), end='')

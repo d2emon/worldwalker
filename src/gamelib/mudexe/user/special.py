@@ -11,28 +11,31 @@ def __g(user):
     initme()
     World.open()
 
-    user.person.strength = user.strength
-    user.person.level = user.level
-    if user.level < 10000:
-        user.person.vis = 0
-    else:
-        user.person.vis = 10000
-    user.person.weapon = None
-    user.person.sexall = user.sex
-    user.person.helping = None
+    user.init_person()
 
-    xy = "\001s{name}\001{name}  has entered the game\n\001".format(name=str(user))
-    xx = "\001s{name}\001[ {name}  has entered the game ]\n\001".format(name=str(user))
-    sendsys(str(user), str(user), -10113, user.location_id, xx)
+    sendsys(
+        user,
+        user,
+        -10113,
+        user.location_id,
+        "\001s{name}\001[ {name}  has entered the game ]\n\001".format(name=str(user)),
+    )
 
-    user.rte()
+    user.rte(save=False)
 
     if randperc() > 50:
         trapch(-5)
     else:
         user.location_id = -183
         trapch(-183)
-    sendsys(str(user), str(user), -10000, user.location_id, xy)
+
+    sendsys(
+        user,
+        user,
+        -10000,
+        user.location_id,
+        "\001s{name}\001{name}  has entered the game\n\001".format(name=str(user)),
+    )
 
 
 SPECIAL_COMMANDS = {
