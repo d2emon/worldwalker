@@ -3,21 +3,13 @@ from ..aber_gamego import block_alarm, unblock_alarm
 from ..database.world import World
 
 
+class BprintfGlobals:
+    pr_due = 0
+
+
 def bprintf(args):
     pass
-
-
-def chksnp():
-    pass
-
-
-"""
-#include "files.h"
-#include <stdio.h>
-#include "System.h"
-
-long pr_due=0;
-
+    """
 void bprintf(args,arg1,arg2,arg3,arg4,arg5,arg6,arg7)
 char *args,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6,*arg7;
     {
@@ -32,13 +24,13 @@ crapup("Internal Error in BPRINTF");
     /* Now we have a string of chars expanded */
     quprnt(x);
     }
+    """
 
- /* The main loop */
 
-void dcprnt(str,file)
- char *str;
- FILE *file;
-    {
+# The main loop
+def dcprnt(s, file):
+    pass
+    """
     long ct;
     ct=0;
     while(str[ct])
@@ -68,8 +60,12 @@ void dcprnt(str,file)
              loseme();crapup("Internal $ control sequence error\n");
              }
        }
-    }
+    """
 
+
+def pfile(text, ct, file):
+    pass
+    """
 int pfile(str,ct,file)
  char *str;
  FILE *file;
@@ -81,7 +77,12 @@ int pfile(str,ct,file)
     f_listfl(x,file);
     return(ct);
     }
+    """
 
+
+def pndeaf(text, ct, file):
+    pass
+    """
 int pndeaf(str,ct,file)
  char *str;
  FILE *file;
@@ -92,7 +93,12 @@ int pndeaf(str,ct,file)
     if(!ail_deaf)fprintf(file,"%s",x);
     return(ct);
     }
+    """
 
+
+def pcansee(text, ct, file):
+    pass
+    """
  pcansee(str,ct,file)
  char *str;
  FILE *file;
@@ -111,7 +117,12 @@ int pndeaf(str,ct,file)
     fprintf(file,"%s",z);
     return(ct);
     }
+    """
 
+
+def prname(text, ct, file):
+    pass
+    """
  prname(str,ct,file)
  char *str;
  FILE *file;
@@ -124,8 +135,12 @@ int pndeaf(str,ct,file)
       fprintf(file,"%s",x);
     return(ct);
     }
+   """
 
 
+def pndark(text, ct, file):
+    pass
+    """
 int pndark(str,ct,file)
  char *str;
  FILE *file;
@@ -137,7 +152,12 @@ int pndark(str,ct,file)
     fprintf(file,"%s",x);
     return(ct);
     }
+    """
 
+
+def tocontinue(text, ct, x, mx):
+    pass
+    """
 int tocontinue(str,ct,x,mx)
  char *str;
  long ct;
@@ -159,6 +179,56 @@ crapup("Buffer OverRun in IO_TOcontinue");
 }
     return(ct+1);
     }
+    """
+
+
+def pfile(text, ct, file):
+    pass
+    """
+    """
+
+
+def pfile(text, ct, file):
+    pass
+    """
+    """
+
+
+def pfile(text, ct, file):
+    pass
+    """
+    """
+
+
+def pfile(text, ct, file):
+    pass
+    """
+    """
+
+
+def pfile(text, ct, file):
+    pass
+    """
+    """
+
+
+def pfile(text, ct, file):
+    pass
+    """
+    """
+
+
+def pfile(text, ct, file):
+    pass
+    """
+    """
+
+
+def chksnp():
+    pass
+
+
+"""
 
 int seeplayer(x)
     {

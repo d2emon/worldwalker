@@ -1,5 +1,4 @@
 from .tkGlobals import TkGlobals
-from ..aber_bprintf import pbfr
 from ..aber_gamego import crapup
 
 from ..database.world import World
@@ -9,13 +8,12 @@ from .get_input import get_input
 
 
 def __main_loop(user):
-    pbfr()  #
+    user.io.show_output()
     get_input(user)
     if TkGlobals.rd_qd:
-        user.rte()
+        user.rte(save=True)
     TkGlobals.rd_qd = 0  #
-    World.close()
-    pbfr()  #
+    user.io.show_output()
 
 
 def talker(user):
@@ -34,7 +32,5 @@ def talker(user):
     except GameException as message:
         print(message)
 
-    # while True:
-    #     __main_loop(user)
-    for _ in range(5):
+    while True:
         __main_loop(user)

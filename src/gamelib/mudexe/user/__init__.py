@@ -2,7 +2,9 @@ from gamelib.services.message import Message
 from ..console import Console
 from ..database.world import World
 from ..database.models.person import Person
+
 from ..exceptions import GameException, CrapupException
+from gamelib.services.buffer.exceptions import ShortBufferOverflowError, BufferOverflowError
 from ..database.exceptions import NoWorldFileException
 from .exceptions import DuplicateEntryException
 from .special import SPECIAL_COMMANDS
@@ -40,15 +42,24 @@ class User:
     def person(self):
         return Person(self.person_id)
 
+    def init_person(self):
+        self.person.strength = self.strength
+        self.person.level = self.level
+        if self.level < 10000:
+            self.person.vis = 0
+        else:
+            self.person.vis = 10000
+        self.person.weapon = None
+        self.person.sexall = self.sex
+        self.person.helping = None
+
     def prepare(self):
         self.io = Console(self.user_id)
 
         self.message_id = None
         self.put_on()
 
-        World.open()
-        self.rte()
-        World.close()
+        self.rte(save=True)
 
         self.message_id = None
         self.special(".g")
@@ -94,7 +105,7 @@ class User:
         special_command(self)
         return True
 
-    def rte(self):
+    def rte(self, save=False):
         try:
             World.open()
 
@@ -114,6 +125,8 @@ class User:
             ParseGlobals.vdes = 0
         except NoWorldFileException:
             raise CrapupException("AberMUD: FILE_ACCESS : Access failed\n")
+        if save:
+            World.close()
 
     @property
     def prompt(self):
@@ -137,4 +150,13 @@ class User:
             return "({})".format(result)
         return result
 
-
+    def add_text(self, text):
+        try:
+            self.io.send(text)
+        except ShortBufferOverflowError:
+            # syslog("Bprintf Short Buffer overflow")
+            raise CrapupException("Internal Error in BPRINTF")
+        except BufferOverflowError:
+            # loseme()
+            # syslog("Buffer overflow on user {}".format(str(self)))
+            raise CrapupException("PANIC - Buffer overflow")

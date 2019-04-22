@@ -12,10 +12,6 @@ PARTS = [
 
 
 class BaseWitchNameGenerator(NameGenerator):
-    NAME_V1 = 1
-    NAME_V2 = 2
-    NAME_V3 = 3
-    name_type = NAME_V1
     default_providers = get_data_providers(DATABASE, PARTS)
     used_parts = PARTS
 

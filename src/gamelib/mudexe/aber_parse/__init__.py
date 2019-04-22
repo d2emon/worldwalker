@@ -15,7 +15,7 @@ def openroom(room, mode):
 
 
 def sendsys(*args):
-    pass
+    print("SEND", args)
 
 
 def eorte():

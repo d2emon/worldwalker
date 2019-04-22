@@ -1,3 +1,4 @@
+from worlds.fantasyNames.fairy import Fairy
 from worlds.fantasyNames.witch import Witch
 from worlds.fantasyNames.witchCoven import WitchCoven
 from worlds.fantasyNames.wizard import Wizard
@@ -39,6 +40,8 @@ def generate_gendered(title, item_class, genders):
 
 def main():
     print('World Walker')
+
+    generate_gendered("Fairy", Fairy, [Fairy.MALE, Fairy.FEMALE])
 
     generate_gendered("Witch", Witch, [Witch.MALE, Witch.FEMALE])
     generate_list("Witch Coven", WitchCoven)
