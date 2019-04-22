@@ -11,7 +11,7 @@ class BBC:
     def top_screen(cls):
         if cls.tty != 4:
             return
-        print("\n" * 8)
+        # print("\n" * 8)
         print("TOP SCREEN")
 
     @classmethod
@@ -19,3 +19,4 @@ class BBC:
         if cls.tty != 4:
             return
         print("BOTTOM SCREEN")
+        # print("\n" * 8)
