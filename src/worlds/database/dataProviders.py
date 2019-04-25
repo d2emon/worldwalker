@@ -1,17 +1,33 @@
 import random
-from genelib import DataProvider
-from .dataItems import DataItem, LengthItem
+from .dataItems import LengthItem
 
 
 class BaseDataProvider:
+    item_class = None
+
+    def by_value(self, value):
+        if self.item_class is None:
+            return value
+        return self.item_class(value)
+
     def generate(self):
         raise NotImplementedError
 
 
-class NewDataProvider(BaseDataProvider):
+class DataProvider(BaseDataProvider):
     def __init__(self, values):
         super().__init__()
-        self.data = [DataItem(item_id, value) for item_id, value in enumerate(values)]
+        self.data = values
+
+    def by_value(self, value):
+        if self.item_class is None:
+            return value
+        return self.data[value]
+
+    def ready(self):
+        result = list(self.data)
+        random.shuffle(result)
+        return iter(result)
 
     def generate(self):
         return random.choice(self.data)
@@ -28,5 +44,7 @@ class IntegerDataProvider(BaseDataProvider):
 
 
 class LengthProvider(IntegerDataProvider):
+    item_class = LengthItem
+
     def generate(self):
-        return LengthItem(super().generate())
+        return self.by_value(super().generate())

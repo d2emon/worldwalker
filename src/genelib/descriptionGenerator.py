@@ -12,6 +12,12 @@ class DescriptionGenerator:
             return data.get(key1) != data.get(key2)
         return f
 
+    def get_provider(self, key):
+        provider_id = self.generators.get(key)
+        if not provider_id:
+            return None
+        return self.providers.get(provider_id)
+
     def verify(self, key, data):
         if data.get(key) is None:
             return False
@@ -27,13 +33,16 @@ class DescriptionGenerator:
             return data
 
         for key in to_generate:
-            provider_id = self.generators[key]
-            data[key] = self.providers[provider_id].generate()
+            data[key] = self.get_provider(key).generate()
 
         return self.generate_items(**data)
 
+    def generate_from_data(self, **data):
+        new_data = {key: self.get_provider(key).by_value(value) for key, value in data.items()}
+        return self.generate_items(**new_data)
+
     def generate_templates(self, **data):
-        items = self.generate_items(**data)
+        items = self.generate_from_data(**data)
         return {key: template.format(**items) for key, template in self.templates.items()}
 
     def generate(self, **data):

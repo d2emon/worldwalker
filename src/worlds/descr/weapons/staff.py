@@ -1,10 +1,10 @@
 from genelib.descriptionGenerator import DescriptionGenerator
-from ...database import get_providers, LengthProvider
+from ...database import get_providers_from_db, LengthProvider
 from .weapon import Weapon
 
 
 STAFF_PROVIDERS = {
-    **get_providers('staff'),
+    **get_providers_from_db('staff'),
     'nm1': LengthProvider(160, 220),
 }
 STAFF_GENERATORS = {
@@ -44,4 +44,14 @@ class StaffDescriptionGenerator(DescriptionGenerator):
 
 
 class Staff(Weapon):
+    """
+    Staves can be simple and modest, like Gandalf's staff, or filled with runes, artifacts, doodads and watchamacallits,
+    like those in many games. The staves in this generator mainly focus on the latter, since those are more fun to
+    create and allow for more randomized details. But by ignoring some of the parts in the description you'll still get
+    plenty of different, simplistic designs as well.
+
+    As always, the descriptions have been kept vague on purpose. The goal is to make sure your interpretation of the
+    same description is different from somebody else, so the result will be 2 different staves. This also allows you to
+    more easily add your own touches and apply elements that might be unique to your own story universe.
+    """
     description_generator = StaffDescriptionGenerator(STAFF_PROVIDERS)

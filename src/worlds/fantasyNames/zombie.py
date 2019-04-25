@@ -1,9 +1,9 @@
-from ..database import db_data_provider
+from ..database import GroupDataProvider
 from genelib import ListNameGenerator, Named
 
 
 class ZombieNameGenerator(ListNameGenerator):
-    default_provider = db_data_provider('zombie', 'nm1')
+    default_provider = GroupDataProvider('zombie', 'nm1')
 
 
 class Zombie(Named):
