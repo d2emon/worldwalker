@@ -7,9 +7,10 @@ class DescriptionGenerator:
         self.text = ""
 
     @classmethod
-    def unique(cls, key1, key2):
-        def f(data):
-            return data.get(key1) != data.get(key2)
+    def unique(cls, *keys):
+        def f(item, data):
+            items = [str(data.get(key)) for key in keys]
+            return str(item) not in items
         return f
 
     def get_provider(self, key):
@@ -19,11 +20,12 @@ class DescriptionGenerator:
         return self.providers.get(provider_id)
 
     def verify(self, key, data):
-        if data.get(key) is None:
+        item = data.get(key)
+        if item is None:
             return False
         rule = self.rules.get(key)
         if rule is not None:
-            return rule(data)
+            return rule(item, data)
         return True
 
     def generate_items(self, **data):

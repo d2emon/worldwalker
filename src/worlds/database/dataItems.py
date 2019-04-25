@@ -15,11 +15,11 @@ class LengthItem(DataItem):
 
     @property
     def cm(self):
-        return self.value
+        return int(self.value)
 
     @property
     def inches(self):
         return int(self.value * self.cm2inch)
 
     def __str__(self):
-        return str(self.value)
+        return str(self.cm)

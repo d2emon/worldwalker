@@ -1,7 +1,7 @@
 from .descr import DATA as DESCRIPTIONS
 from .fantasyNames import FANTASY_NAMES_DATA
 from .dataItems import DataItem, LengthItem
-from .dataProviders import LengthProvider, DataProvider
+from .dataProviders import DataProvider, LengthProvider, NumberDataProvider
 
 
 DATA = {

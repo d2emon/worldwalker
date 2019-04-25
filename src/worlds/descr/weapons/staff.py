@@ -37,7 +37,7 @@ class StaffDescriptionGenerator(DescriptionGenerator):
         super().__init__(providers)
         self.generators = STAFF_GENERATORS
         self.rules = {
-            'nm13': self.unique('nm13', 'nm9'),
+            'rnd13': self.unique('rnd9'),
         }
         self.templates = STAFF_TEMPLATES
         self.text = STAFF_TEXT

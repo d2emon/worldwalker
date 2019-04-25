@@ -10,6 +10,7 @@ from worlds.fantasyNames.zaratan import Zaratan
 from worlds.fantasyNames.zombie import Zombie
 
 from worlds.descr.realm import Realm
+from worlds.descr.weapons.shotgun import Shotgun
 from worlds.descr.weapons.staff import Staff
 
 GENDERS = {
@@ -38,6 +39,12 @@ def generate_gendered(title, item_class, genders):
         generate_list(gender_title, item_class, gender)
 
 
+def generate_description(title, item_class):
+    item = item_class()
+    print("\n{}".format(title))
+    print(item.description)
+
+
 def main():
     print('World Walker')
 
@@ -57,9 +64,8 @@ def main():
     realm = Realm()
     print(realm.show())
 
-    staff = Staff()
-    print("\nStaff")
-    print(staff.description)
+    generate_description("Shotgun", Shotgun)
+    generate_description("Staff", Staff)
 
 
 if __name__ == "__main__":

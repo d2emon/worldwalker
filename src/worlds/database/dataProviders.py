@@ -33,17 +33,18 @@ class DataProvider(BaseDataProvider):
         return random.choice(self.data)
 
 
-class IntegerDataProvider(BaseDataProvider):
-    def __init__(self, min_value, max_value):
+class NumberDataProvider(BaseDataProvider):
+    def __init__(self, min_value, max_value, float_point=1):
         super().__init__()
         self.min_value = min_value
         self.max_value = max_value
+        self.float_point = float_point
 
     def generate(self):
-        return random.randrange(self.min_value, self.max_value)
+        return random.randrange(self.min_value, self.max_value) / self.float_point
 
 
-class LengthProvider(IntegerDataProvider):
+class LengthProvider(NumberDataProvider):
     item_class = LengthItem
 
     def generate(self):
