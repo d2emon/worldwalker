@@ -1,18 +1,22 @@
-from genelib import DataProvider
+from .descr import DATA as DESCRIPTIONS
 from .fantasyNames import FANTASY_NAMES_DATA
+from .dataItems import DataItem, LengthItem
+from .dataProviders import NewDataProvider, LengthProvider, DataProvider
 
 
-class DataItem:
-    def __init__(self, item_id, text):
-        self.item_id = item_id
-        self.__text = text
+DATA = {
+    **FANTASY_NAMES_DATA,
+    **DESCRIPTIONS,
+}
 
-    def __str__(self):
-        return self.__text
+
+def get_providers(class_id):
+    providers_data = DATA[class_id]
+    return {key: NewDataProvider(values) for key, values in providers_data.items()}
 
 
 def get_data(key, group_id):
-    data = FANTASY_NAMES_DATA.get(key)
+    data = DATA.get(key)
     if not data:
         return None
 

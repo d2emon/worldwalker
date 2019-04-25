@@ -10,7 +10,7 @@ from worlds.fantasyNames.zaratan import Zaratan
 from worlds.fantasyNames.zombie import Zombie
 
 from worlds.descr.realm import Realm
-
+from worlds.descr.weapons.staff import Staff
 
 GENDERS = {
     0: chr(9893),
@@ -56,6 +56,10 @@ def main():
     print("\nRealm")
     realm = Realm()
     print(realm.show())
+
+    staff = Staff()
+    print("\nStaff")
+    print(staff.description)
 
 
 if __name__ == "__main__":
