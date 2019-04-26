@@ -69,13 +69,6 @@ TEXT = "\n".join([
 ])
 
 
-def unique_from(key, keys):
-    def f(data):
-        compare = [data[k] for k in keys]
-        return data[key] not in compare
-    return f
-
-
 class ShotgunDescriptionGenerator(DescriptionGenerator):
     def __init__(self, providers):
         super().__init__(providers)

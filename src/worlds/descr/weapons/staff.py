@@ -3,11 +3,11 @@ from ...database import get_providers_from_db, LengthProvider
 from .weapon import Weapon
 
 
-STAFF_PROVIDERS = {
+PROVIDERS = {
     **get_providers_from_db('staff'),
     'nm1': LengthProvider(160, 220),
 }
-STAFF_GENERATORS = {
+DATA_GENERATORS = {
     'nm1': 'nm1',
     'rnd2': 'nm2',
     'rnd3': 'nm3',
@@ -22,25 +22,25 @@ STAFF_GENERATORS = {
     'rnd12': 'nm8',
     'rnd13': 'nm9',
 }
-STAFF_TEMPLATES = {
+TEMPLATES = {
     'name1': "{nm1.cm} centimeters ({nm1.inches} inches) of {rnd2} {rnd3} form the base of this {rnd4} staff. {rnd5}, "
              "which has been {rnd6}.",
     'name2': "The bottom ends in {rnd7} made of {rnd8} and has been decorated with {rnd9}.",
     'name3': "The top is made out of {rnd11} {rnd12} and has been crafted into {rnd10}, which has been decorated with "
              "{rnd13}.",
 }
-STAFF_TEXT = "{name1}\n\n{name2}\n\n{name3}"
+TEXT = "{name1}\n\n{name2}\n\n{name3}"
 
 
 class StaffDescriptionGenerator(DescriptionGenerator):
     def __init__(self, providers):
         super().__init__(providers)
-        self.generators = STAFF_GENERATORS
+        self.generators = DATA_GENERATORS
         self.rules = {
             'rnd13': self.unique('rnd9'),
         }
-        self.templates = STAFF_TEMPLATES
-        self.text = STAFF_TEXT
+        self.templates = TEMPLATES
+        self.text = TEXT
 
 
 class Staff(Weapon):
@@ -54,4 +54,4 @@ class Staff(Weapon):
     same description is different from somebody else, so the result will be 2 different staves. This also allows you to
     more easily add your own touches and apply elements that might be unique to your own story universe.
     """
-    description_generator = StaffDescriptionGenerator(STAFF_PROVIDERS)
+    description_generator = StaffDescriptionGenerator(PROVIDERS)

@@ -60,10 +60,7 @@ def main():
     generate_list("Zaratan", Zaratan)
     generate_list("Zombie", Zombie)
 
-    print("\nRealm")
-    realm = Realm()
-    print(realm.show())
-
+    generate_description("Realm", Realm)
     generate_description("Shotgun", Shotgun)
     generate_description("Staff", Staff)
 

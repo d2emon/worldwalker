@@ -1,12 +1,5 @@
-from genelib.descriptionGenerator import DescriptionGenerator
+from ..descriptive import Descriptive
 
 
-class Weapon:
-    description_generator = DescriptionGenerator(dict())
-
-    def __init__(self, **data):
-        self.data = data
-
-    @property
-    def description(self):
-        return self.description_generator.generate(**self.data)
+class Weapon(Descriptive):
+    pass
