@@ -19,7 +19,7 @@ class Thing:
     @property
     def children(self):
         if self.__children is None:
-            self.__children = self.generate_children()
+            self.__children = sum(self.generate_children(), [])
         return self.__children
 
     @property
