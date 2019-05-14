@@ -39,6 +39,22 @@ class Thing:
         return []
 
 
+class SizedThing(Thing):
+    size_unit = 'm'
+
+    def __init__(self):
+        super().__init__()
+        self.size = self.generate_size()
+
+    @classmethod
+    def generate_size(cls):
+        return 1, 1, 1
+
+    def generate_point(self):
+        axles = [axle / 2 for axle in self.size]
+        return [random.randint(-axle, axle) for axle in axles]
+
+
 def generate_child(thing, amount=(1,), probability=100):
     if random.randrange(1000) / 10 >= probability:
         return []
