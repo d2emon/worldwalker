@@ -23,12 +23,12 @@ class Universe(SizedThing):
 
     @classmethod
     def generate_size(cls):
-        diameter = random.randint(10, 2000)
+        diameter = random.uniform(100, 2000)
         return diameter, diameter, diameter
 
 
-class CosmicWall(SizedThing):
-    thing_name = 'cosmic wall'
+class GalaxyFilament(SizedThing):
+    thing_name = 'galaxy filament'
     size_unit = 'm^24'
 
     @classmethod
@@ -40,23 +40,64 @@ class CosmicWall(SizedThing):
     @classmethod
     def generate_size(cls):
         length = [
-            random.randint(10, 250),
-            random.randint(10, 250),
-            random.randint(1, 25),
+            random.uniform(1.0, 20.0),
+            random.uniform(0.1, 2.0),
+            random.uniform(0.1, 2.0),
         ]
         random.shuffle(length)
         return length
 
 
-class Supercluster(Thing):
+class CosmicWall(GalaxyFilament):
+    thing_name = 'cosmic wall'
+
+    @classmethod
+    def generate_size(cls):
+        length = [
+            random.uniform(1.0, 25.0),
+            random.uniform(1.0, 25.0),
+            random.uniform(0.1, 2.5),
+        ]
+        random.shuffle(length)
+        return length
+
+
+class Supervoid(SizedThing):
+    thing_name = 'supervoid'
+    name_generator = NameGenerator(["supervoid"])
+    size_unit = 'm^24'
+
+    @classmethod
+    def generate_size(cls):
+        length = [
+            random.randint(1.0, 10),
+            random.randint(1.0, 10),
+            random.randint(1.0, 10),
+        ]
+        random.shuffle(length)
+        return length
+
+
+class Supercluster(SizedThing):
     thing_name = 'supercluster'
     name_generator = NameGenerator(["galactic supercluster"])
+    size_unit = 'm^24'
 
     @classmethod
     def generate_children(cls):
         return [
             generate_child(Galaxy, (10, 30)),
         ]
+
+    @classmethod
+    def generate_size(cls):
+        length = [
+            random.uniform(0.1, 2.5),
+            random.uniform(0.1, 2.5),
+            random.uniform(0.1, 2.5),
+        ]
+        random.shuffle(length)
+        return length
 
 
 class Galaxy(Thing):

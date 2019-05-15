@@ -42,9 +42,9 @@ class Thing:
 class SizedThing(Thing):
     size_unit = 'm'
 
-    def __init__(self):
+    def __init__(self, size=None):
         super().__init__()
-        self.size = self.generate_size()
+        self.size = size or self.generate_size()
 
     @classmethod
     def generate_size(cls):
