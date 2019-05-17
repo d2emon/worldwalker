@@ -1,3 +1,3 @@
 from .game import Game
-from .game_object import GameObject
-from .text_object import TextObject
+from .text_object import Font, TextObject
+from .button import Button

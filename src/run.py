@@ -1,5 +1,5 @@
 import config
-from breakout import Breakout
+from games.breakout import Breakout
 
 
 if __name__ == "__main__":
