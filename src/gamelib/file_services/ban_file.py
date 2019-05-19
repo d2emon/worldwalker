@@ -1,7 +1,7 @@
 from .file_service import TextFileService
 
 
-class Nologin(TextFileService):
-    filename = "nologin"
+class BanFile(TextFileService):
+    filename = "ban_file"
     connections = dict()
     content = None

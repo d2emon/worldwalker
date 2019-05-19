@@ -6,6 +6,7 @@ def time():
 
 
 class ResetN(FileService):
+    filename = "reset.n"
     connections = dict()
     started = 0
 

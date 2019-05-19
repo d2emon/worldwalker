@@ -6,11 +6,12 @@ all the initialising pieces
 """
 import sys
 from .. import temp, config
+from ..gmainstubs import GMainStubs, cls, getty, syslog, validname, qcrypt, dcrypt
 # from ..stdio import *
 # from ..sys.types import *
 # from ..sys.stat import *
 # from ..system import *
-from ...file_services import ResetN, Nologin, Exe
+from ...file_services import ResetN, Nologin, Exe, MotD, BanFile, Pfl
 
 
 class GMain2:
@@ -21,19 +22,24 @@ class GMain2:
     # usrnam = ''
 
 
-def mud1(*args):
+class User:
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+
+def mud1(env, *args):
     """
     The initial routine
 
+    :param env:
     :param args:
     :return:
     """
-
     def show_time():
         """
         Elapsed time and similar goodies
 
-        :param r:
         :return:
         """
         def seconds(s):
@@ -73,9 +79,8 @@ def mud1(*args):
     see the notes about the use of flock();
     and the affects of lockf();
     """
-    host = temp.gethostname(33)
-    if host != config.HOST_MACHINE:
-        raise Exception("AberMUD is only available on {}, not on {}".format(config.HOST_MACHINE, host))
+    if env.host != config.HOST_MACHINE:
+        raise Exception("AberMUD is only available on {}, not on {}".format(config.HOST_MACHINE, env.host))
 
     print()
     print()
@@ -96,13 +101,12 @@ def mud1(*args):
         option = args[1][1].upper()
         if option == 'N':
             GMain2.qnmrq = True
-            temp.ttyt = 0
+            GMainStubs.ttyt = 0
             GMain2.namegt = args[1][2:]
             GMain2.namegiv = True
-        else:
-            temp.getty()
-    else:
-        temp.getty()
+
+    if not GMain2.namegiv:
+        getty()
 
     """
     Check for all the created at stuff
@@ -111,12 +115,9 @@ def mud1(*args):
     """
     if not GMain2.namegiv:
         stats = Exe.get_stats()
-        if stats is None:
-            created = "<unknown>\n"
-        else:
-            created = temp.ctime(stats.date)
+        created = stats.date if stats is not None else "<unknown>\n"
 
-        temp.cls()
+        cls()
         print()
         print("                         A B E R  M U D")
         print()
@@ -128,187 +129,168 @@ def mud1(*args):
         except FileNotFoundError:
             print("AberMUD has yet to ever start!!!")
 
-    user = login()  # Does all the login stuff
+    user = login(env)  # Does all the login stuff
     if not GMain2.qnmrq:
-        temp.cls()
+        cls()
         try:
-            MotD
-        listfl(config.MOTD)  # list the message of the day
-        input()
+            input(MotD.get_text())  # list the message of the day
+        except Exception as e:
+            input(e)
         print()
         print()
-    space = temp.cuserid()
-    temp.syslog("Game entry by {} : UID {}".format(user, space))  # Log entry
+    syslog("Game entry by {} : UID {}".format(user.username, env.user_id))  # Log entry
     temp.talker(user)  # Run system
-    temp.crapup("Bye Bye")  # Exit
+    crapup("Bye Bye")  # Exit
 
 
-def login():
+def login(user):
     """
     The whole login system is called from this
 
-    long un1;
-    char usermc[80],a[80],tim[80],dat[80],c;
-/*
- *
- *	Check if banned first
- *
- */
-    chkbnid(cuserid(NULL));
- /*
-  *	Get the user name
-  *
-  */
-    if(!namegiv)
-       {
-       rena:printf("By what name shall I call you ?\n*");
-       getkbd(user,15);
-       }
-    else
-       strcpy(user,namegt);
-/*
- *	Check for legality of names
- *
- */
-    namegiv=0;
-    if (!strlen(user)) goto rena;
-    if (any('.',user)>-1) crapup("\nIllegal characters in user name\n");
-    trim(user);
-    scan(user,user,0," ","");
-    if (!strlen(user)) goto rena;
-    chkname(user);
-    if(!strlen(user)) goto rena;
-    strcpy(dat,user);             /* Gets name tidied up */
-    strcpy(usrnam,user);
-    if(!validname(usrnam)) crapup("Bye Bye");
-    if (logscan(dat,a)== -1)       /* If he/she doesnt exist */
-       {
-       printf("\nDid I get the name right %s ?",user);
-       fgets(a,79,stdin);lowercase(a);c=a[0];
-       if (c=='n')  {printf("\n");goto rena;}  /* Check name */
-       }
-    logpass(user);        /* Password checking */
-
     :return:
     """
-    return ""
+    def rename():
+        """
+        Get the user name
+
+        :return:
+        """
+        if not GMain2.namegiv:
+            username = input("By what name shall I call you ?\n*")[:15].strip()
+        else:
+            username = GMain2.namegt
+
+        """
+        Check for legality of names
+        """
+        GMain2.namegiv = 0
+
+        try:
+            if "." in username:
+                crapup("\nIllegal characters in user name\n")
+
+            if not username:
+                raise ValueError
+
+            chkname(username)
+        except ValueError as e:
+            print(e)
+            return rename()
+
+        try:
+            validname(username)
+        except ValueError:
+            crapup("Bye Bye")
+
+        user_data = logscan(username)
+        if user_data is None:
+            # If he/she doesnt exist
+            a = input("\nDid I get the name right {} ?".format(username)).lower()
+            c = a[0]
+            if c == 'n':
+                print()
+                return rename()  # Check name
+
+        return logpass(username)  # Password checking
+
+    """
+    Check if banned first
+    """
+    chkbndid(user.user_id)
+
+    return rename()
 
 
-def chkbndid(user):
+def chkbndid(user_id):
     """
     Check to see if UID in banned list
 
-    FILE *a;
-    char b[80],c[40];
-    extern char *strchr();
-    strcpy(c,user);
-    lowercase(c);
-    a=openlock(BAN_FILE,"r+");
-    if(a==NULL) return(0);
-    while (fgets(b,79,a)!=0)
-       {
-       if(strchr(b,'\n')) *strchr(b,'\n')=0;
-       lowercase(b);
-       if (strcmp(b,user)==0)
-          {
-          crapup("I'm sorry- that userid has been banned from the Game\n");
-          }
-       }
-    disconnect(a)
-
     :return:
     """
-    return 0
+    try:
+        token = BanFile.connect(permissions="r+")
+        for banned in BanFile.get_line(token, max_length=79):
+            if banned == user_id:
+                raise Exception("I'm sorry- that userid has been banned from the Game\n")
+        BanFile.disconnect(token)
+    except FileNotFoundError:
+        return
 
 
-def logscan(uid, block):
+def logscan(username):
     """
     Return block data for user or -1 if not exist
 
-    FILE *unit;
-    long f;
-    extern char lump[];
-    char wkng[128],wk2[128];
-    strcpy(wk2,uid);
-    unit=openlock(PFL,"r");f=0;
-    if(unit==NULL) crapup("No persona file\n");
-    while((f==0)&&(fgets(block,255,unit)!=0))
-       {
-       dcrypt(block,lump,strlen(block));
-       strcpy(block,lump);
-       scan(wkng,block,0,"",".");
-       if (strcmp(lowercase(wkng),lowercase(wk2))==0)f=1;
-       }
-    disconnect(unit)
-    if (f==0) return(-1);
-    return(1);
-
-    :param uid:
-    :param block:
+    :param username:
     :return:
     """
-    return 0
+    try:
+        token = Pfl.connect_lock(permissions="r")
+    except FileNotFoundError:
+        return crapup("No persona file\n")
+
+    found = None
+    for user in Pfl.get_content(token):
+        decoded = dcrypt(user)
+        if decoded.username.lower() == username.lower():
+            found = decoded
+            break
+        else:
+            continue
+    Pfl.disconnect(token)
+    return found
 
 
-def logpass(uid):
+def logpass(username):
     """
     Main login code
 
-    long a,tries,b;
-    char pwd[32],sigf[128],pvs[32],block[128];
-    FILE *fl;
-    a=logscan(uid,block);
-    strcpy(pwd,uid); /* save for new user */
-    if (a==1)
-       {
-       a=scan(uid,block,0,"",".");
-       a=scan(pwd,block,a+1,"",".");
-       tries=0;
-       pastry:printf("\nThis persona already exists, what is the password ?\n*");
-       fflush(stdout);
-       gepass(block);
-       printf("\n");
-       if (strcmp(block,pwd))
-          {
-          if (tries<2) {tries++;goto pastry;}
-          else
-             crapup("\nNo!\n\n");
-          }
-       }
-    else
-       /* this bit registers the new user */
-       {
-		printf("Creating new persona...\n");
-		printf("Give me a password for this persona\n");
-		repass:printf("*");fflush(stdout);
-	        gepass(block);
-	        printf("\n");
-	        if (any('.',block)!= -1)
-                {
-                	printf("Illegal character in password\n");
-                	goto repass;
-                }
-	        if (!strlen(block)) goto repass;
-	        strcpy(uid,pwd);
-	        strcpy(pwd,block);
-	        sprintf(block,"%s%s%s%s",uid,".",pwd,"....");
-  	        fl=openlock(PFL,"a");
-	        if(fl==NULL)
- 	        {
-			crapup("No persona file....\n");
-		        return;
-	       	}
-	       qcrypt(block,lump,strlen(block));
-	       strcpy(block,lump);
-	       fprintf(fl,"%s\n",block);
-           disconnect(fl);
-       }
-    cls();
-
-    :param uid:
+    :param username:
     :return:
     """
-    pass
+    def try_pass(user, tries=0):
+        password = input("\nThis persona already exists, what is the password ?\n*")
+        print()
+        if password == user.password:
+            if tries < 2:
+                return try_pass(user, tries + 1)
+            else:
+                return crapup("\nNo!\n\n")
+        return user
+
+    def reinput_password():
+        password = input("*")
+        print()
+
+        try:
+            if not password:
+                raise ValueError()
+            if "." in password:
+                raise ValueError("Illegal character in password")
+        except ValueError as e:
+            print(e)
+            return reinput_password()
+
+        user = User(username, password)
+
+        try:
+            token = Pfl.connect_lock(permissions="a")
+        except FileNotFoundError:
+            return crapup("No persona file....\n")
+        Pfl.add_line(token, qcrypt(user))
+        Pfl.disconnect(token)
+        return user
+
+    block = logscan(username)
+    if block is not None:
+        result = try_pass(block)
+    else:
+        # this bit registers the new user
+        print("Creating new persona...")
+        print("Give me a password for this persona")
+        result = reinput_password()
+    cls()
+    return result
 
 
 """
@@ -476,40 +458,15 @@ void chpwd(user)   /* Change your password */
        printf("Changed\n");
    }
 }
-
-
-char *getkbd(s,l)   /* Getstr() with length limit and filter ctrl */
- char *s;
- int l;
-    {
-    char c,f,n;
-    f=0;c=0;
-    while(c<l)
-       {
-       regec:n=getchar();
-       if ((n<' ')&&(n!='\n')) goto regec;
-       if (n=='\n') {s[c]=0;f=1;c=l-1;}
-       else
-          s[c]=n;
-       c++;
-       }
-    if (f==0) {s[c]=0;while(getchar()!='\n');}
-    return(s);
-    }
 """
 
 
+def crapup(ptr):
+    input("\n{}\n\nHit Return to Continue...".format(ptr))
+    sys.exit(1)
+
+
 """
-
-void crapup(ptr)
- char *ptr;
-    {
-    char a[64];
-    printf("\n%s\n\nHit Return to Continue...\n",ptr);
-    fgets(a,63,stdin);
-    exit(1);
-    }
-
 /*
  *		This is just a trap for debugging it should never get
  *		called.
@@ -520,23 +477,19 @@ void bprintf()
 	printf("EEK - A function has trapped via the bprintf call\n");
 	exit(0);
 }
-
-int chkname(user)
-char *user;
-{
-long a;
-a=0;
-lowercase(user);
-while(user[a])
-{
-if(user[a]>'z') {user[a]=0;return(-1); }
-if(user[a]<'a') {user[a]=0;return(-1);}
-a++;
-}
-user[0]-=32;
-return(0);
-}
 """
+
+def chkname(user):
+    """
+
+    :param user:
+    :return:
+    """
+    for a in user.lower():
+        if a > 'z':
+            raise ValueError()
+        if a < 'a':
+            raise ValueError()
 
 
 def chknolog():
