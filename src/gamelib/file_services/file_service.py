@@ -5,7 +5,9 @@ class FileService:
     filename = None
     connections = dict()
 
+    LOCK_SH = 0
     LOCK_EX = 1
+    LOCK_UN = 2
 
     @classmethod
     def connect(cls, **query):
