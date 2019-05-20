@@ -1,92 +1,116 @@
-#! /usr/bin/python
-import config
 import pygame
-from player import Player
-from games.middleearth.bgmap import BgMap
-from games.middleearth.background import Background
-from games.middleearth.grid import MapGrid
-from pygame.time import Clock
+from pygame import Surface
+from pygame.sprite import LayeredDirty
+from game_utils import Game
+from .player import Player
+from .world_map import BgMap
+from .background import Background
+from .grid import MapGrid
 
 
-CONTROLS = {
-    pygame.K_LEFT: (-1, None),
-    pygame.K_RIGHT: (1, None),
-    pygame.K_UP: (None, -1),
-    pygame.K_DOWN: (None, 1),
-}
+class MainSurface(Surface):
+    MAP_POS = (0, 0)
+    GRID_SIZE = 32
+    CONTROLS = {
+        pygame.K_LEFT: (-1, None),
+        pygame.K_RIGHT: (1, None),
+        pygame.K_UP: (None, -1),
+        pygame.K_DOWN: (None, 1),
+    }
+
+    def __init__(self, size, **config):
+        super().__init__(size)
+
+        self.speed = [0, 0]
+
+        self.my_font = pygame.font.SysFont('Sans', 16)
+
+        rect = self.get_rect()
+
+        self.background = Background()
+        self.game_map = BgMap(*self.MAP_POS)
+        self.map_grid = MapGrid(self.game_map.rect.width, self.game_map.rect.height, self.GRID_SIZE)
+        self.hero = Player(rect.centerx, rect.centery)
+
+        self.sprites = LayeredDirty((
+            self.background,
+            self.game_map,
+            self.map_grid,
+            self.hero,
+        ))
+
+        self.event_handlers = {
+            pygame.KEYDOWN: [self.key_events],
+            pygame.KEYUP: [self.key_events],
+        }
+
+    def update_map(self):
+        self.game_map.x, self.game_map.y = self.MAP_POS
+
+    def update(self):
+        self.background.dirty = True
+
+        self.game_map.set_speed(self.speed)
+
+        self.sprites.update()
+        self.sprites.draw(self)
+
+        coords = "{}, {}".format(self.game_map.x, self.game_map.y)
+        text_surface = self.my_font.render(coords, False, (0, 0, 0))
+        self.blit(text_surface, (0, 0))
+
+    def key_events(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_h:
+                self.update_map()
+            if event.key == pygame.K_g:
+                self.map_grid.toggle()
+
+        if event.key in self.CONTROLS.keys():
+            self.movement_handler(event)
+
+    def movement_handler(self, event):
+        for i, value in enumerate(self.CONTROLS[event.key]):
+            if value is None:
+                continue
+            if event.type == pygame.KEYDOWN:
+                self.speed[i] = value
+            if event.type == pygame.KEYUP:
+                self.speed[i] = 0
 
 
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode(config.DISPLAY)
-    pygame.display.set_caption(config.TITLE)
+class MiddleEarth(Game):
+    STATE_INITIALIZATION = 100
+    STATE_MENU = 200
+    STATE_PLAY = 300
+    STATE_WIN = 400
+    STATE_GAME_OVER = 500
+    STATE_EXIT = 600
 
-    pygame.font.init()
-    myfont = pygame.font.SysFont('Sans', 16)
+    def __init__(self, **config):
+        super().__init__(**config)
 
-    bg = Background((config.WIN_WIDTH, config.WIN_HEIGHT))
+        self.surface = MainSurface((self.width, self.height), **config)
 
-    game_map = BgMap(*config.MAP_POS)
-    hero = Player(*config.PLAYER_POS)
-    xvel = yvel = 0
+    def handle_event(self, event):
+        super().handle_event(event)
 
-    show_grid = False
-    map_grid = MapGrid(game_map.rect.width, game_map.rect.height, config.GRID_SIZE)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game_over()
 
-    timer = Clock()
+        if self.surface is None:
+            return
+        handlers = self.surface.event_handlers.get(event.type)
+        if handlers is None:
+            return
+        for handler in handlers:
+            handler(event)
 
-    while True:
-        for event in pygame.event.get():
-            event_exit(event)
-            xvel, yvel = event_move(event, xvel, yvel)
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_h:
-                game_map.x = config.MAP_POS[0]
-                game_map.y = config.MAP_POS[1]
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
-                show_grid = not show_grid
+    def update(self):
+        if self.surface is not None:
+            self.surface.update()
+        super().update()
 
-        bg.draw(screen)
-
-        game_map.update(xvel, yvel)
-        game_map.draw(screen)
-
-        if show_grid:
-            map_grid.draw(screen)
-
-        hero.draw(screen)
-
-        coords = "{}, {}".format(game_map.x, game_map.y)
-        text_surface = myfont.render(coords, False, (0, 0, 0))
-        screen.blit(text_surface, (0, 0))
-
-        pygame.display.update()
-        timer.tick(24)
-
-
-def event_exit(event):
-    if event.type == pygame.QUIT:
-        pygame.quit()
-        raise SystemExit("QUIT")
-    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-        raise SystemExit("QUIT")
-
-
-def event_move(event, xvel, yvel):
-    if event.type == pygame.KEYDOWN and event.key in CONTROLS.keys():
-        c = CONTROLS[event.key]
-        if c[0] is not None:
-            xvel = c[0]
-        if c[1] is not None:
-            yvel = c[1]
-
-    if event.type == pygame.KEYUP and event.key in CONTROLS.keys():
-        c = CONTROLS[event.key]
-        if c[0] is not None:
-            xvel = 0
-        if c[1] is not None:
-            yvel = 0
-    return xvel, yvel
-
-
-if __name__ == "__main__":
-    main()
+    def game_over(self, *args):
+        self.state = self.STATE_EXIT

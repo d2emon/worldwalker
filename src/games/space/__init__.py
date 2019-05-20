@@ -2,7 +2,7 @@
 import config
 import pygame
 import random
-from player import Player
+from games.middleearth.player import Player
 # from bgmap import BgMap
 # from background import Background
 # from grid import MapGrid

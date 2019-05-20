@@ -1,12 +1,10 @@
-from games.middleearth import resources
-from pygame import Surface, image
+from . import resources
+from pygame import image
+from pygame.sprite import DirtySprite
 
 
-class Background(Surface):
-    def __init__(self, size):
-        Surface.__init__(self, size)
+class Background(DirtySprite):
+    def __init__(self):
+        super().__init__()
         self.image = image.load(resources.BGFILE)
-        self.blit(self.image, (0, 0))
-
-    def draw(self, screen):
-        screen.blit(self, (0, 0))
+        self.rect = self.image.get_rect()

@@ -57,10 +57,6 @@ class Game:
     def handle_event(self, event):
         if event.type == pygame.QUIT:
             self.state = self.STATE_EXIT
-        # handler = self.event_handlers.get(event.type)
-        # if handler is None:
-        #     return
-        # handler(event)
 
     @classmethod
     def end_game(cls):
