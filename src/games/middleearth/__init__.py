@@ -2,9 +2,9 @@
 import config
 import pygame
 from player import Player
-from bgmap import BgMap
-from background import Background
-from grid import MapGrid
+from games.middleearth.bgmap import BgMap
+from games.middleearth.background import Background
+from games.middleearth.grid import MapGrid
 from pygame.time import Clock
 
 

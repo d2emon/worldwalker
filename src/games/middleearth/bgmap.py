@@ -1,4 +1,4 @@
-import resources
+from games.middleearth import resources
 from pygame import image, sprite, draw, transform, Surface, Color, Rect
 
 

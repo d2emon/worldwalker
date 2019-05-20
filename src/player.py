@@ -1,4 +1,4 @@
-import resources
+from games.middleearth import resources
 from pygame import sprite, image
 
 

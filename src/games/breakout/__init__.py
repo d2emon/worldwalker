@@ -1,6 +1,4 @@
-import time
-import pygame
-from game_utils import Game, Font, TextObject
+from game_utils import Game
 from .screens import MenuScreen, GameScreen
 
 
