@@ -11,7 +11,7 @@ class GMainStubs:
     ttyt = 0
 
 
-def cls():
+def clear():
     """
     This isnt used on unix
 

@@ -1,7 +1,8 @@
 from . import config
 from .errors import CrapupError, FileServiceError
 from .file_services import Nologin, Exe, ResetN, MotD, BanFile, Pfl, Pft, LogFile
-from .utils import encode, decode, test_valid_username
+from .file_services.person.person import Person
+from .utils import encode, decode
 
 
 class Mud1Services:
@@ -10,7 +11,7 @@ class Mud1Services:
 
     @classmethod
     def __add_user(cls, user_id, username, password):
-        user = User(user_id, username, password)
+        user = Person(user_id, username, password)
         token = Pfl.connect(lock=True, permissions="a")
         Pfl.add_line(token, encode(user))
         Pfl.disconnect(token)
@@ -198,7 +199,7 @@ class Mud1Services:
             Pfl.disconnect(token)
 
             if found is None and default:
-                return User(
+                return Person(
                     self.host.host_id,
                     username,
                     "default",
@@ -241,12 +242,12 @@ class Mud1Services:
     def validate_password(self, value):
         self.__verify_host()
 
-        User.validate_username(value)
+        return Person.validate_username(value)
 
     def validate_username(self, value):
         self.__verify_host()
 
-        User.validate_password(value)
+        return Person.validate_password(value)
 
     def execute(self, *args):
         self.__verify_host()

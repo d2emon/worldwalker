@@ -1,5 +1,4 @@
-from services.errors import CrapupError
-from ..gmainstubs import cls
+from ..screens import MainScreen
 from .options import OPTIONS
 
 
@@ -12,11 +11,12 @@ def __select_option(*args):
 
 
 def quick_start(user, game):
+    MainScreen.show()
     game.service.run_game("   --}----- ABERMUD -----{--    Playing as ", user.username)
 
 
 def talker(user, game):
-    cls()
+    MainScreen.show()
     print("Welcome To AberMUD II [Unix]")
     print()
     print()

@@ -1,5 +1,4 @@
-from services.errors import CrapupError
-from..gmainstubs import cls
+from..gmainstubs import clear
 
 
 def wizard_only(option):
@@ -12,7 +11,7 @@ def wizard_only(option):
 
 def __get_user_data(game, show=False, default=False):
     if show:
-        cls()
+        clear()
     username = __input_username()
     user_data = game.service.get_user(username, default)
     if show:
@@ -88,7 +87,7 @@ def __show_user_data(user):
 
 
 def enter_game(user, game):
-    cls()
+    clear()
     print("The Hallway")
     print("You stand in a long dark hallway, which echoes to the tread of your")
     print("booted feet. You stride on down the hall, choose your masque and enter the")
@@ -125,7 +124,7 @@ def exit_game(user, game):
 
 @wizard_only
 def enter_test_game(user, game):
-    cls()
+    clear()
     print("Entering Test Version")
 
 

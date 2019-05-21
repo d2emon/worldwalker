@@ -6,8 +6,9 @@ all the initialising pieces
 """
 from services.errors import CrapupError
 from services.mud1 import Mud1Services
-from ..gmainstubs import GMainStubs, cls, getty
+from ..gmainstubs import GMainStubs, getty
 from ..gmlnk import quick_start, talker
+from ..screens import Splash, LoginScreen, MessageOfTheDay, GameOver
 
 
 class MudGame:
@@ -30,11 +31,11 @@ class MudGame:
 
     @username.setter
     def username(self, value):
-        self.__username = value or input("By what name shall I call you ?\n*")[:15].strip()
         self.__name_given = False
+        username = value or LoginScreen.input_username()
 
         # Check for legality of names
-        self.service.validate_username(self.__username)
+        self.__username = self.service.validate_username(username)
 
     def get_user(self):
         return self.service.get_user(self.username)
@@ -60,39 +61,23 @@ class MudGame:
         return self.__name_given
 
     def show_splash(self):
-        print()
-        print()
-        print()
-        print()
-
-        if not self.show_all:
-            return
-
         getty()
         time = self.service.get_time()
-
-        cls()
-        print()
-        print("                         A B E R  M U D")
-        print()
-        print("                  By Alan Cox, Richard Acott Jim Finnis")
-        print()
-        print(time['created'])
-        print(time['elapsed'])
+        Splash.show(
+            visible=self.show_all,
+            created=time['created'],
+            elapsed=time['elapsed'],
+        )
 
     def show_message_of_the_day(self):
-        if not self.show_all:
-            return
-
-        input(self.service.get_message_of_the_day())
-        print()
-        print()
+        MessageOfTheDay.show(
+            visible=self.show_all,
+            message=self.service.get_message_of_the_day()
+        )
 
     def __try_password(self, tries=0):
         try:
-            password = input("\nThis persona already exists, what is the password ?\n*")
-            print()
-            return self.service.auth(self.username, password)
+            return self.service.auth(self.username, LoginScreen.input_password())
         except PermissionError:
             if tries >= 2:
                 raise CrapupError("\nNo!\n\n")
@@ -100,11 +85,9 @@ class MudGame:
 
     def __set_password(self):
         try:
-            password = input("*")
-            print()
-            return self.service.put_user(self.username, password)
+            return self.service.put_user(self.username, LoginScreen.input_new_password())
         except ValueError as e:
-            print(e)
+            LoginScreen.show_message(e)
             return self.__set_password()
 
     def login(self, username=None):
@@ -118,20 +101,18 @@ class MudGame:
         try:
             # Main login code
             self.username = username
-
             if self.get_user():
                 return self.__try_password()
 
             # If he/she doesnt exist
-            if input("\nDid I get the name right {} ?".format(self.username)).lower()[0] == 'n':
+            if not LoginScreen.verify_username(username=self.username):
                 raise ValueError()  # Check name
 
             # this bit registers the new user
-            print("Creating new persona...")
-            print("Give me a password for this persona")
+            LoginScreen.new_user()
             return self.__set_password()
         except ValueError as e:
-            print(e)
+            LoginScreen.show_message(e)
             return self.login()
 
     def play(self):
@@ -141,11 +122,15 @@ class MudGame:
         :return:
         """
         try:
+            print()
+            print()
+            print()
+            print()
+
             self.show_splash()
             # Does all the login stuff
             user = self.login(self.username)
 
-            cls()
             self.show_message_of_the_day()
             self.service.put_log("Game entry by {} : UID {}".format(user.username, user.user_id))  # Log entry
             if self.quick_start:
@@ -164,10 +149,7 @@ class MudGame:
         :param message:
         :return:
         """
-        print()
-        print(message)
-        print()
-        input("Hit Return to Continue...")
+        GameOver.show_message(message=message)
         raise SystemExit()
 
 
