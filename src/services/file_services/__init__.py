@@ -15,8 +15,8 @@ WIZLIST = "/cygdrive/c/Programs/Adv/AberMUD2/mud/TEXT/wiz.list"
 CREDITS = "/cygdrive/c/Programs/Adv/AberMUD2/mud/TEXT/credits"
 EXAMINES = "/cygdrive/c/Programs/Adv/AberMUD2/mud/EXAMINES/"
 LEVELS = "/cygdrive/c/Programs/Adv/AberMUD2/mud/TEXT/level.txt"
-from .pfl import Pfl
-PFT = "/cygdrive/c/Programs/Adv/AberMUD2/mud/user_file.b"
+from services.file_services.person.pfl import Pfl
+from services.file_services.person.pft import Pft
 from .exe import Exe
 EXE2 = "/cygdrive/c/Programs/Adv/AberMUD2/mud/mud.1"
 SNOOP = "/cygdrive/c/Programs/Adv/AberMUD2/mud/SNOOP/"

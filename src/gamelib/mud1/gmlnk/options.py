@@ -1,159 +1,184 @@
-from ..errors import CrapupError
+from services.errors import CrapupError
 from..gmainstubs import cls
 
 
 def wizard_only(option):
-    def wrapper(user):
+    def wrapper(user, *args):
         if not user.is_wizard:
             raise PermissionError()
-        option(user)
+        option(user, *args)
     return wrapper
 
 
-def enter_game(user):
+def __get_user_data(game, show=False, default=False):
+    if show:
+        cls()
+    username = __input_username()
+    user_data = game.service.get_user(username, default)
+    if show:
+        __show_user_data(user_data)
+    return user_data
+
+
+def __input_field(label, value):
+    """
+
+    :param label:
+    :param value:
+    :return:
+    """
+    try:
+        new_value = input("{}(Currently {} ):".format(label, value))[:128]
+        if not new_value:
+            return new_value
+        if new_value[0] == ".":
+            return new_value
+        if "." in new_value:
+            raise ValueError("\nInvalid Data Field\n")
+    except ValueError as e:
+        print(e)
+        return __input_field(label, value)
+
+
+def __input_password(username, old_password, game):
+    try:
+        new_password = input("*")
+        print()
+
+        game.service.validate_password(new_password)
+
+        print()
+        print("Verify Password")
+        verify = input("*")
+        print()
+
+        if verify != new_password:
+            raise ValueError("\nNo!")
+
+        game.service.put_password(username, old_password, new_password)
+        print("Changed")
+    except ValueError as e:
+        print(e)
+        return __input_password(username, old_password, game)
+
+
+def __input_username():
+    return input("\nUser Name:")[:79]
+
+
+def __show_user_data(user):
+    """
+    for show user and edit user
+
+    :return:
+    """
+    if user is None:
+        print()
+        print("No user registered in that name")
+        print()
+        print()
+        return None
+
+    print()
+    print()
+    print("User Data For {}".format(user.username))
+    print()
+    print("Name:{}".format(user.username))
+    print("Password:{}".format(user.password))
+
+
+def enter_game(user, game):
     cls()
     print("The Hallway")
     print("You stand in a long dark hallway, which echoes to the tread of your")
     print("booted feet. You stride on down the hall, choose your masque and enter the")
     print("worlds beyond the known......")
     print()
-    try:
-        execl(EXE, "   --{----- ABERMUD -----}--      Playing as ", user.username)
-    except Exception:
-        raise CrapupError("mud.exe: Not Found\n")
+    game.service.run_game("   --{----- ABERMUD -----}--      Playing as ", user.username)
 
 
-def __enter_password(username):
-    print("*")
-    pwd = gepass()
-    print()
-
-    if not pwd:
-        return __enter_password(username)
-    if "," in pwd:
-        print("Illegal Character in password")
-        return __enter_password(username)
-    print()
-    print("Verify Password")
-    print("*")
-    pv = gepass()
-    print()
-
-    if pv == pwd:
-        print()
-        print("NO!")
-        return __enter_password(username)
-
-    block = User(username, pwd)
-    delu2(username)  # delete me and tack me on end!
-    try:
-        token = Pfl.connect_lock(permissions="a")
-    except FileNotFoundError:
-        return
-    block = qcrypt(block)
-    Pfl.add_line(token, block)
-    Pfl.disconnect(token)
-    print("Changed")
-
-
-def change_password(user):
+def change_password(user, game):
     """
     Change your password
 
     :param user:
+    :param game:
     :return:
     """
-    pv = ""
-    fl = None
-
-    block = logscan(user.username)
-    pwd = block.password
-    print()
-    print("Old Password")
-    data = gepass()
-    if data != pwd:
+    try:
+        print()
+        password = input("Old Password")
+        game.service.auth(user.username, password)
+    except PermissionError:
         print()
         print("Incorrect Password")
         return
 
     print()
     print("New Password")
-    return  __enter_password()
+    return __input_password(user.username, password, game)
 
 
-def exit_game(user):
+def exit_game(user, game):
     raise SystemExit()
 
 
 @wizard_only
-def enter_test_game(user):
+def enter_test_game(user, game):
     cls()
     print("Entering Test Version")
 
 
 @wizard_only
-def show_user(user):
+def show_user(user, game):
     """
 
     :param user:
+    :param game:
     :return:
     """
-    a = 0
-    block = ""
+    __get_user_data(game, True)
 
-    cls()
-    name = getunm()
-    block = shu(name)
     print()
     input("Hit Return...\n")
 
 
 @wizard_only
-def edit_user(user):
+def edit_user(user, game):
     """
 
     :param user:
+    :param game:
     :return:
     """
-    cls()
-    name = getunm()
-    block = shu(name)
-    if block is None:
-        block = User(
-            name,
-            "default",
-            "E"
-        )
-    nam2 = block.name
-    pas2 = block.password
+    user_data = __get_user_data(game, True, True)
+
     print()
-    print("Editing : {}".format(name))
+    print("Editing : {}".format(user_data.username))
     print()
-    ed_fld("Name:", nam2)
-    ed_fld("Password:", pas2)
-    bk2 = User(nam2, pas2)
-    delu2(name)
+    __input_field("Name:", user_data.username)
+    __input_field("Password:", user_data.password)
+
     try:
-        token = Pfl.connect_lock(permissions="a")
-        Pfl.add_line(token, qcrypt(bk2))
-        Pfl.disconnect(token)
-    except FileNotFoundError:
-        return
+        game.service.update_user(user_data.username, user_data.password)
+    except ValueError as e:
+        print(e)
 
 
 @wizard_only
-def delete_user(user):
+def delete_user(user, game):
     """
 
     :param user:
+    :param game:
     :return:
     """
-    name = getunm()
-    block = logscan(name)
-    if block is None:
-        print("\nCannot delete non-existant user")
-    else:
-        delu2(name)
+    user_data = __get_user_data(game)
+
+    try:
+        game.service.delete_user(user_data.username)
+    except ValueError as e:
+        print(e)
 
 
 OPTIONS = {

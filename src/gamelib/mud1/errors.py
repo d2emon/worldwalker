@@ -1,2 +1,0 @@
-class CrapupError(Exception):
-    pass

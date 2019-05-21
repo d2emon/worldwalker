@@ -4,67 +4,73 @@ Program starts Here!
 This forms the main loop of the code, as well as calling
 all the initialising pieces
 """
-import sys
-from ...file_services import ResetN, Nologin, Exe, MotD, BanFile, Pfl
-from ...mud_services import Mud1Services
-from ..errors import CrapupError
-from ..gmainstubs import GMainStubs, cls, getty, syslog, validname, qcrypt, dcrypt
+from services.errors import CrapupError
+from services.mud1 import Mud1Services
+from ..gmainstubs import GMainStubs, cls, getty
 from ..gmlnk import quick_start, talker
-# from ..stdio import *
-# from ..system import *
 
 
-class GMain2:
-    # lump = ''
-    namegiv = False
-    namegt = ''
-    qnmrq = False
-    # usrnam = ''
+class MudGame:
+    def __init__(self, host, username=None):
+        self.host = host
+        self.service = Mud1Services(self.host)
 
-    @classmethod
-    def set_name(cls, name):
-        cls.qnmrq = True
-        GMainStubs.ttyt = 0
-        cls.namegt = name
-        cls.namegiv = True
+        self.__user = None
+        self.__username = username
+        self.__name_given = bool(self.username)
 
+        # lump = ''
+        # usrnam = ''
+        if self.username:
+            GMainStubs.ttyt = 0
 
-class User:
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
+    @property
+    def username(self):
+        return self.__username
 
+    @username.setter
+    def username(self, value):
+        self.__username = value or input("By what name shall I call you ?\n*")[:15].strip()
+        self.__name_given = False
 
-def mud1(env, *args):
-    """
-    The initial routine
+        # Check for legality of names
+        self.service.validate_username(self.__username)
 
-    :param env:
-    :param args:
-    :return:
-    """
-    def verify_server():
-        Mud1Services.validate_host(env.host)
+    def get_user(self):
+        return self.service.get_user(self.username)
+
+    @property
+    def namegiv(self):
+        return self.__name_given
+
+    @property
+    def namegt(self):
+        return self.__username
+
+    @property
+    def qnmrq(self):
+        return self.__name_given
+
+    @property
+    def show_all(self):
+        return not self.__name_given
+
+    @property
+    def quick_start(self):
+        return self.__name_given
+
+    def show_splash(self):
         print()
         print()
         print()
         print()
-        Mud1Services.check_nologin()
 
-    def parse_args(option):
-        """
-        Now check the option entries
+        if not self.show_all:
+            return
 
-        -n(name)
-
-        :return:
-        """
-        if option == 'N':
-            return GMain2.set_name(args[1][2:])
-
-    def show_logo():
         getty()
-        time = Mud1Services.get_time()
+        time = self.service.get_time()
+
         cls()
         print()
         print("                         A B E R  M U D")
@@ -74,195 +80,95 @@ def mud1(env, *args):
         print(time['created'])
         print(time['elapsed'])
 
-    def show_motd():
-        cls()
-        input(Mud1Services.get_message_of_the_day())
+    def show_message_of_the_day(self):
+        if not self.show_all:
+            return
+
+        input(self.service.get_message_of_the_day())
         print()
         print()
 
-    try:
-        verify_server()
-        if len(args) == 2 and args[1][0] == '-':
-            parse_args(args[1][1].upper())
-        if not GMain2.namegiv:
-            show_logo()
-        # Check if banned first
-        Mud1Services.chkbndid(env.user_id)
-        # Does all the login stuff
-        user = login(env)
-        if not GMain2.qnmrq:
-            show_motd()
-        syslog("Game entry by {} : UID {}".format(user.username, env.user_id))  # Log entry
-        if GMain2.qnmrq:
-            quick_start(user)
-        else:
-            talker(user)  # Run system
-        crapup("Bye Bye")  # Exit
-    except CrapupError as e:
-        crapup(e)
-
-
-def login(user):
-    """
-    The whole login system is called from this
-
-    Get the user name
-
-    :return:
-    """
-    if not GMain2.namegiv:
-        username = input("By what name shall I call you ?\n*")[:15].strip()
-    else:
-        username = GMain2.namegt
-        GMain2.namegiv = 0
-
-    """
-    Check for legality of names
-    """
-    try:
-        Mud1Services.validate_username(username)
-    except ValueError as e:
-        print(e)
-        return login(user)
-
-    user_data = Mud1Services.logscan(username)
-    if user_data is None:
-        # If he/she doesnt exist
-        if input("\nDid I get the name right {} ?".format(username)).lower()[0] == 'n':
-            print()
-            return login(user)  # Check name
-
-    return logpass(username)  # Password checking
-
-
-def logpass(username):
-    """
-    Main login code
-
-    :param username:
-    :return:
-    """
-    def try_pass(user, tries=0):
-        password = input("\nThis persona already exists, what is the password ?\n*")
-        print()
-        if password == user.password:
-            if tries < 2:
-                return try_pass(user, tries + 1)
-            else:
-                return crapup("\nNo!\n\n")
-        return user
-
-    def reinput_password():
-        password = input("*")
-        print()
-
+    def __try_password(self, tries=0):
         try:
-            if not password:
-                raise ValueError()
-            if "." in password:
-                raise ValueError("Illegal character in password")
+            password = input("\nThis persona already exists, what is the password ?\n*")
+            print()
+            return self.service.auth(self.username, password)
+        except PermissionError:
+            if tries >= 2:
+                raise CrapupError("\nNo!\n\n")
+            return self.__try_password(tries + 1)
+
+    def __set_password(self):
+        try:
+            password = input("*")
+            print()
+            return self.service.put_user(self.username, password)
         except ValueError as e:
             print(e)
-            return reinput_password()
+            return self.__set_password()
 
-        user = User(username, password)
+    def login(self, username=None):
+        """
+        The whole login system is called from this
 
+        Get the user name
+
+        :return:
+        """
         try:
-            token = Pfl.connect_lock(permissions="a")
-        except FileNotFoundError:
-            return crapup("No persona file....\n")
-        Pfl.add_line(token, qcrypt(user))
-        Pfl.disconnect(token)
-        return user
+            # Main login code
+            self.username = username
 
-    block = logscan(username)
-    if block is not None:
-        result = try_pass(block)
-    else:
-        # this bit registers the new user
-        print("Creating new persona...")
-        print("Give me a password for this persona")
-        result = reinput_password()
-    cls()
-    return result
+            if self.get_user():
+                return self.__try_password()
 
+            # If he/she doesnt exist
+            if input("\nDid I get the name right {} ?".format(self.username)).lower()[0] == 'n':
+                raise ValueError()  # Check name
 
-"""
-void getunm(name)
- char *name;
-    {
-    printf("\nUser Name:");
-    fgets(name,79,stdin);
-    }
+            # this bit registers the new user
+            print("Creating new persona...")
+            print("Give me a password for this persona")
+            return self.__set_password()
+        except ValueError as e:
+            print(e)
+            return self.login()
 
-long shu(name,block)  /* for show user and edit user */
- char *name,*block;
-    {
-    long a;
-    long x;
-    char nm[128],pw[128],pr[128],pv[128];
-    a=logscan(name,block);
-    if (a== -1) printf("\nNo user registered in that name\n\n\n");
-    else
-       {
-       printf("\n\nUser Data For %s\n\n",name);
-       x=scan(nm,block,0,"",".");
-       x=scan(pw,block,x+1,"",".");
-       printf("Name:%s\nPassword:%s\n",nm,pw);
-       }
-    return(a);
-    }
+    def play(self):
+        """
+        The initial routine
 
+        :return:
+        """
+        try:
+            self.show_splash()
+            # Does all the login stuff
+            user = self.login(self.username)
 
-void ed_fld(name,string)
- char *name,*string;
-    {
-    char bk[128];
-    bafld:printf("%s(Currently %s ):",name,string);
-    fgets(bk,128,stdin);
-    if(bk[0]=='.') strcpy(bk,"");
-    if(strchr(bk,'.')){printf("\nInvalid Data Field\n");goto bafld;}
-    if (strlen(bk)) strcpy(string,bk);
-    }
-void delu2(name)   /* For delete and edit */
- char *name;
-    {
-    char b2[128],buff[128];
-    FILE *a;
-    FILE *b;
-    char b3[128];
-    a=openlock(PFL,"r+");
-    b=openlock(PFT,"w");
-    if(a==NULL) return;
-    if(b==NULL) return;
-    while(fgets(buff,128,a)!=0)
-       {
-       dcrypt(buff,lump,strlen(buff)-1);
-       scan(b2,lump,0,"",".");
-       strcpy(b3,name);lowercase(b3);
-       if (strcmp(b3,lowercase(b2))) fprintf(b,"%s",buff);
-       }
-    disconnect(a);
-    disconnect(b);
-    a=openlock(PFL,"w");
-    b=openlock(PFT,"r+");
-    if(a==NULL) return;
-    if(b==NULL) return;
-    while(fgets(buff,128,b)!=0)
-       {
-       fprintf(a,"%s",buff);
-       }
-    disconnect(a);
-    disconnect(b);
-    }
+            cls()
+            self.show_message_of_the_day()
+            self.service.put_log("Game entry by {} : UID {}".format(user.username, user.user_id))  # Log entry
+            if self.quick_start:
+                quick_start(user, self)
+            else:
+                talker(user, self)  # Run system
+            self.game_over("Bye Bye")
+        except CrapupError as e:
+            self.game_over(e)
 
+    @classmethod
+    def game_over(cls, message):
+        """
+        Exit
 
-"""
-
-
-def crapup(ptr):
-    input("\n{}\n\nHit Return to Continue...".format(ptr))
-    sys.exit(1)
+        :param message:
+        :return:
+        """
+        print()
+        print(message)
+        print()
+        input("Hit Return to Continue...")
+        raise SystemExit()
 
 
 """
@@ -277,15 +183,3 @@ void bprintf()
 	exit(0);
 }
 """
-
-def chkname(user):
-    """
-
-    :param user:
-    :return:
-    """
-    for a in user.lower():
-        if a > 'z':
-            raise ValueError()
-        if a < 'a':
-            raise ValueError()

@@ -1,26 +1,21 @@
-from ..errors import CrapupError
+from services.errors import CrapupError
 from ..gmainstubs import cls
 from .options import OPTIONS
 
 
-def __select_option(user):
+def __select_option(*args):
     answer = input()[:2].lower()
     option = OPTIONS.get(answer)
     if option is None:
         raise ValueError()
-    option(user)
+    option(*args)
 
 
-def quick_start(user):
-    try:
-        execl(EXE, "   --}----- ABERMUD -----{--    Playing as ", user.username)
-    except Exception:
-        raise CrapupError("mud.exe : Not found\n")
+def quick_start(user, game):
+    game.service.run_game("   --}----- ABERMUD -----{--    Playing as ", user.username)
 
 
-def talker(user):
-    user.is_wizard = user.user_id in ["wisner"]
-
+def talker(user, game):
     cls()
     print("Welcome To AberMUD II [Unix]")
     print()
@@ -44,7 +39,7 @@ def talker(user):
     print("Select > ")
 
     try:
-        __select_option(user)
+        __select_option(user, game)
     except ValueError:
         print("Bad Option")
-        talker(user)
+        talker(user, game)

@@ -53,14 +53,7 @@ char *str;
 	if(strchr(str,ch)==NULL) return(-1);
 	return(strchr(str,ch)-str);
 }
-"""
 
-
-def gepass():
-    return input()
-
-
-"""
 int scan(out,in,start,skips,stops)
 char *in,*out,*skips,*stops;
 {
@@ -149,7 +142,3 @@ long len;
 	fwrite((char *)block,len*(sizeof(long)),1,unit);
 }
 """
-
-
-def cuserid():
-    return "getpwuid(getuid().pw_name)"

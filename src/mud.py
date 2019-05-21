@@ -1,13 +1,17 @@
+import logging
 import uuid
-from gamelib.mudexe.user import User
-from gamelib.mudexe.tk.talker import talker
-from gamelib.mud1 import mud1
+# from gamelib.mudexe.user import User
+# from gamelib.mudexe.tk.talker import talker
+from gamelib.mud1 import MudGame
 
 
-class Env:
+logging.basicConfig(level=logging.DEBUG)
+
+
+class User:
     def __init__(self):
-        self.user_id = uuid.uuid1()
-        self.host = "DAVIDPOOTER"
+        self.host_id = uuid.uuid1()
+        self.hostname = "DAVIDPOOTER"
         self.username = None
         self.password = None
 
@@ -20,10 +24,10 @@ def main():
     # user = User(1, "username")
     # talker(user)
 
-    env = Env()
+    user = User()
 
     print(">", "mud.1")
-    mud1(env, 'mud.1')
+    MudGame(user).play()
 
     # print(">", "mud.1", "-nName")
     # mud1(env, 'mud.1', '-nName')

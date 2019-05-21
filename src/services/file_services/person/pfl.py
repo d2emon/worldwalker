@@ -1,4 +1,4 @@
-from .file_service import TextFileService
+from services.file_services.file_service import TextFileService
 
 
 class Pfl(TextFileService):
