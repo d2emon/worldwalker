@@ -1,27 +1,12 @@
-from ..gmainstubs import clear
-
-
-class Screen:
-    @classmethod
-    def start(cls):
-        clear()
-
-    @classmethod
-    def show(cls, **kwargs):
-        raise NotImplementedError()
-
-    @classmethod
-    def show_message(cls, message):
-        print(message)
+from .screen import Screen
+from .main_screen import UserScreen, MainScreen
+from.game_screen import GameScreen, TestGameScreen
 
 
 class Splash(Screen):
     @classmethod
     def show(cls, **kwargs):
-        if not kwargs.get('visible', False):
-            return
-
-        cls.start()
+        super().show(**kwargs)
         print()
         print("                         A B E R  M U D")
         print()
@@ -34,7 +19,7 @@ class Splash(Screen):
 class LoginScreen(Screen):
     @classmethod
     def show(cls, **kwargs):
-        return
+        super().show(**kwargs)
 
     @classmethod
     def input_username(cls):
@@ -69,30 +54,18 @@ class LoginScreen(Screen):
 class MessageOfTheDay(Screen):
     @classmethod
     def show(cls, **kwargs):
-        if not kwargs.get('visible', False):
-            return
-
-        cls.start()
+        super().show(**kwargs)
         input(kwargs.get('message'))
         print()
         print()
 
 
-class MainScreen(Screen):
-    @classmethod
-    def show(cls, **kwargs):
-        if not kwargs.get('visible', False):
-            return
-
-        cls.start()
-
-
 class GameOver(Screen):
+    clear_before = False
+
     @classmethod
     def show(cls, **kwargs):
-        if not kwargs.get('visible', False):
-            return
-
+        super().show(**kwargs)
         print()
         print(kwargs.get('message'))
         print()
