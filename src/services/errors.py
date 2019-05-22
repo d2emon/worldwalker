@@ -4,3 +4,7 @@ class CrapupError(Exception):
 
 class FileServiceError(Exception):
     pass
+
+
+class RetryError(Exception):
+    pass

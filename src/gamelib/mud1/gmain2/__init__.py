@@ -4,10 +4,10 @@ Program starts Here!
 This forms the main loop of the code, as well as calling
 all the initialising pieces
 """
-from services.errors import CrapupError
+from services.errors import CrapupError, RetryError
 from services.mud1 import Mud1Services
-from ..gmlnk import quick_start, talker
-from ..screens import Splash, LoginScreen, MessageOfTheDay, GameOver
+from ..gmlnk import OPTIONS
+from ..screens import Splash, LoginScreen, MessageOfTheDay, MainScreen, GameScreen, GameOver
 
 
 class MudGame:
@@ -30,54 +30,34 @@ class MudGame:
     def show_all(self):
         return not self.quick_start
 
-    def __try_password(self, tries=0):
+    def on_auth(self, username, password):
         try:
-            return self.service.get_auth(self.username, LoginScreen.input_password())
-        except PermissionError:
-            if tries >= 2:
-                raise CrapupError("\nNo!\n\n")
-            return self.__try_password(tries + 1)
+            return self.service.get_auth(username, password)
+        except PermissionError as e:
+            raise RetryError(e)
 
-    def __set_password(self):
+    def on_save(self, username, password):
         try:
-            return self.service.post_user(self.username, LoginScreen.input_new_password())
+            return self.service.post_user(username, password)
         except ValueError as e:
-            LoginScreen.show_message(e)
-            return self.__set_password()
+            raise RetryError(e)
 
-    @classmethod
-    def game_over(cls, message):
-        """
-        Exit
-
-        :param message:
-        :return:
-        """
-        GameOver.show_message(message=message)
-
-    def get_user(self):
-        return self.service.get_user(self.username)
-
-    def login(self, username=None):
-        """
-        The whole login system is called from this
-
-        Get the user name
-
-        :return:
-        """
+    def on_old_password(self, username, password):
         try:
-            self.username = LoginScreen.input_username(value=username)
+            self.service.get_auth(username, password)
+        except PermissionError as e:
+            raise RetryError(e)
 
-            if self.get_user():
-                return self.__try_password()
-
-            LoginScreen.new_user(username=self.username)
-            self.quick_start = False
-            return self.__set_password()
+    def on_new_password(self, new_password):
+        try:
+            self.service.get_validate_password(new_password)
         except ValueError as e:
-            LoginScreen.show_message(e)
-            return self.login()
+            raise RetryError(e)
+
+    def on_change_password(self, username, old_password, new_password, verify):
+        if verify != new_password:
+            raise RetryError("\nNo!")
+        self.service.put_password(username, old_password, new_password)
 
     def play(self):
         """
@@ -91,15 +71,45 @@ class MudGame:
                 visible=self.show_all,
                 **self.service.get_time(),
             )
-            user = self.login(username=self.username)
+            user = LoginScreen.show(
+                service=self.service,
+                username=self.username,
+
+                on_username=self.service.get_validate_username,
+                on_password=self.on_auth,
+                on_load=self.service.get_user,
+                on_save=self.on_save,
+            )
             MessageOfTheDay.show(
                 visible=self.show_all,
                 message=self.service.get_message_of_the_day()
             )
+            self.service.post_log("Game entry by {} : UID {}".format(user['username'], user['user_id']))
             if self.quick_start:
-                quick_start(user, self)
+                GameScreen.show(
+                    show_intro=False,
+                    on_run=lambda: self.service.run_game(
+                        "   --}----- ABERMUD -----{--    Playing as ",
+                        user['username'],
+                    ),
+                )
             else:
-                talker(user, self)
+                MainScreen.show(
+                    options=OPTIONS,
+                    user=user,
+                    admin=user['is_wizard'],
+
+                    on_run=lambda: self.service.run_game(
+                        "   --{----- ABERMUD -----}--      Playing as ",
+                        user['username']
+                    ),
+                    on_username=lambda username: self.service.get_user(username),
+                    on_old_password=lambda password: self.on_old_password(user['username'], password),
+                    on_new_password=self.on_new_password,
+                    on_change_password=lambda *args: self.on_change_password(user['username'], *args),
+                    on_edit_user=self.service.put_user,
+                    on_delete_user=self.service.delete_user,
+                )
             GameOver.show_message(
                 message="Bye Bye"
             )

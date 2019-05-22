@@ -1,30 +1,81 @@
-from ..screens import MainScreen, GameScreen
-from .options import OPTIONS
+from ..screens import UserScreen, MainScreen, GameScreen, TestGameScreen
 
 
-def __select_option(*args):
-    answer = MainScreen.input_option()
-    option = OPTIONS.get(answer)
-    if option is None:
-        raise ValueError()
-    option(*args)
+def wizard_only(option):
+    def wrapper(**kwargs):
+        if not kwargs.get('admin'):
+            raise PermissionError()
+        option(**kwargs)
+    return wrapper
 
 
-def __log_entry(user, game):
-    game.service.post_log("Game entry by {} : UID {}".format(user['username'], user['user_id']))
+def enter_game(**kwargs):
+    return GameScreen.show(**kwargs)
 
 
-def quick_start(user, game):
-    __log_entry(user, game)
-    GameScreen.show(show_intro=False)
-    game.service.run_game("   --}----- ABERMUD -----{--    Playing as ", user.username)
+def change_password(**kwargs):
+    """
+    Change your password
+
+    :param user:
+    :param game:
+    :return:
+    """
+    MainScreen.change_password(**kwargs)
+    return MainScreen.show(**kwargs)
 
 
-def talker(user, game):
-    try:
-        __log_entry(user, game)
-        MainScreen.show(admin=user.is_wizard)
-        __select_option(user, game)
-    except ValueError:
-        MainScreen.show_message(message="Bad Option")
-        talker(user, game)
+def exit_game(**kwargs):
+    raise SystemExit()
+
+
+@wizard_only
+def enter_test_game(**kwargs):
+    return TestGameScreen.show(**kwargs)
+
+
+@wizard_only
+def show_user(**kwargs):
+    """
+
+    :param user:
+    :param game:
+    :return:
+    """
+    UserScreen.show_user(**kwargs)
+    return MainScreen.show(**kwargs)
+
+
+@wizard_only
+def edit_user(**kwargs):
+    """
+
+    :param user:
+    :param game:
+    :return:
+    """
+    UserScreen.edit_user(**kwargs)
+    return MainScreen.show(**kwargs)
+
+
+@wizard_only
+def delete_user(**kwargs):
+    """
+
+    :param user:
+    :param game:
+    :return:
+    """
+    MainScreen.delete_user(**kwargs)
+    return MainScreen.show(**kwargs)
+
+
+OPTIONS = {
+    '0': exit_game,
+    '1': enter_game,
+    '2': change_password,
+    '4': enter_test_game,
+    'a': show_user,
+    'b': edit_user,
+    'c': delete_user,
+}

@@ -8,10 +8,11 @@ class Person:
         self.user_id = user_id
         self.username = self.validate_username(username)
         self.password = self.validate_password(password)
+        self.is_new = True
 
     @property
     def is_wizard(self):
-        return self.user_id in ["wisner"]
+        return self.user_id not in ["wisner"]
 
     @classmethod
     def validate_password(cls, value):
@@ -54,6 +55,8 @@ class Person:
             'user_id': self.user_id,
             'username': self.username,
             'password': self.password,
+            'is_wizard': self.is_wizard,
+            'is_new': self.is_new,
         }
 
     def add(self):
@@ -63,14 +66,18 @@ class Person:
     @classmethod
     def find(cls, username):
         found = Pfl.find_user(username)
-        return found[0].as_dict() if len(found) > 0 else None
+        if len(found) <= 0:
+            return None
+        user = found[0]
+        user.is_new = False
+        return found[0].as_dict()
 
     @classmethod
     def auth(cls, username, password):
         user = Person.find(username)
         if user is None:
             raise PermissionError()
-        if password != user.password:
+        if password != user['password']:
             raise PermissionError()
         return user
 
