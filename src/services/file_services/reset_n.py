@@ -1,10 +1,6 @@
 from .file_service import FileService
 
 
-def time():
-    return 0
-
-
 class ResetN(FileService):
     filename = "reset.n"
     connections = dict()
@@ -16,5 +12,6 @@ class ResetN(FileService):
         yield cls.started
 
     @classmethod
-    def time(cls, token):
-        return time() - next(cls.get_data(token))
+    def get_time(cls):
+        with cls(permissions='r') as token:
+            return next(cls.get_data(token))

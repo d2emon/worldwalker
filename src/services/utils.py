@@ -14,14 +14,6 @@ RESERVED = [
 ]
 
 
-def encode(data):
-    return data
-
-
-def decode(data):
-    return data
-
-
 def test_reserved(name):
     if name.lower() in RESERVED:
         raise ValueError("Sorry I cant call you that")

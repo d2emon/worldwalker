@@ -1,4 +1,3 @@
-from ..gmainstubs import clear
 from ..screens import UserScreen, MainScreen, GameScreen, TestGameScreen
 
 
@@ -10,8 +9,7 @@ def wizard_only(option):
     return wrapper
 
 
-def __get_user_data(game, screen, default=False):
-    screen.before_data()
+def __get_person(game, screen, default=False):
     user_data = game.service.get_user(
         screen.input_username(),
         default,
@@ -20,35 +18,15 @@ def __get_user_data(game, screen, default=False):
     return user_data
 
 
-def __input_field(label, value):
-    """
-
-    :param label:
-    :param value:
-    :return:
-    """
-    try:
-        new_value = input("{}(Currently {} ):".format(label, value))[:128]
-        if not new_value:
-            return new_value
-        if new_value[0] == ".":
-            return new_value
-        if "." in new_value:
-            raise ValueError("\nInvalid Data Field\n")
-    except ValueError as e:
-        UserScreen.show_message(e)
-        return __input_field(label, value)
-
-
 def __input_password(username, old_password, game):
     try:
         new_password = MainScreen.input_new_password()
-        game.service.validate_password(new_password)
+        game.service.get_validate_password(new_password)
         verify = MainScreen.input_verify_password()
         if verify != new_password:
             raise ValueError("\nNo!")
 
-        game.service.put_password(username, old_password, new_password)
+        game.service.post_password(username, old_password, new_password)
         MainScreen.show_message(message="Changed")
     except ValueError as e:
         MainScreen.show_message(message=e)
@@ -70,7 +48,7 @@ def change_password(user, game):
     """
     try:
         password = MainScreen.input_old_password()
-        game.service.auth(user.username, password)
+        game.service.get_auth(user.username, password)
         MainScreen.request_new_password()
         return __input_password(user.username, password, game)
     except PermissionError:
@@ -94,7 +72,8 @@ def show_user(user, game):
     :param game:
     :return:
     """
-    __get_user_data(game, UserScreen)
+    person = game.service.get_user(UserScreen.input_username())
+    UserScreen.show_data(user=person)
     MainScreen.input_wait()
 
 
@@ -106,13 +85,20 @@ def edit_user(user, game):
     :param game:
     :return:
     """
+    username = UserScreen.input_username()
+    person = game.service.get_user(username)
+    if person is None:
+        person = {
+            'user_id': user.user_id,
+            'username': username,
+            'password': 'default'
+        }
+    UserScreen.show_data(user=person)
     try:
-        user_data = __get_user_data(game, UserScreen, True)
-
-        __input_field("Name:", user_data.username)
-        __input_field("Password:", user_data.password)
-
-        game.service.update_user(user_data.username, user_data.password)
+        game.service.put_user(
+            UserScreen.input_field(label="Name:", value=person.username),
+            UserScreen.input_field(label="Password:", value=person.password),
+        )
     except ValueError as e:
         UserScreen.show_message(message=e)
 
@@ -125,10 +111,10 @@ def delete_user(user, game):
     :param game:
     :return:
     """
+    person = game.service.get_user(MainScreen.input_username())
+    MainScreen.show_data(user=person)
     try:
-        user_data = __get_user_data(game, MainScreen)
-
-        game.service.delete_user(user_data.username)
+        game.service.delete_user(person.username)
     except ValueError as e:
         MainScreen.show_message(message=e)
 

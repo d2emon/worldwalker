@@ -1,64 +1,44 @@
 from . import config
 from .errors import CrapupError, FileServiceError
-from .file_services import Nologin, Exe, ResetN, MotD, BanFile, Pfl, Pft, LogFile
+from .file_services import Nologin, BanFile, Exe, ResetN, MotD, LogFile
 from .file_services.person.person import Person
-from .utils import encode, decode
 
 
-class Mud1Services:
-    def __init__(self, host):
-        self.host = host
+def now():
+    return 0
 
-    @classmethod
-    def __add_user(cls, user_id, username, password):
-        user = Person(user_id, username, password)
-        token = Pfl.connect(lock=True, permissions="a")
-        Pfl.add_line(token, encode(user))
-        Pfl.disconnect(token)
-        return user
 
-    @classmethod
-    def __validate_host(cls, host):
+def verify_host(f):
+    def check_host(hostname):
         """
         Check we are running on the correct host
         see the notes about the use of flock();
         and the affects of lockf();
 
-        :param host:
+        :param hostname:
         :return:
         """
-        if host != config.HOST_MACHINE:
-            raise PermissionError("AberMUD is only available on {}, not on {}".format(config.HOST_MACHINE, host))
+        if hostname != config.HOST_MACHINE:
+            raise PermissionError("AberMUD is only available on {}, not on {}".format(config.HOST_MACHINE, hostname))
 
-    @classmethod
-    def __check_nologin(cls):
-        """
-        Check if there is a no logins file active
+    def decorated(self, *args, **kwargs):
+        check_host(self.hostname)
+        Nologin.check()
+        BanFile.check(self.user_id)
 
-        :return:
-        """
-        try:
-            token = Nologin.connect(permissions='r')
-            error = Nologin.get_content(token)
-            Nologin.disconnect(token)
-            raise error
-        except FileServiceError:
-            return
+        return f(self, *args, **kwargs)
+    return decorated
 
-    def __check_banned(self, host_id):
-        """
-        Check to see if UID in banned list
 
-        :return:
-        """
-        try:
-            token = BanFile.connect(permissions="r+")
-            for banned in BanFile.get_line(token, max_length=79):
-                if banned == host_id:
-                    raise PermissionError("I'm sorry- that userid has been banned from the Game\n")
-            BanFile.disconnect(token)
-        except FileServiceError:
-            return
+class Mud1Services:
+    hostname = config.HOST_MACHINE
+
+    def __init__(self, host):
+        self.host = host
+
+    @property
+    def user_id(self):
+        return self.host.host_id
 
     @classmethod
     def __time_string(cls, time):
@@ -72,6 +52,8 @@ class Mud1Services:
                 return "1 second"
             else:
                 return "{} seconds.".format(s % 60)
+
+        time = now() - time
 
         if time > 24 * 60 * 60:
             return "Over a day!!!\n"  # Add a Day !
@@ -96,21 +78,7 @@ class Mud1Services:
         else:
             return hours + "1 minute"
 
-    def __verify_host(self):
-        self.__validate_host(self.host.hostname)
-        self.__check_nologin()
-        # Check if banned first
-        self.__check_banned(self.host.host_id)
-
-    def auth(self, username, password):
-        self.__verify_host()
-
-        user = self.get_user(username)
-        if user is None:
-            raise PermissionError()
-        if password != user.password:
-            raise PermissionError()
-
+    @verify_host
     def delete_user(self, username):
         """
         For delete and edit
@@ -118,32 +86,17 @@ class Mud1Services:
         :param username:
         :return:
         """
-        self.__verify_host()
+        return Person.delete(username)
 
-        search = username.lower()
-        user = self.get_user(search)
-        if user is None:
-            raise ValueError("\nCannot delete non-existant user")
+    @verify_host
+    def get_auth(self, username, password):
+        return Person.auth(username, password)
 
-        try:
-            token_a = Pfl.connect_lock(permissions="r+")
-            token_b = Pft.connect_lock(permissions="w")
-            for user in Pfl.get_content(token_a):
-                if decode(user).username.lower() != search:
-                    Pft.add_line(token_b, user)
-            Pfl.disconnect(token_a)
-            Pft.disconnect(token_b)
+    @verify_host
+    def get_message_of_the_day(self):
+        return MotD.get_message()
 
-            token_a = Pfl.connect_lock(permissions="w")
-            token_b = Pft.connect_lock(permissions="r+")
-            for user in Pft.get_content(token_b):
-                Pfl.add_line(token_a, user)
-            Pfl.disconnect(token_a)
-            Pft.disconnect(token_b)
-
-        except FileServiceError:
-            return
-
+    @verify_host
     def get_time(self):
         """
         Check for all the created at stuff
@@ -152,112 +105,60 @@ class Mud1Services:
 
         :return:
         """
-        self.__verify_host()
-
-        stats = Exe.get_stats()
-        token = ResetN.connect(permissions='r')
-        time = ResetN.time(token)
-
-        created = stats.date if stats is not None else "<unknown>\n"
+        created = "This AberMUD was created:{}".format(Exe.get_created())
         try:
-            elapsed = "Game time elapsed: " + self.__time_string(time)
+            elapsed = "Game time elapsed: " + self.__time_string(ResetN.get_time())
         except FileServiceError:
             elapsed = "AberMUD has yet to ever start!!!"
 
         return {
-            'created': "This AberMUD was created:{}".format(created),
+            'created': created,
             'elapsed': elapsed,
         }
 
-    def get_message_of_the_day(self):
-        self.__verify_host()
-
-        try:
-            return MotD.get_text()  # list the message of the day
-        except FileServiceError as e:
-            return e
-
-    def get_user(self, username, default=False):
+    @verify_host
+    def get_user(self, username):
         """
         Return block data for user or -1 if not exist
 
-        :param default:
         :param username:
         :return:
         """
-        self.__verify_host()
+        return Person.find(username)
 
+    @verify_host
+    def get_validate_password(self, value):
+        return Person.validate_username(value)
+
+    @verify_host
+    def get_validate_username(self, value):
+        return Person.validate_password(value)
+
+    @verify_host
+    def post_log(self, message):
+        LogFile.log(message)
+
+    @verify_host
+    def post_user(self, username, password):
         try:
-            token = Pfl.connect(lock=True, permissions="r")
-            found = None
-            search = username.lower()
-            for user in Pfl.get_content(token):
-                decoded = decode(user)
-                if decoded.username.lower() == search:
-                    found = decoded
-                    break
-            Pfl.disconnect(token)
-
-            if found is None and default:
-                return Person(
-                    self.host.host_id,
-                    username,
-                    "default",
-                    # "E"
-                )
-            return found
-        except FileServiceError:
-            raise CrapupError("No persona file\n")
-
-    def put_log(self, message):
-        try:
-            LogFile.log(message)
-        except FileServiceError:
-            # loseme()
-            raise CrapupError("Log fault : Access Failure")
-
-    def put_password(self, username, old_password, new_password):
-        self.__verify_host()
-
-        self.auth(username, old_password)
-        self.update_user(username, new_password)
-
-    def put_user(self, username, password):
-        self.__verify_host()
-
-        try:
-            return self.__add_user(self.host.host_id, username, password)
+            return Person(self.user_id, username, password).add()
         except FileServiceError:
             raise CrapupError("No persona file....\n")
 
-    def update_user(self, username, password):
-        self.__verify_host()
+    @verify_host
+    def put_password(self, username, old_password, new_password):
+        Person.auth(username, old_password)
+        return self.put_user(username, new_password)
 
+    @verify_host
+    def put_user(self, username, password):
         try:
-            self.delete_user(username)  # delete me and tack me on end!
-            return self.__add_user(self.host.host_id, username, password)
+            # delete me and tack me on end!
+            self.delete_user(username)
+            return Person(self.user_id, username, password).add()
         except FileServiceError:
             return
 
-    def validate_password(self, value):
-        self.__verify_host()
-
-        return Person.validate_username(value)
-
-    def validate_username(self, value):
-        self.__verify_host()
-
-        return Person.validate_password(value)
-
-    def execute(self, *args):
-        self.__verify_host()
-
-        print("\texecl({}".format(args))
-
+    @verify_host
     def run_game(self, *args):
-        self.__verify_host()
-
-        try:
-            self.execute(Exe, *args)
-        except FileServiceError:
-            raise CrapupError("mud.exe : Not found\n")
+        Exe.run(*args)

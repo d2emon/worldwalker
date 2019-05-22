@@ -3,12 +3,25 @@ from .screen import Screen
 
 class UserScreen(Screen):
     @classmethod
-    def input_username(cls):
-        return input("\nUser Name:")[:79]
+    def input_field(cls, **kwargs):
+        try:
+            value = kwargs.get('value')
+            new_value = input("{}(Currently {} ):".format(kwargs.get('label'), kwargs.get('value')))[:128]
+            if not new_value:
+                return value
+            if new_value[0] == ".":
+                return value
+            if "." in new_value:
+                raise ValueError("\nInvalid Data Field\n")
+            return new_value
+        except ValueError as e:
+            cls.show_message(e)
+            return cls.input_field(**kwargs)
 
     @classmethod
-    def input_field(cls, **kwargs):
-        return input("{}(Currently {} ):".format(kwargs.get('label'), kwargs.get('value')))[:128]
+    def input_username(cls):
+        cls.before_data()
+        return input("\nUser Name:")[:79]
 
     @classmethod
     def before_data(cls, **kwargs):

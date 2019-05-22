@@ -1,9 +1,10 @@
 from ...errors import CrapupError
 from ...utils import test_valid_username
+from .pfl import Pfl
 
 
 class Person:
-    def __init__(self, user_id, username, password):
+    def __init__(self, user_id, username, password="default"):
         self.user_id = user_id
         self.username = self.validate_username(username)
         self.password = self.validate_password(password)
@@ -47,3 +48,36 @@ class Person:
             raise CrapupError("Bye Bye")
 
         return value
+
+    def as_dict(self):
+        return {
+            'user_id': self.user_id,
+            'username': self.username,
+            'password': self.password,
+        }
+
+    def add(self):
+        # user = Person(user_id, username, password)
+        return Pfl.add_user(self).as_dict()
+
+    @classmethod
+    def find(cls, username):
+        found = Pfl.find_user(username)
+        return found[0].as_dict() if len(found) > 0 else None
+
+    @classmethod
+    def auth(cls, username, password):
+        user = Person.find(username)
+        if user is None:
+            raise PermissionError()
+        if password != user.password:
+            raise PermissionError()
+        return user
+
+    @classmethod
+    def delete(cls, username):
+        search = username.lower()
+        user = Person.find(search)
+        if user is None:
+            raise ValueError("\nCannot delete non-existant user")
+        return Pfl.del_user(username)
