@@ -11,7 +11,8 @@ class Screen:
 
         :return:
         """
-        logging.debug("getty()")
+        # logging.debug("getty()")
+        pass
 
     @classmethod
     def clear(cls):
@@ -20,7 +21,7 @@ class Screen:
 
         :return:
         """
-        logging.debug("cls()")
+        # logging.debug("cls()")
         print("\n" * 24)
 
     @classmethod

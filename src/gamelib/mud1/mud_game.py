@@ -6,8 +6,8 @@ all the initialising pieces
 """
 from services.errors import CrapupError, RetryError
 from services.mud1 import Mud1Services
-from ..gmlnk import OPTIONS
-from ..screens import Splash, LoginScreen, MessageOfTheDay, MainScreen, GameScreen, GameOver
+from .options import OPTIONS
+from .screens import Splash, LoginScreen, MessageOfTheDay, MainScreen, GameScreen, GameOver
 
 
 class MudGame:

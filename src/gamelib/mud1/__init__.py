@@ -1,1 +1,1 @@
-from .gmain2 import MudGame
+from .mud_game import MudGame

@@ -1,4 +1,4 @@
-from ..screens import UserScreen, MainScreen, GameScreen, TestGameScreen
+from .screens import UserScreen, MainScreen, GameScreen, TestGameScreen
 
 
 def wizard_only(option):
