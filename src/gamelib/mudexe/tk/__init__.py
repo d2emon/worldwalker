@@ -6,13 +6,13 @@ This game systems, its code scenario and design are (C) 1987/88  Alan Cox,Jim Fi
 This file holds the basic communications routines
 """
 from .dummies import DummyGlobals
-from ..aber_blib import sec_read, sec_write, scan
-from ..aber_gamego import crapup
-from ..aber_objsys import fpbns, dumpstuff
-from ..aber_support import syslog, pname, ppos, ploc
-from ..aber_weather import longwthr
+from gamelib.mudexe.temp.used.aber_blib import sec_read, sec_write, scan
+from gamelib.mudexe.temp.used.aber_gamego import crapup
+from gamelib.mudexe.temp.used.aber_objsys import fpbns, dumpstuff
+from gamelib.mudexe.temp.used.aber_support import syslog, pname, ppos, ploc
+from gamelib.mudexe.temp.used.aber_weather import longwthr
 
-from ..database.world import World
+from gamelib.mudexe.temp.database import World
 
 from .tkGlobals import TkGlobals
 from .loseme import loseme

@@ -1,9 +1,8 @@
 from .tkGlobals import TkGlobals
-from ..aber_gamego import crapup
+from gamelib.mudexe.temp.used.aber_gamego import crapup
 
-from ..database.world import World
-from ..exceptions import CrapupException, GameException
-from ..database.exceptions import WorldFullException, NoDatabaseException
+from gamelib.mudexe.temp.exceptions import CrapupException, GameException
+from gamelib.mudexe.temp.database import WorldFullException, NoDatabaseException
 from .get_input import get_input
 
 

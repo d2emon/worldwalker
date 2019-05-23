@@ -1,0 +1,1 @@
+from .gamego import GameGo

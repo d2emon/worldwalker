@@ -1,11 +1,11 @@
 from .dummies import DummyGlobals
 from .tkGlobals import TkGlobals
-from ..bbc import BBC
-from ..aber_bprintf import pbfr
-from ..aber_gamego import sig_alon, sig_aloff, set_progname
-from ..aber_key import key_input
-from ..aber_parse import gamecom
-from ..database.world import World
+from gamelib.mudexe.temp.used.bbc import BBC
+from gamelib.mudexe.temp.used.aber_bprintf import pbfr
+from gamelib.mudexe.temp.used.aber_gamego import sig_alon, sig_aloff, set_progname
+from gamelib.mudexe.temp.used.aber_key import key_input
+from gamelib.mudexe.temp.used.aber_parse import gamecom
+from gamelib.mudexe.temp.database import World
 
 
 def __test_fight():

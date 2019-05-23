@@ -1,4 +1,4 @@
-from ...mudexe.exceptions import CrapupException
+from gamelib.mudexe.temp.exceptions import CrapupException
 
 
 class OutOfMemoryError(Exception):

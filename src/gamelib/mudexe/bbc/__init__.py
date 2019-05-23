@@ -1,22 +1,29 @@
+"""
+Code for doing hardware windowed output on BBC GTSS terminals
+Removed on UNIX version
+"""
+
+
 class BBC:
-    tty = 4
+    def __init__(self, tty=0):
+        self.tty = tty
+        if tty == 4:
+            # initbbc()
+            self.initscr()
+            self.topscr()
 
     @classmethod
-    def init_screen(cls):
-        if cls.tty != 4:
-            return
-        print("INIT SCREEN")
+    def initscr(cls):
+        pass
 
     @classmethod
-    def top_screen(cls):
-        if cls.tty != 4:
-            return
-        # print("\n" * 8)
-        print("TOP SCREEN")
+    def topscr(cls):
+        pass
 
-    @classmethod
-    def bottom_screen(cls):
-        if cls.tty != 4:
-            return
-        print("BOTTOM SCREEN")
-        # print("\n" * 8)
+
+"""
+void btmscr()
+{
+	;
+}
+"""

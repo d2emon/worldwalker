@@ -1,11 +1,11 @@
 from .dummies import DummyGlobals
 from .tkGlobals import TkGlobals
-from ..aber_bprintf import chksnp
-from ..aber_gamego import sig_aloff
-from ..aber_newuaf1 import saveme
-from ..aber_objsys import dumpitems
-from ..aber_parse import sendsys
-from ..aber_support import pname, pvis
+from gamelib.mudexe.temp.used.aber_bprintf import chksnp
+from gamelib.mudexe.temp.used.aber_gamego import sig_aloff
+from gamelib.mudexe.temp.used.aber_newuaf1 import saveme
+from gamelib.mudexe.temp.used.aber_objsys import dumpitems
+from gamelib.mudexe.temp.used.aber_parse import sendsys
+from gamelib.mudexe.temp.used.aber_support import pname, pvis
 
 
 def loseme(user=None):

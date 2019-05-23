@@ -1,4 +1,4 @@
-from ..database.world import World
+from gamelib.mudexe.temp.database import World
 
 
 class TkGlobals:

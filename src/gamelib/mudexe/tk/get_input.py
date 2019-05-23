@@ -1,8 +1,7 @@
-from ..aber_blood import BloodGlobals
-from ..aber_gamego import sig_alon, sig_aloff
-from ..aber_parse import gamecom
-from ..bbc import BBC
-from ..database.world import World
+from gamelib.mudexe.temp.used.aber_blood import BloodGlobals
+from gamelib.mudexe.temp.used.aber_gamego import sig_alon, sig_aloff
+from gamelib.mudexe.temp.used.aber_parse import gamecom
+from gamelib.mudexe.temp.used.bbc import BBC
 
 
 class Program:

@@ -1,7 +1,8 @@
 from . import config
 from .errors import CrapupError, FileServiceError
-from .file_services import Nologin, BanFile, Exe, ResetN, MotD, LogFile
+from .file_services import Nologin, BanFile, Exe, ResetN, MotD
 from .file_services.person.person import Person
+from .mud_exe import MudExeServices
 
 
 def now():
@@ -33,12 +34,8 @@ def verify_host(f):
 class Mud1Services:
     hostname = config.HOST_MACHINE
 
-    def __init__(self, host):
-        self.host = host
-
-    @property
-    def user_id(self):
-        return self.host.host_id
+    def __init__(self, user_id):
+        self.user_id = user_id
 
     @classmethod
     def __time_string(cls, time):
@@ -136,7 +133,7 @@ class Mud1Services:
 
     @verify_host
     def post_log(self, message):
-        LogFile.log(message)
+        MudExeServices.post_log(message)
 
     @verify_host
     def post_user(self, username, password):
@@ -158,7 +155,3 @@ class Mud1Services:
             return Person(self.user_id, username, password).add()
         except FileServiceError:
             return
-
-    @verify_host
-    def run_game(self, *args):
-        Exe.run(*args)

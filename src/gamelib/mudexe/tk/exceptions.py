@@ -1,4 +1,4 @@
-from ..exceptions import CrapupException
+from gamelib.mudexe.temp.exceptions import CrapupException
 
 
 class WorldUnavailableException(CrapupException):

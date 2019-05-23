@@ -1,2 +1,0 @@
-def lodex(file):
-    pass

@@ -1,18 +1,16 @@
-from .dummies import DummyGlobals
 from .tkGlobals import TkGlobals
 from .loseme import loseme
-from ..aber_blib import getstr
-from ..aber_bprintf import bprintf
-from ..aber_gamego import crapup
-from ..aber_mobile import onlook
-from ..aber_new1 import ail_blind
-from ..aber_newuaf1 import my_lev
-from ..aber_objsys import lisobs, lispeople
-from ..aber_parse import openroom
-from ..aber_support import setploc
-from ..aber_weather import isdark, showname
-from ..aber_zones import lodex
-from ..database.world import World
+from gamelib.mudexe.temp.used.aber_blib import getstr
+from gamelib.mudexe.temp.used.aber_bprintf import bprintf
+from gamelib.mudexe.temp.used.aber_gamego import crapup
+from gamelib.mudexe.temp.used.aber_mobile import onlook
+from gamelib.mudexe.temp.used.aber_new1 import ail_blind
+from gamelib.mudexe.temp.used.aber_newuaf1 import my_lev
+from gamelib.mudexe.temp.used.aber_objsys import lisobs, lispeople
+from gamelib.mudexe.temp.used.aber_parse import openroom
+from gamelib.mudexe.temp.used.aber_weather import isdark, showname
+from gamelib.mudexe.temp.used.aber_zones import lodex
+from gamelib.mudexe.temp.database import World
 
 
 def lookin(room):

@@ -6,14 +6,14 @@ all the initialising pieces
 """
 from services.errors import CrapupError, RetryError
 from services.mud1 import Mud1Services
+from ..mudexe import GameGo
 from .options import OPTIONS
 from .screens import Splash, LoginScreen, MessageOfTheDay, MainScreen, GameScreen, GameOver
 
 
 class MudGame:
     def __init__(self, host, username=None):
-        self.host = host
-        self.service = Mud1Services(self.host)
+        self.service = Mud1Services(host.host_id)
 
         self.__username = username
         self.quick_start = bool(self.username)
@@ -88,10 +88,7 @@ class MudGame:
             if self.quick_start:
                 GameScreen.show(
                     show_intro=False,
-                    on_run=lambda: self.service.run_game(
-                        "   --}----- ABERMUD -----{--    Playing as ",
-                        user['username'],
-                    ),
+                    on_run=lambda: GameGo("   --}----- ABERMUD -----{--    Playing as ", user).play(),
                 )
             else:
                 MainScreen.show(
@@ -99,10 +96,7 @@ class MudGame:
                     user=user,
                     admin=user['is_wizard'],
 
-                    on_run=lambda: self.service.run_game(
-                        "   --{----- ABERMUD -----}--      Playing as ",
-                        user['username']
-                    ),
+                    on_run=lambda: GameGo("   --{----- ABERMUD -----}--      Playing as ", user).play(),
                     on_username=lambda username: self.service.get_user(username),
                     on_old_password=lambda password: self.on_old_password(user['username'], password),
                     on_new_password=self.on_new_password,
