@@ -3,8 +3,32 @@ Key drivers
 """
 
 
+class Tc:
+    __echo = True
+    __i_canon = True
+
+    @classmethod
+    def get_attr(cls):
+        return {
+            'ECHO': cls.__echo,
+            'ICANON': cls.__i_canon,
+        }
+
+    @classmethod
+    def set_attr(cls, **kwargs):
+        cls.__echo = kwargs.get('ECHO', cls.__echo)
+        cls.__i_canon = kwargs.get('ICANON', cls.__i_canon)
+
+
 class Key:
-    save_flag = None
+    MODE_DEFAULT = 0
+    MODE_NOT_DEFAULT = 1
+
+    __save_flag = None
+
+    __mode = MODE_DEFAULT
+    __prompt = ""
+    __buffer = ""
 
     @classmethod
     def setup(cls):
@@ -12,11 +36,12 @@ class Key:
 
         :return:
         """
-        ios = tcgetattr(None)
-        cls.save_flag = ios.flag
-        ios.flag['ECHO'] = False
-        ios.flag['ICANON'] = False
-        tcgetattr(None, TCSANOW, ios)
+        flags = Tc.get_attr()
+        cls.save_flag = flags
+        Tc.set_attr(
+            ECHO=False,
+            ICANON=False,
+        )
 
     @classmethod
     def setback(cls):
@@ -24,20 +49,21 @@ class Key:
 
         :return:
         """
-        ios = tcgetattr(None)
-        ios.flag = cls.save_flag
-        tcgetattr(None, TCSANOW, ios)
+        Tc.set_attr(**cls.__save_flag)
+
+    @classmethod
+    def reprint(cls):
+        """
+
+        :return:
+        """
+        if cls.__mode != cls.MODE_NOT_DEFAULT:
+            return
+        print()
+        print("{}{}".format(cls.__prompt, cls.__buffer), end="")
 
 
 """
-#include <stdio.h>
-/*#include <sgtty.h>*/
-#include <termios.h>
-
-char key_buff[256];
-char pr_bf[32];
-long key_mode= -1;
-
 key_input(ppt,len_max)
 char *ppt;
 int len_max;
@@ -76,16 +102,4 @@ int len_max;
 	key_buff[len_cur]=0;
      }
 }	
-
-key_reprint()
-{
-	extern long pr_due;
-	extern long pr_qcr;
-	pr_qcr=1;
-	pbfr();
-	if((key_mode==0)&&(pr_due))
-		printf("\n%s%s",pr_bf,key_buff);
-	pr_due=0;
-	fflush(stdout);
-}
 """

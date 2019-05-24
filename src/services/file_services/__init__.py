@@ -19,4 +19,4 @@ from services.file_services.person.pfl import Pfl
 # from services.file_services.person.pft import Pft
 from .exe import Exe
 # EXE2 = "/cygdrive/c/Programs/Adv/AberMUD2/mud/mud.1"
-# SNOOP = "/cygdrive/c/Programs/Adv/AberMUD2/mud/SNOOP/"
+from .snoop import Snoop

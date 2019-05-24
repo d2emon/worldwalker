@@ -85,8 +85,13 @@ class FileService:
         return "\n".join(cls.get_line(token, max_length=128))
 
     @classmethod
+    def truncate(cls, token, new_content=None):
+        cls.__verify_token(token)
+        cls.content = new_content
+
+    @classmethod
     def execute(cls, token, *args):
-        logging.info("execl(%s, %s)", token, [cls.filename, *args])
+        cls.logger.info("execl(%s, %s)", token, [cls.filename, *args])
 
 
 class LockFileService(FileService):

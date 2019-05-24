@@ -5,6 +5,7 @@ import logging
 from services.errors import CrapupError
 from services.mud_exe import MudExeServices
 from ..bbc import BBC
+from ..tk import Talker
 
 
 class GameStopped(Exception):
@@ -27,26 +28,6 @@ class ContinueException(Exception):
     pass
 
 
-def keysetup(*args):
-    logging.debug("keysetup(%s)", args)
-
-
-def keysetback(*args):
-    logging.debug("keysetback(%s)", args)
-
-
-def talker(*args):
-    logging.debug("talker(%s)", args)
-
-
-def loseme(*args):
-    logging.debug("loseme(%s)", args)
-
-
-def pbfr(*args):
-    logging.debug("pbfr(%s)", args)
-
-
 class GameGo:
     def __init__(self, *args):
         if len(args) != 2:
@@ -59,28 +40,37 @@ class GameGo:
         """
         self.title, user = args
         username = user.get('username')
+        username = "The {}".format(username) if username in ["Phantom"] else username
+        user_id = user.get('user_id')
+
         logging.debug("mud.exe %s %s", self.title, username)
 
         # Extra
-        self.globme = "The {}".format(username) if username in ["Phantom"] else username
         self.in_fight = None
         self.pr_due = None
 
+        print("Entering Game ....")
+
         self.signals = Signals(
+            on_custom=self.on_custom(),
             on_error=self.on_error(),
             on_exit=self.on_exit(),
         )
-        print("Entering Game ....")
         self.bbc = BBC(0)
-        print("Hello {}".format(self.globme))
-        self.services.post_log("GAME ENTRY: {}[{}]".format(self.globme, user.get('user_id')))
-        keysetup()
+        print("Hello {}".format(username))
+        self.services.post_log("GAME ENTRY: {}[{}]".format(username, user_id))
+        self.talker = Talker(
+            username,
+            on_loose=self.signals.alarm_off,
+            on_before_buffer=self.signals.alarm_block,
+            on_after_buffer=self.signals.alarm_unblock,
+        )
 
     def on_error(self):
         def f(signals):
             signals.alarm_off()
-            loseme()
-            keysetback()
+            self.talker.loseme()
+            self.bbc.disconnect()
             raise GameStopped(255)
         return f
 
@@ -90,8 +80,26 @@ class GameGo:
             if self.in_fight:
                 return
             signals.alarm_off()
-            loseme()
+            self.talker.loseme()
             raise CrapupError("Byeeeeeeeeee  ...........")
+        return f
+
+    def on_custom(self):
+        def f(signals):
+            """
+
+            :param signals:
+            :return:
+            """
+            if not signals.active:
+                return
+
+            signals.alarm_off()
+            self.talker.on_time()
+            self.talker.pbfr(False)
+            if self.talker.is_dirty():
+                self.bbc.reprint()
+            signals.alarm_on()
         return f
 
     def play(self):
@@ -99,24 +107,28 @@ class GameGo:
 
         :return:
         """
-        try:
-            talker(self.globme)
-        except CloseException as e:
-            self.signals.on_close(e)
-        except KeyboardInterrupt as e:
-            self.signals.on_exit(e)
-        except SystemExit as e:
-            self.signals.on_kill(e)
-        except StopException as e:
-            self.signals.on_stop(e)
-        except QuitException as e:
-            self.signals.on_quit(e)
-        except ContinueException as e:
-            self.signals.on_continue(e)
-        except CrapupError as e:
-            self.game_over(e)
-        except GameStopped as e:
-            return e
+        while True:
+            try:
+                self.talker.show()
+                self.signals.on_time()
+            except KeyboardInterrupt as e:
+                self.signals.on_exit(e)
+            except ValueError as e:
+                self.signals.on_kill(e)
+            except SystemExit as e:
+                self.signals.on_kill(e)
+            except CloseException as e:
+                self.signals.on_close(e)
+            except StopException as e:
+                self.signals.on_stop(e)
+            except QuitException as e:
+                self.signals.on_quit(e)
+            except ContinueException as e:
+                self.signals.on_continue(e)
+            except CrapupError as e:
+                self.game_over(e)
+            except GameStopped as e:
+                return e
 
     def game_over(self, message):
         """
@@ -125,9 +137,10 @@ class GameGo:
         :return:
         """
         dashes = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-        pbfr()
+        self.talker.pbfr()
         self.pr_due = 0  # So we dont get a prompt after the exit
-        keysetback()
+        self.bbc.disconnect()
+
         print()
         print(dashes)
         print()
@@ -171,21 +184,6 @@ char *getkbd(s,l)   /* Getstr() with length limit and filter ctrl */
 
 """
 long interrupt=0;
-
-sig_occur()
-{
-	extern char globme[];
-	if(sig_active==0) return;
-	sig_aloff();
-	openworld();
-	interrupt=1;
-	rte(globme);
-	interrupt=0;
-	on_timing();
-	closeworld();
-	key_reprint();
-	sig_alon();
-}
 """
 
 
@@ -194,55 +192,60 @@ class Signals:
         self,
         on_error=lambda signals: None,
         on_exit=lambda signals: None,
+        on_custom=lambda signals: None,
     ):
-        self.active = False
-        self.alarm = None
         self.on_oops = on_error
         self.on_ctrlc = on_exit
+        self.on_custom = on_custom
         self.on_alarm = lambda signals: None
 
-    # def alarm_unblock(self):
-    #     self.on_alarm = self.on_occur
-    #     if self.active:
-    #         self.alarm = 2
+        self.active = False
+
+        self.__alarm = None
+
+    def alarm_unblock(self):
+        self.on_alarm = self.on_custom
+        if self.active:
+            self.__alarm = 2
 
     def alarm_block(self):
         self.on_alarm = lambda signals: None
 
-    # def alarm_on(self):
-    #     self.active = True
-    #     self.alarm_unblock()
+    def alarm_on(self):
+        self.active = True
+        self.alarm_unblock()
 
     def alarm_off(self):
         self.active = False
         self.alarm_block()
-        self.alarm = 2147487643
+        self.__alarm = 2147487643
 
-    def on_close(self, e):
+    def on_close(self, e=None):
         logging.debug('SIGHUP: %s', e)
         self.on_oops(self)
 
-    def on_exit(self, e):
+    def on_exit(self, e=None):
         logging.debug('SIGINT: %s', e)
         self.on_ctrlc(self)
 
-    def on_kill(self, e):
+    def on_kill(self, e=None):
         logging.debug('SIGTERM: %s', e)
         self.on_ctrlc(self)
 
     @classmethod
-    def on_stop(cls, e):
+    def on_stop(cls, e=None):
         logging.debug('SIGTSTP: %s', e)
 
     @classmethod
-    def on_quit(cls, e):
+    def on_quit(cls, e=None):
         logging.debug('SIGQUIT: %s', e)
 
-    def on_continue(self, e):
+    def on_continue(self, e=None):
         logging.debug('SIGCONT: %s', e)
         self.on_oops(self)
 
-    def on_time(self, e):
+    def on_time(self, e=None):
+        logging.debug('alarm: %s', self.__alarm)
         logging.debug('SIGALRM: %s', e)
         self.on_alarm(self)
 
