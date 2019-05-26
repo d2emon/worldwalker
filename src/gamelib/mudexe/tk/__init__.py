@@ -10,134 +10,66 @@ This file holds the basic communications routines
 """
 import logging
 from services.errors import CrapupError, FileServiceError
-from services.bprintf import BufferService
+from services.mud_exe import MudExeServices
 from services.world import WorldService
+from ..support import Player
+from ..weather import is_dark
+from .special import special
 
 
-class Player:
-    maxu = 16
-    players = []
-
-    def __init__(self, player_id, name=None, curch=None):
-        self.player_id = player_id
-        self.__name = name
-        self.__loc = curch
-        self.__pos = None
-        self.__lev = 1
-        self.__vis = 0
-        self.__str = -1
-        self.__wpn = -1
-        self.__sex = 0
-        self.__helping = None
-
-    @property
-    def exists(self):
-        return self.__name is not None
-
-    @property
-    def name(self):
-        return self.__name
-
-    @name.setter
-    def name(self, value):
-        self.__name = value
-
-    @property
-    def strength(self):
-        return self.__str
-
-    @strength.setter
-    def strength(self, value):
-        self.__str = value
-
-    @property
-    def level(self):
-        return self.__lev
-
-    @level.setter
-    def level(self, value):
-        self.__lev = value
-
-    @property
-    def location(self):
-        return self.__loc
-
-    @location.setter
-    def location(self, value):
-        self.__loc = value
-
-    @property
-    def visible(self):
-        return self.__vis
-
-    @visible.setter
-    def visible(self, value):
-        self.__vis = value
-
-    @property
-    def position(self):
-        return self.__pos
-
-    @position.setter
-    def position(self, value):
-        self.__pos = value
-
-    @property
-    def weapon(self):
-        return self.__wpn
-
-    @weapon.setter
-    def weapon(self, value):
-        self.__wpn = value
-
-    @property
-    def helping(self):
-        return self.__helping
-
-    @helping.setter
-    def helping(self, value):
-        self.__helping = value
-
-    @property
-    def sex(self):
-        return self.__sex
-
-    @sex.setter
-    def sex(self, value):
-        self.__sex = value
-
-    @property
-    def sex_all(self):
-        return self.__sex
-
-    @sex_all.setter
-    def sex_all(self, value):
-        self.__sex = value
-
-    def remove(self):
-        self.__name = None
+class Blood:
+    fighting = None
+    in_fight = None
 
     @classmethod
-    def fill(cls):
-        cls.players = [cls(player_id) for player_id in range(cls.maxu)]
+    def fighting_with(cls):
+        return Player.players[cls.fighting]
 
     @classmethod
-    def find_empty(cls):
-        for player_id, player in enumerate(cls.players):
-            if not player.exists:
-                return player_id
-        raise OverflowError()
+    def stop_fight(cls):
+        cls.in_fight = 0
+        cls.fighting = None
 
-    def add(self):
-        self.players[self.player_id] = self
+    @classmethod
+    def update(cls, channel):
+        if cls.fighting is not None:
+            if not cls.fighting_with().exists:
+                cls.stop_fight()
+            if cls.fighting_with().location != channel:
+                cls.stop_fight()
+        if cls.in_fight:
+            cls.in_fight -= 1
+
+
+class New1:
+    ail_blind = False
+
+
+class NewUaf:
+    score = 0
+    level = 0
+    strength = 0
+    sex = 0
+
+
+class Parser:
+    zapped = False
+
+    tdes = 0
+    vdes = False
+    rdes = False
+    # ades = 0
+
+    debug_mode = 0
+
+    @classmethod
+    def clear_des(cls):
+        cls.tdes = 0
+        cls.rdes = cls.vdes = False
 
 
 def sendsys(*args):
     logging.debug("sendsys(%s)", args)
-
-
-def fpbn(*args):
-    logging.debug("fpbn(%s)", args)
 
 
 def dumpitems(*args):
@@ -154,15 +86,6 @@ def chksnp(*args):
 
 def on_timing(*args):
     logging.debug("on_timing(%s)", args)
-
-
-def mstoout(*args):
-    logging.debug("mstoout(%s)", args)
-
-
-def readmsg(*args):
-    logging.debug("readmsg(%s)", args)
-    return []
 
 
 def eorte(*args):
@@ -225,20 +148,6 @@ long offd,offs,len;
        }
     }
 
- mstoout(block,name)
- long *block;char *name;
-    {
-    extern long debug_mode;
-    char luser[40];
-    char *x;
-    x=(char *)block;
-    /* Print appropriate stuff from data block */
-    strcpy(luser,name);lowercase(luser);
-if(debug_mode)    bprintf("\n<%d>",block[1]);
-    if (block[1]<-3) sysctrl(block,luser);
-    else
-       bprintf("%s", (x+2*sizeof(long)));
-    }
 
  send2(block)
  long *block;
@@ -258,216 +167,161 @@ if(debug_mode)    bprintf("\n<%d>",block[1]);
     if(number>=199) longwthr();
     }
 
- readmsg(channel,block,num)
- long channel;
- long *block;
- int num;
-    {
-    long buff[64],actnum;
-    sec_read(channel,buff,0,64);
-    actnum=num*2-buff[0];
-    sec_read(channel,block,actnum,128);
-    }
 """
 
 
 class Talker:
+    MODE_SPECIAL = 0
+    MODE_GAME = 1
+
+    CONVERSATION_MODE_CMD = 0
+    CONVERSATION_MODE_SAY = 1
+    CONVERSATION_MODE_TSS = 2
+
+    __PROMPTS = {
+        CONVERSATION_MODE_CMD: ">",
+        CONVERSATION_MODE_SAY: "\"",
+        CONVERSATION_MODE_TSS: "*",
+    }
+
     def __init__(
         self,
         name,
         on_loose=lambda: None,
-        on_before_buffer=lambda: None,
-        on_after_buffer=lambda: None,
-        on_top=lambda: None,
-        on_bottom=lambda: None,
+        get_cmd=lambda: None,
+        show_buffer=lambda: None,
     ):
         """
 
         :param name:
         """
-        self.on_loose = on_loose
-        self.on_before_buffer = on_before_buffer
-        self.on_after_buffer = on_after_buffer
-        self.on_top = on_top
-        self.on_bottom = on_bottom
-
-        self.__interrupt = False
-
-        self.__i_setup = False
-        # __oddcat = 0
-        # __talkfl = 0
-
-        self.__curch = 0
-
-        self.__name = name
-        self.__curmode = 0
-        # __meall = 0
-
-        # __gurum = 0
-        self.__convflg = 0
-
-        self.__fl_com = None
-
-        self.__rd_qd = False
-
-        # __dsdb = 0
-        # __moni = 0
-
-        # __bound = 0;
-        # __tmpimu = 0;
-        # __* echoback = "*e";
-        # __* tmpwiz = "."; / *Illegal name so natural immunes are ungettable! * /
-
-        self.__mynum = 0
-
-        self.__lasup = 0
-
-        self.__iamon = False
-
         # Externals
         Player.fill()
-        self.__zapped = None
-        self.__vdes = None
-        self.__tdes = None
-        self.__rdes = None
-        self.__my_str = 0
-        self.__my_lev = 0
-        self.__my_sex = 0
-        self.__debug_mode = None
-        self.__fighting = None
-        self.__in_fight = None
 
-        self.__buffer_id = BufferService.post_new_buffer()
-        self.__cms = None
+        self.on_loose = on_loose
+        self.get_cmd = get_cmd
+        self.show_buffer = show_buffer
+
+        self.__active = False
+        self.__mode = self.MODE_SPECIAL
+        self.__conversation_mode = self.CONVERSATION_MODE_CMD
+        self.__ready_to_read = False
+        self.__last_update = 0
+        self.__is_on = False
+
+        self.__name = name
+        self.__player_id = None
+        self.__message_id = None
+        self.__channel = 0
 
         try:
             with WorldService():
-                self.putmeon()
+                self.__put_on()
                 self.rte()
-        except OverflowError:
-            raise CrapupError("Sorry AberMUD is full at the moment")
-        except FileServiceError:
-            raise CrapupError("Sorry AberMUD is currently unavailable")
 
-        self.__cms = None
-        self.special('.g')
-        self.i_setup = True
+            self.__message_id = None
+            special('.g', self)
+        except OverflowError:
+            raise CrapupError("\nSorry AberMUD is full at the moment")
+        except FileServiceError as e:
+            raise CrapupError(e)
+
+        self.__active = True
+
+    @property
+    def active(self):
+        return self.__active
+
+    @property
+    def mode(self):
+        return self.__mode
 
     @property
     def player(self):
-        return Player.players[self.__mynum]
+        return Player.players[self.__player_id]
 
-    def __before_prompt(self):
-        self.pbfr()
+    @property
+    def prompt(self):
+        result = ""
+        if Parser.debug_mode:
+            result += "#"
+        if NewUaf.level > 9:
+            result += "----"
+        result += self.__PROMPTS.get(self.__conversation_mode, "?")
+        if self.player.visible:
+            result = "({})".format(result)
+        return "\n" + result
 
-    def __after_prompt(self):
-        if self.__rd_qd:
-            self.rte()
-        self.__rd_qd = False
-        WorldService.disconnect()
+    @property
+    def __is_updated(self):
+        last_message = self.__message_id or 0
+        messages = last_message - self.__last_update
+        if messages < 0:
+            messages = -messages
+        return messages < 10
 
-        self.pbfr()
-
-    def __sendmsg(self):
+    def __mstoout(self, message):
         """
+        Print appropriate stuff from data block
 
+        :param message:
         :return:
         """
-        def nadj(cmd):
-            if self.__curmode == 1:
-                gamecom(cmd)
-            else:
-                if cmd and cmd != ".Q" and cmd != ".q":
-                    self.special(cmd)
+        block0, code, text = message
+        # if Parser.debug_mode:
+        #     bprintf("\n&lt;{}&gt;".format(code))
+        # if code < -3:
+        #     sysctrl(message, self.__name.lower())
+        # else:
+        #     bprintf(text)
 
-            if self.__fighting is not None:
-                if not Player.players[self.__fighting].exists:
-                    self.__in_fight = 0
-                    self.__fighting = None
-                if Player.players[self.__fighting].location != self.__curch:
-                    self.__in_fight = 0
-                    self.__fighting = None
+    def __prepare_cmd(self, work):
+        if not work:
+            return ""
+        if work != "*" and work[0] == "*":
+            return work[1:]
+        if self.__conversation_mode == self.CONVERSATION_MODE_SAY:
+            return "say {}".format(work)
+        elif self.__conversation_mode == self.CONVERSATION_MODE_TSS:
+            return "tss {}".format(work)
+        return work
 
-            if self.__in_fight:
-                self.__in_fight -= 1
+    def __put_on(self):
+        self.__is_on = False
+        MudExeServices.post_player(self.__name, self.__channel)
+        self.__is_on = True
 
-            return cmd == ".Q" or cmd == ".q"
-
-        self.pbfr()
-
-        self.on_bottom()
-        # if self.__tty == 4:
-        #     btmscr()
-
-        prmpt = "\n"
-        if self.player.visible:
-            prmpt += "("
-        if self.__debug_mode:
-            prmpt += "#"
-        if self.__my_lev > 9:
-            prmpt += "----"
-        if self.__convflg == 0:
-            prmpt += ">"
-        elif self.__convflg == 1:
-            prmpt += "\""
-        elif self.__convflg == 2:
-            prmpt += "*"
-        else:
-            prmpt += "?"
-        if self.player.visible:
-            prmpt += ")"
-
-        self.pbfr()
-
-        if self.player.visible > 9999:
-            set_progname(0, "-csh")
-            work = ""
-        else:
-            work = "   --}}----- ABERMUD -----{{--     Playing as {}".format(self.__name)
-        if self.player.visible == 0:
-            set_progname(0, work)
-
-        work = input(prmpt)
-        # sig_alon()
-        # key_input(prmpt, 80)
-        # sig_aloff()
-        # work = self.__key_buff
-
-        self.on_top()
-        # if self.__tty == 4:
-        #     topscr()
-
-        BufferService.post_buffer(self.__buffer_id, "<l>{}\n</l>".format(work))
-
+    def process_cmd(self, cmd):
         with WorldService():
             self.rte()
 
-        if self.__convflg and work == "**":
-            self.__convflg = 0
-            return self.__sendmsg()
+        if self.__conversation_mode != self.CONVERSATION_MODE_CMD and cmd == "**":
+            self.__conversation_mode = self.CONVERSATION_MODE_CMD
+            return self.get_cmd()
 
-        if not work:
-            return nadj("")
+        cmd = self.__prepare_cmd(cmd)
 
-        if work != "*" and work[0] == "*":
-            return nadj(work[1:])
+        if self.mode == self.MODE_GAME:
+            gamecom(cmd)
+        else:
+            special(cmd, self)
 
-        if self.__convflg:
-            if self.__convflg == 1:
-                return nadj("say {}".format(work))
-            else:
-                return nadj("tss {}".format(work))
+        Blood.update(self.__channel)
 
-        return nadj(work)
+        return cmd.lower() == ".q"
 
     def show(self):
         """
 
         :return:
         """
-        self.__before_prompt()
-        self.__sendmsg()
-        self.__after_prompt()
+        # sendmsg(name)
+        self.get_cmd()
+
+        if self.__ready_to_read:
+            self.rte()
+        self.__ready_to_read = False
+        WorldService.disconnect()
 
     def on_time(self):
         with WorldService():
@@ -476,48 +330,17 @@ class Talker:
             self.__interrupt = False
             on_timing()
 
-    def is_dirty(self):
-        return BufferService.get_dirty(self.__buffer_id)
-
-    def pbfr(self, is_finished=True):
-        self.on_before_buffer()
-
-        WorldService.disconnect()
-
-        logging.debug("%s:\tpbfr()", self.__buffer_id)
-        print(BufferService.get_buffer(self.__buffer_id, is_finished))
-
-        self.on_after_buffer()
-
-    def putmeon(self):
-        """
-
-        :return:
-        """
-        self.__iamon = False
-
-        WorldService.connect()
-        if fpbn(self.__name) is not None:
-            raise CrapupError("You are already on the system - you may only be on once at a time")
-
-        self.__mynum = Player.find_empty()
-        if self.__mynum >= Player.maxu:
-            raise OverflowError()
-
-        Player(self.__mynum, self.__name, self.__curch).add()
-
-        self.__iamon = True
-
     def loseme(self):
         """
 
         :return:
         """
+        # sig_aloff()
         # No interruptions while you are busy dying
         # ABOUT 2 MINUTES OR SO
         self.on_loose()
 
-        self.i_setup = False
+        self.__active = False
 
         with WorldService():
             dumpitems()
@@ -531,102 +354,29 @@ class Talker:
                 )
             self.player.remove()
 
-        if not self.__zapped:
+        if not Parser.zapped:
             saveme()
         chksnp()
 
     def rte(self):
-        """
-
-        :return:
-        """
         try:
-            unit = WorldService.connect()
-            self.__fl_com = unit
-
-            last_message = WorldService.get_last_message_id()
-            self.__cms = self.__cms or last_message
-            for ct in range(self.__cms, last_message):
-                block = readmsg(unit, ct)
-                mstoout(block, self.__name)
-            self.__cms = last_message
+            messages = MudExeServices.get_messages(self.__message_id)
+            self.__message_id = messages.get('message_id')
+            for message in messages.get('messages', []):
+                self.__mstoout(message)
 
             self.update()
             eorte()
-            self.__rdes = self.__tdes = self.__vdes = 0
-
-        except FileServiceError:
-            raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
+            Parser.clear_des()
+        except FileServiceError as e:
+            raise CrapupError(e)
 
     def update(self):
-        """
-
-        :return:
-        """
-        if self.__cms is None:
-            xp = - self.__lasup
-        else:
-            xp = self.__cms - self.__lasup
-
-        if xp < 0:
-            xp = -xp
-
-        if xp < 10:
+        if self.__is_updated:
             return
 
-        WorldService.connect()
-        self.player.position = self.__cms
-        self.__lasup = self.__cms
-
-    def special(self, code):
-        """
-
-        :param code:
-        :return:
-        """
-        bk = code.lower()
-        if bk[0] != ".":
-            return False
-
-        ch = bk[1:]
-        if ch == "g":
-            self.__curmode = 1
-            self.__curch = 5
-            initme()
-            WorldService.connect()
-
-            self.player.strength = self.__my_str
-            self.player.level = self.__my_lev
-            if self.__my_lev < 10000:
-                self.player.visible = 0
-            else:
-                self.player.visible = 10000
-            self.player.weapon = None
-            self.player.sex_all = self.__my_sex
-            self.player.helping = None
-
-            xy = "<s user=\"{user}\">{user}  has entered the game\n</s>".format(user=self.__name)
-            sendsys(
-                self.__name,
-                self.__name,
-                -10113,
-                self.__curch,
-                "<s user=\"{user}\">[ {user}  has entered the game ]\n</s>".format(user=self.__name),
-            )
-            self.rte()
-            if randperc() <= 50:
-                self.__curch = -183
-            self.trapch(self.__curch)
-            sendsys(
-                self.__name,
-                self.__name,
-                -10000,
-                self.__curch,
-                xy,
-            )
-        else:
-            print("\nUnknown . option\n")
-        return True
+        MudExeServices.put_position(self.__player_id, self.__message_id)
+        self.__last_update = self.__message_id
 
     def trapch(self, channel):
         """
@@ -637,6 +387,48 @@ class Talker:
         self.player.location = channel
         lookin(channel)
 
+    def set_name(self, player):
+        """
+        Assign Him her etc according to who it is
+
+        :return:
+        """
+        # if player.gender == player.GENDER_IT:
+        #     wd_it = player.name
+        #     return
+        # elif player.gender == player.GENDER_SHE:
+        #     wd_her = player.name
+        # else:
+        #     wd_him = player.name
+        # wd_them = player.name
+        pass
+
+    def see_player(self, player):
+        """
+
+        :return:
+        """
+        if player is None:
+            return True
+        if player.player_id == self.__player_id:
+            return True
+        if self.player.level < player.visible:
+            return False
+        if New1.ail_blind:
+            return False
+        if self.__channel == player.location and is_dark(self):
+            return False
+
+        self.set_name(player)
+        return True
+
+    def fpbn(self, name):
+        player = Player.fpbns(name)
+        if player is None:
+            return None
+        if not self.see_player(player):
+            return None
+        return player
 
 """
  cleanup(inpbk)
@@ -659,22 +451,13 @@ class Talker:
 """
 
 """
-
-
- special(string,name)
- char *string,*name;
-    {
-    }
-
-
-
  broad(mesg)
  char *mesg;
     {
 extern long rd_qd;
 char bk2[256];
 long block[128];
-rd_qd=1;
+self.__ready_to_read = True
 block[1]= -1;
 strcpy(bk2,mesg);
 vcpy(block,2,(long *)bk2,0,126);
@@ -746,21 +529,19 @@ if(!strcmp(lowercase(nam1+4),lowercase(luser))) return(1);
     long xxx;
     extern long brmode;
     extern long curmode;
-    extern long ail_blind;
     long ct;
-    extern long my_lev;
     closeworld();
-    if(ail_blind)
+    if(New1.ail_blind)
     {
     	bprintf("You are blind... you can't see a thing!\n");
     }
-    if(my_lev>9) showname(room);
+    if(NewUaf.level>9) showname(room);
     un1=openroom(room,"r");
     if (un1!=NULL)
     {
 xx1:   xxx=0;
        lodex(un1);
-       	if(isdark())
+       	if(WeatherServices.get_is_dark(talker.channel))
        	{
           		fclose(un1);
           		bprintf("It is dark\n");
@@ -772,8 +553,8 @@ xx1:   xxx=0;
           {
           if(!strcmp(str,"#DIE"))
              {
-             if(ail_blind) {rewind(un1);ail_blind=0;goto xx1;}
-             if(my_lev>9)bprintf("<DEATH ROOM>\n");
+             if(New1.ail_blind) {rewind(un1);New1.ail_blind=0;goto xx1;}
+             if(NewUaf.level>9)bprintf("<DEATH ROOM>\n");
              else
                 {
                 loseme(globme);
@@ -784,7 +565,7 @@ xx1:   xxx=0;
 {
 if(!strcmp(str,"#NOBR")) brmode=0;
 else
-             if((!ail_blind)&&(!xxx))bprintf("%s\n",str);
+             if((!New1.ail_blind)&&(!xxx))bprintf("%s\n",str);
           xxx=brmode;
 }
           }
@@ -793,18 +574,17 @@ else
        bprintf("\nYou are on channel %d\n",room);
     fclose(un1);
     openworld();
-    if(!ail_blind)
+    if(!New1.ail_blind)
     {
 	    lisobs();
-	    if(curmode==1) lispeople();
+	    if(self.mode==self.MODE_GAME) lispeople();
     }
     bprintf("\n");
     onlook();
     }
  loodrv()
     {
-    extern long curch;
-    lookin(curch);
+    lookin(self.__channel);
     }
 
 

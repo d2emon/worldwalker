@@ -1,15 +1,4 @@
-"""
-Some more basic functions
-
-Note
-
-state(obj)
-setstate(obj,val)
-destroy(obj)
-
-are elsewhere
-"""
-from services.world import WorldService
+from . import WorldService
 
 
 class Player:
@@ -22,16 +11,18 @@ class Player:
     players = []
     maxu = 16
 
-    def __init__(self, player_id, name=None, curch=None):
+    def __init__(self, player_id, name=None, channel=None):
         self.player_id = player_id
+
         self.name = name
-        self.location = curch
+        self.location = channel
         self.position = None
         self.level = 1
         self.visible = 0
         self.strength = -1
         self.weapon = None
-        self.sex_all = 0
+        self.sex = 0
+
         self.helping = None
 
     @property
@@ -54,6 +45,7 @@ class Player:
         # 15
         return WorldService.get_player(self.player_id)
 
+    # Properties
     @property
     def name(self):
         return self.__data[0]
@@ -170,261 +162,56 @@ class Player:
         else:
             return self.GENDER_HE
 
+    # Add and remove
+    def add(self):
+        self.players[self.player_id] = self
+
     def remove(self):
         self.name = None
 
     @classmethod
-    def fill(cls):
-        cls.players = [cls(player_id) for player_id in range(cls.PLAYERS_COUNT)]
-
-    @classmethod
-    def find_empty(cls):
+    def __find_empty(cls):
         for player_id, player in enumerate(cls.players):
             if not player.exists:
                 return player_id
         raise OverflowError()
 
-    def add(self):
-        self.players[self.player_id] = self
-
     @classmethod
     def put_on(cls, name, channel):
-        player_id = cls.find_empty()
+        player_id = cls.__find_empty()
         cls(player_id, name, channel).add()
         return player_id
 
+    # Fill players
+    @classmethod
+    def fill(cls):
+        cls.players = [cls(player_id) for player_id in range(cls.PLAYERS_COUNT)]
+
+    # Objsys
     @classmethod
     def fpbns(cls, name):
         search = name.lower()
         for player in cls.players:
             if not player.exists:
                 continue
+
             player_name = player.name.lower()
             if player_name == search:
                 return player
-            if player_name[:4] == "the ":
-                if player_name[4:] == search:
-                    return player
+            if player_name[:4] == "the " and player_name[4:] == search:
+                return player
         return None
 
+    @classmethod
+    def fpbn(cls, name):
+        player_id = cls.fpbns(name)
+        # if new1.ail_blind:
+        #     return None
+        if player_id is None:
+            return None
+        # if player_id == Talker.player_id:
+        #     return player_id
+        # if not Talker.see_player(player_id):
+        #     return None
 
-
-"""
-ptothlp(pl)
-{
-int tot;
-extern long maxu;
-int ct=0;
-while(ct<maxu)
-{
-if(ploc(ct)!=ploc(pl)){ct++;continue;}
-if(phelping(ct)!=pl){ct++;continue;}
-return(ct);
-}
-return(-1);
-}
- 
-
-psetflg(ch,x)
-long ch;
-long x;
-{
-	extern long ublock[];
-	ublock[16*ch+9]|=(1<<x);
-}
-
-pclrflg(ch,x)
-long ch;
-long x;
-{
-	extern long ublock[];
-	ublock[16*ch+9]&=~(1<<x);
-}
-
-
-
-ptstbit(ch,x)
-long ch;
-long x;
-{
-	return(ptstflg(ch,x));
-}
-
-
-ptstflg(ch,x)
-long ch;
-long x;
-{
-	extern long ublock[];
-	extern char globme[];
-	if((x==2)&&(strcmp(globme,"Debugger")==0)) return(1<<x);
-	return(ublock[16*ch+9]&(1<<x));
-}
-"""
-
-
-
-"""
-#include "object.h"
-#include <stdio.h>
-#include "files.h"
-
-extern FILE* openlock();
- /*
-
-
- */
-extern OBJECT objects[];
-
- ocarrf(ob)
-    {
-    extern long objinfo[];
-    return(objinfo[4*ob+3]);
-    }
-
- setocarrf(ob,v)
-    {
-    extern long objinfo[];
-    objinfo[4*ob+3]=v;
-    }
-
- oloc(ob)
-    {
-    extern long objinfo[];
-    return(objinfo[4*ob]);
-    }
-
- setoloc(ob,l,c)
-    {
-    extern long objinfo[];
-    objinfo[4*ob]=l;
-    objinfo[4*ob+3]=c;
-    }
-
-
-
-char * oname(ob)
-    {
-    extern OBJECT objects[];
-    return(objects[ob].o_name);
-    }
- 
-char * olongt(ob,st)
-{
-	extern OBJECT objects[];
-	return(objects[ob].o_desc[st]);
-}
-
-
- omaxstate(ob)
-    {
-    extern OBJECT objects[];
-    return(objects[ob].o_maxstate);
-    }
-
- obflannel(ob)  /* Old version */
-    {
-    return(oflannel(ob));
-    }
- oflannel(ob)
-    {
-    extern OBJECT objects[];
-    return(objects[ob].o_flannel);
-    }
-
- obaseval(ob)
-    {
-    extern OBJECT objects[];
-    return(objects[ob].o_value);
-    }
-
- isdest(ob)
-    {
-    if(otstbit(ob,0))return(1);
-    return(0);
-    }
-
- isavl(ob)
-    {
-    extern long mynum;
-    if(ishere(ob)) return(1);
-    return(iscarrby(ob,mynum));
-    }
-
- ospare(ob)
-    {
-    return(otstbit(ob,0)?-1:0);
-    }
-
-ocreate(ob)
-{
-oclrbit(ob,0);
-}
-
-syslog(args,arg1,arg2)
-char *args,*arg1,*arg2;
-{
-extern char *strchr();	
-extern char *ctime();
-long tm;
-FILE *x;
-char *z;
-time(&tm);
-z=ctime(&tm);
-*strchr(z,'\n')=0;
-x=openlock(LOG_FILE,"a");
-if(x==NULL) {loseme();crapup("Log fault : Access Failure"); }
-fprintf(x,"%s:  ",z);
-fprintf(x,args,arg1,arg2);
-fprintf(x,"\n");
-fclose(x);
-}
- 
-osetbit(ob,x)
-{
-extern long objinfo[];
-bit_set(&(objinfo[4*ob+2]),x);
-}
-oclearbit(ob,x)
-{
-extern long objinfo[];
-bit_clear(&(objinfo[4*ob+2]),x);
-}
-oclrbit(ob,x)
-{
-oclearbit(ob,x)
-;
-}
-otstbit(ob,x)
-{
-extern long objinfo[];
-return(bit_fetch(objinfo[4*ob+2],x));
-}
-osetbyte(o,x,y)
-{
-extern long objinfo[];
-byte_put(&(objinfo[4*o+2]),x,y);
-}
-obyte(o,x)
-{
-extern long objinfo[];
-return(byte_fetch(objinfo[4*o+2],x));
-}
-ohany(mask)
-long mask;
-{
-extern long numobs;
-auto a;
-extern long mynum;
-extern long objinfo[];
-a=0;
-mask=mask<<16;
-while(a<numobs)
-{
-if(((iscarrby(a,mynum))||(ishere(a,mynum)))&&(objinfo[4*a+2]&mask))return(1);
-a++;
-}
-return(0);
-}
-
-"""
+        return player_id

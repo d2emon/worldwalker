@@ -32,10 +32,9 @@ int pfile(str,ct,file)
  char *str;
  FILE *file;
     {
-    extern long debug_mode;
     char x[128];
     ct=tocontinue(str,ct,x,128);
-    if(debug_mode) fprintf(file,"[FILE %s ]\n",str);
+    if(Parser.debug_mode) fprintf(file,"[FILE %s ]\n",str);
     f_listfl(x,file);
     return(ct);
     }
@@ -59,8 +58,7 @@ int pndeaf(str,ct,file)
     char z[257];
     long a;
     ct=tocontinue(str,ct,x,23);
-    a=fpbns(x);
-    if(!seeplayer(a))
+    if not seeplayer(fpbns(x), Talker, New1)
        {
        ct=tocontinue(str,ct,z,256);
        return(ct);
@@ -76,10 +74,7 @@ int pndeaf(str,ct,file)
     {
     char x[24];
     ct=tocontinue(str,ct,x,24);
-    if(!seeplayer(fpbns(x)))
-    fprintf(file,"Someone");
-    else
-      fprintf(file,"%s",x);
+    fprintf(file, x if seeplayer(fpbns(x), Talker, New1) else "Someone")
     return(ct);
     }
 
@@ -89,10 +84,9 @@ int pndark(str,ct,file)
  FILE *file;
     {
     char x[257];
-    extern long ail_blind;
     ct=tocontinue(str,ct,x,256);
-    if((!isdark())&&(ail_blind==0))
-    fprintf(file,"%s",x);
+    if not WeatherService.get_is_dark(Talker.__channel) and not New1.ail_blind:
+        fprintf(file,"%s",x);
     return(ct);
     }
 
@@ -106,10 +100,7 @@ int ppndeaf(str,ct,file)
     long a;
     ct=tocontinue(str,ct,x,24);
     if(ail_deaf) return(ct);
-    a=fpbns(x);
-    if(seeplayer(a)) fprintf(file,"%s",x);
-    else
-      fprintf(file,"Someone");
+    fprintf(file, x if seeplayer(fpbns(x), Talker, New1) else "Someone")
     return(ct);
     }
 
@@ -117,15 +108,11 @@ int  ppnblind(str,ct,file)
 char *str;
 FILE *file;
     {
-    extern long ail_blind;
     char x[24];
     long a;
     ct=tocontinue(str,ct,x,24);
-    if(ail_blind) return(ct);
-    a=fpbns(x);
-    if(seeplayer(a)) fprintf(file,"%s",x);
-    else
-       fprintf(file,"Someone");
+    if(New1.ail_blind) return(ct);
+    fprintf(file, x if seeplayer(fpbns(x), Talker, New1) else "Someone")
     return(ct);
     }
 
@@ -192,8 +179,7 @@ class Buffer:
 
     def __get_main(self):
         self.__iskb = True
-        self.__decode(None)
-        return ""
+        return self.__decode(None)
 
     def __view_snoop(self, user):
         """
@@ -274,6 +260,28 @@ class Buffer:
     def add_message(self, message, raw=False):
         if raw:
             self.__data += message
+            return
+        # Max 240 chars/msg
+        if len(message) > 235:
+            # syslog("Bprintf Short Buffer overflow")
+            raise CrapupError("Internal Error in BPRINTF")
+        # Now we have a string of chars expanded
+        self.__quprnt(message)
+
+    def __quprnt(self, message):
+        """
+
+        :param message:
+        :return:
+        """
+        if len(self.__data) + len(message) < 4095:
+            self.__data += message
+            return
+
+        self.__data = ""
+        # loseme()
+        # syslog("Buffer overflow on user {}".format(globme))
+        raise CrapupError("PANIC - Buffer overflow")
 
 
 class BufferService:
@@ -285,6 +293,7 @@ class BufferService:
 
         :return:
         """
+        logging.debug("%s:\tpbfr()", buffer_id)
         return cls.buffers[buffer_id].get_all(is_finished)
 
     @classmethod
@@ -320,39 +329,6 @@ class BufferService:
     def post_dirty(cls, buffer_id):
         cls.buffers[buffer_id].is_dirty = True
 
-
-"""
-void bprintf(args,arg1,arg2,arg3,arg4,arg5,arg6,arg7)
-char *args,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6,*arg7;
-    {
-    char x[256],a[40];  /* Max 240 chars/msg */
-    long ct;
-    sprintf(x,args,arg1,arg2,arg3,arg4,arg5,arg6);
-if(strlen(x)>235)
-{
-syslog("Bprintf Short Buffer overflow");
-crapup("Internal Error in BPRINTF");
-}
-    /* Now we have a string of chars expanded */
-    quprnt(x);
-    }
-
-int seeplayer(x)
-    {
-    extern long mynum;
-    extern long ail_blind;
-    extern long curch;
-    if(x==-1) return(1);
-    if(mynum==x) {return(1);} /* me */
-    if(plev(mynum)<pvis(x)) return(0);
-    if(ail_blind) return(0); /* Cant see */
-    if((curch==ploc(x))&&(isdark(curch)))return(0);
-    setname(x);
-    return(1);
-    }
-"""
-
-
 """
 void logcom()
     {
@@ -381,14 +357,6 @@ void logcom()
 void quprnt(x)
  char *x;
     {
-    if((strlen(x)+strlen(sysbuf))>4095)
-       {
-       strcpy(sysbuf,"");
-       loseme();
-       syslog("Buffer overflow on user %s",globme);
-       crapup("PANIC - Buffer overflow");
-       }
-    strcat(sysbuf,x);
     }
 
 void snoopcom()

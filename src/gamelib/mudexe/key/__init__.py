@@ -21,21 +21,26 @@ class Tc:
 
 
 class Key:
-    MODE_DEFAULT = 0
-    MODE_NOT_DEFAULT = 1
+    MODE_OUTPUT = 0
+    MODE_INPUT = 1
 
     __save_flag = None
 
-    __mode = MODE_DEFAULT
+    __mode = MODE_OUTPUT
     __prompt = ""
     __buffer = ""
 
+    is_finished = False
+    show_prompt = False
+
     @classmethod
-    def setup(cls):
+    def connect(cls):
         """
 
         :return:
         """
+        cls.show_prompt = False
+
         flags = Tc.get_attr()
         cls.save_flag = flags
         Tc.set_attr(
@@ -44,7 +49,7 @@ class Key:
         )
 
     @classmethod
-    def setback(cls):
+    def disconnect(cls):
         """
 
         :return:
@@ -57,49 +62,24 @@ class Key:
 
         :return:
         """
-        if cls.__mode != cls.MODE_NOT_DEFAULT:
-            return
-        print()
-        print("{}{}".format(cls.__prompt, cls.__buffer), end="")
+        if cls.__mode == cls.MODE_INPUT and cls.show_prompt:
+            print()
+            print("{}{}".format(cls.__prompt, cls.__buffer), end="")
+        cls.show_prompt = False
 
+    @classmethod
+    def get_input(cls, prompt, max_length, on_input=lambda prompt: None):
+        """
 
-"""
-key_input(ppt,len_max)
-char *ppt;
-int len_max;
-{
-   char x;
-   extern long pr_due;
-   int len_cur=0;
-   key_mode=0;
-   strcpy(pr_bf,ppt);
-   bprintf("%s",ppt);
-   pbfr();
-   pr_due=0;
-   strcpy(key_buff,"");
-   while(len_cur<len_max)
-   {
-   	x=getchar();
-   	if(x=='\n')
-   	{
-   		printf("\n");
-   		key_mode= -1;
-    		return;
-   	}
-   	if(((x==8)||(x==127))&&(len_cur))
-	{
-		putchar(8);
-		putchar(' ');
-		putchar(8);
-		len_cur--;
-		key_buff[len_cur]=0;
-		continue;
-	}
-	if(x<32) continue;
-	if(x==127) continue;
-	putchar(x);
-	key_buff[len_cur++]=x;
-	key_buff[len_cur]=0;
-     }
-}	
-"""
+        :param on_input:
+        :param prompt:
+        :param max_length:
+        :return:
+        """
+        cls.__mode = cls.MODE_INPUT
+        cls.__prompt = prompt
+        on_input(prompt)
+        cls.show_prompt = False
+        cls.__buffer = input()[:max_length]
+        cls.__mode = cls.MODE_OUTPUT
+        return cls.__buffer
