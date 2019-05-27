@@ -37,6 +37,9 @@ class BBC:
 
     @title.setter
     def title(self, value):
+        if value is None:
+            return
+
         # if self.args[n] == text:
         #     return
         #
@@ -78,13 +81,31 @@ class BBC:
 
     def show_top_screen(self):
         logging.debug("Top Screen[%s]", self.__tty)
+        print(self.title)
+        print("/" + "-" * 80 + "\\")
         if self.__tty != 4:
             return
 
-    def show_bottom_screen(self):
+    def show_bottom_screen(self, with_buffer=False):
+        if with_buffer:
+            self.show_buffer()
+
         logging.debug("Bottom Screen[%s]", self.__tty)
+        print("\\" + "-" * 80 + "/")
         if self.__tty != 4:
             return
+
+        if with_buffer:
+            self.show_buffer()
+
+    def show_command_prompt(self, prompt):
+        self.events.is_active = True
+        command = self.get_input(prompt)
+        #
+        self.events.on_timer()
+        #
+        self.events.is_active = False
+        return command
 
     # Main
     def run(self, action=lambda: None):
@@ -127,10 +148,10 @@ class BBC:
         if value:
             BufferService.post_dirty(self.__buffer_id)
 
-    def add_buffer(self, message):
+    def add_buffer(self, message, raw=False):
         # Unknown
         # bprintf()
-        return BufferService.post_buffer(self.__buffer_id, message)
+        return BufferService.post_buffer(self.__buffer_id, message, raw)
 
     def get_buffer(self, is_finished=True):
         # Unknown

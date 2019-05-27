@@ -12,9 +12,10 @@ import logging
 from services.errors import CrapupError, FileServiceError
 from services.mud_exe import MudExeServices
 from services.world import WorldService
-from ..support import Player
+from services.world.player import PlayerServices
 from ..weather import is_dark
-from .special import special
+from .special import process_command, special, NewUaf
+from ..support import Player
 
 
 class Blood:
@@ -23,7 +24,7 @@ class Blood:
 
     @classmethod
     def fighting_with(cls):
-        return Player.players[cls.fighting]
+        return WorldService.get_player(cls.fighting)
 
     @classmethod
     def stop_fight(cls):
@@ -45,13 +46,6 @@ class New1:
     ail_blind = False
 
 
-class NewUaf:
-    score = 0
-    level = 0
-    strength = 0
-    sex = 0
-
-
 class Parser:
     zapped = False
 
@@ -66,10 +60,6 @@ class Parser:
     def clear_des(cls):
         cls.tdes = 0
         cls.rdes = cls.vdes = False
-
-
-def sendsys(*args):
-    logging.debug("sendsys(%s)", args)
 
 
 def dumpitems(*args):
@@ -92,29 +82,8 @@ def eorte(*args):
     logging.debug("eorte(%s)", args)
 
 
-def initme(*args):
-    logging.debug("initme(%s)", args)
-
-
-def randperc(*args):
-    logging.debug("randperc(%s)", args)
-    return 1
-
-
 def lookin(*args):
     logging.debug("lookin(%s)", args)
-
-
-def set_progname(*args):
-    logging.debug("set_progname(%s)", args)
-
-
-def gamecom(*args):
-    logging.debug("gamecom(%s)", args)
-
-
-def btmscr(*args):
-    logging.debug("btmscr(%s)", args)
 
 
 """
@@ -195,12 +164,11 @@ class Talker:
 
         :param name:
         """
-        # Externals
-        Player.fill()
-
         self.on_loose = on_loose
         self.get_cmd = get_cmd
         self.show_buffer = show_buffer
+
+        self.__player = None
 
         self.__active = False
         self.__mode = self.MODE_SPECIAL
@@ -220,7 +188,7 @@ class Talker:
                 self.rte()
 
             self.__message_id = None
-            special('.g', self)
+            special(self, '.g')
         except OverflowError:
             raise CrapupError("\nSorry AberMUD is full at the moment")
         except FileServiceError as e:
@@ -233,12 +201,26 @@ class Talker:
         return self.__active
 
     @property
+    def channel(self):
+        return self.__channel
+
+    @channel.setter
+    def channel(self, value):
+        self.__channel = value
+
+    @property
     def mode(self):
         return self.__mode
 
     @property
+    def name(self):
+        return self.__name
+
+    @property
     def player(self):
-        return Player.players[self.__player_id]
+        if self.__player is None:
+            self.__player = Player(self.__player_id)
+        return self.__player.load()
 
     @property
     def prompt(self):
@@ -275,40 +257,34 @@ class Talker:
         # else:
         #     bprintf(text)
 
-    def __prepare_cmd(self, work):
-        if not work:
+    def __make_command(self, command):
+        if not command:
             return ""
-        if work != "*" and work[0] == "*":
-            return work[1:]
+        if command != "*" and command[0] == "*":
+            return command[1:]
         if self.__conversation_mode == self.CONVERSATION_MODE_SAY:
-            return "say {}".format(work)
+            return "say {}".format(command)
         elif self.__conversation_mode == self.CONVERSATION_MODE_TSS:
-            return "tss {}".format(work)
-        return work
+            return "tss {}".format(command)
+        return command
 
     def __put_on(self):
         self.__is_on = False
-        MudExeServices.post_player(self.__name, self.__channel)
+        self.__player_id = MudExeServices.post_player(self.__name, self.__channel)
         self.__is_on = True
 
-    def process_cmd(self, cmd):
+    def process_command(self, command):
         with WorldService():
             self.rte()
 
-        if self.__conversation_mode != self.CONVERSATION_MODE_CMD and cmd == "**":
+        # Check conversation_mode
+        if self.__conversation_mode != self.CONVERSATION_MODE_CMD and command == "**":
             self.__conversation_mode = self.CONVERSATION_MODE_CMD
             return self.get_cmd()
 
-        cmd = self.__prepare_cmd(cmd)
-
-        if self.mode == self.MODE_GAME:
-            gamecom(cmd)
-        else:
-            special(cmd, self)
-
+        result = process_command(self, self.__make_command(command))
         Blood.update(self.__channel)
-
-        return cmd.lower() == ".q"
+        return result
 
     def show(self):
         """
@@ -422,13 +398,13 @@ class Talker:
         self.set_name(player)
         return True
 
-    def fpbn(self, name):
-        player = Player.fpbns(name)
-        if player is None:
-            return None
-        if not self.see_player(player):
-            return None
-        return player
+    # def fpbn(self, name):
+    #     player = Player.fpbns(name)
+    #     if player is None:
+    #         return None
+    #     if not self.see_player(player):
+    #         return None
+    #     return player
 
 """
  cleanup(inpbk)

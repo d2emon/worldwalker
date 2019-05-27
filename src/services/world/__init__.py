@@ -7,7 +7,9 @@ from ..file_services.file_service import LockFileService
 
 
 def new_user():
-    return [None] * 16
+    data = [None] * 16
+    data[9] = [False] * 8
+    return data
 
 
 class World(LockFileService):
@@ -26,7 +28,7 @@ class World(LockFileService):
     def read(cls, token, offset, block_size):
         if offset == cls.OFFSET_MESSAGE_DATA:
             data = cls.__messages_data
-        elif cls.OFFSET_MESSAGE_DATA < offset < cls.OFFSET_OBJECTS:
+        elif cls.OFFSET_MESSAGE_DATA < offset < cls.OFFSET_USERS:
             data = cls.__messages[offset - cls.OFFSET_MESSAGE_DATA - 1]
         elif offset == cls.OFFSET_OBJECTS:
             data = cls.__objects
@@ -41,7 +43,7 @@ class World(LockFileService):
     def write(cls, token, data, offset, block_size):
         if offset == cls.OFFSET_MESSAGE_DATA:
             cls.__messages_data = data
-        elif cls.OFFSET_MESSAGE_DATA < offset < cls.OFFSET_OBJECTS:
+        elif cls.OFFSET_MESSAGE_DATA < offset < cls.OFFSET_USERS:
             cls.__messages[offset - cls.OFFSET_MESSAGE_DATA - 1] = data
         elif offset == cls.OFFSET_OBJECTS:
             cls.__objects = data

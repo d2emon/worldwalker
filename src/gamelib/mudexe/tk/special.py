@@ -1,40 +1,60 @@
+import logging
+from services.world import WorldService
+
+
+def initme(*args):
+    logging.debug("initme(%s)", args)
+
+
+def sendsys(*args):
+    logging.debug("sendsys(%s)", args)
+
+
+def randperc(*args):
+    logging.debug("randperc(%s)", args)
+    return 1
+
+
+class NewUaf:
+    score = 0
+    level = 0
+    strength = 0
+    sex = [False] * 8
+
+
 def __start_game(user):
     user.__mode = user.MODE_GAME
     user.__channel = 5
     initme()
     WorldService.connect()
 
-    user.player.strength = NewUaf.strength
-    user.player.level = NewUaf.level
-    if NewUaf.level < 10000:
-        user.player.visible = 0
-    else:
-        user.player.visible = 10000
-    user.player.weapon = None
-    user.player.sex_all = NewUaf.sex
-    user.player.helping = None
+    user.player.start(NewUaf)
 
     sendsys(
-        user.__name,
-        user.__name,
+        user.name,
+        user.name,
         -10113,
-        user.__channel,
-        "<s user=\"{user}\">[ {user}  has entered the game ]\n</s>".format(user=user.__name),
+        user.channel,
+        "<s user=\"{user}\">[ {user}  has entered the game ]\n</s>".format(user=user.name),
     )
 
     user.rte()
     if randperc() <= 50:
-        user.__channel = -183
-    user.trapch(user.__channel)
+        user.channel = -183
+    user.trapch(user.channel)
 
     sendsys(
-        user.__name,
-        user.__name,
+        user.name,
+        user.name,
         -10000,
-        user.__channel,
-        "<s user=\"{user}\">{user}  has entered the game\n</s>".format(user=user.__name),
+        user.channel,
+        "<s user=\"{user}\">{user}  has entered the game\n</s>".format(user=user.name),
     )
     return True
+
+
+def gamecom(user, command):
+    logging.debug("%s:\tgamecom(%s)", user.__name, command)
 
 
 def special(user, command):
@@ -55,3 +75,11 @@ def special(user, command):
     else:
         print("\nUnknown . option\n")
         return True
+
+
+def process_command(user, command):
+    if user.mode == user.MODE_GAME:
+        gamecom(user, command)
+    else:
+        special(user, command)
+    return command.lower() == ".q"

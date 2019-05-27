@@ -35,9 +35,17 @@ class GameGo:
         self.talker = Talker(
             username,
             on_loose=self.on_loose,
-            get_cmd=self.get_cmd,
+            get_cmd=self.get_command,
             # show_buffer=self.bbc.show_buffer,
         )
+
+    @property
+    def title(self):
+        if self.talker.player.visible > 9999:
+            return "-csh"
+        if self.talker.player.visible == 0:
+            return "   --}}----- ABERMUD -----{{--     Playing as {}".format(self.username)
+        return None
 
     @property
     def user_id(self):
@@ -90,119 +98,18 @@ class GameGo:
             self.talker.rte()
             self.bbc.events.interrupt = False
             # self.talker.on_time()
-            on_timing()
+            # on_timing()
         self.bbc.reprint()
 
     # Talker events
-    def __show_bottom(self):
-        self.bbc.show_buffer()
-        self.bbc.show_bottom_screen()
-
-    def get_cmd(self):
-        self.__show_bottom()
-
-        prompt = self.talker.prompt
-        self.bbc.show_buffer()
-
-        if self.talker.player.visible > 9999:
-            self.bbc.title = "-csh"
-        elif self.talker.player.visible == 0:
-            self.bbc.title = "   --}----- ABERMUD -----{--     Playing as {}".format(self.username)
-
-        self.bbc.events.is_active = True
-        # work = key_input(prompt, 80)
-        self.bbc.events.is_active = False
-
+    def get_command(self):
+        self.bbc.show_bottom_screen(True)
+        self.bbc.title = self.title
+        command = self.bbc.show_command_prompt(self.talker.prompt)
         self.bbc.show_top_screen()
-        sysbuf += "<l>{}<\l>".format(work)
 
-        with WorldService():
-            self.talker.rte()
-
-        if self.talker.__conv_flg and work = "**"
-            self.talker.__conv_flg = 0
-            return self.get_cmd
-
-        if not work:
-            return nadj()
-        if work != "*" and work[0] == "*":
-            work[0] = 32
-            return nadj()
-        if self.talker.__conv_flg:
-            w2 = work
-            if self.talker.__conv_flg == 1:
-                work = "say {}"
-            else:
-                work = "tss {}"
-
-        if work == "&"
-    """
-        if((strcmp(work,"*"))&&(work[0]=='*')){(work[0]=32);goto nadj;}
-        if(convflg)
-        {
-            strcpy(w2,work);
-            if(convflg==1) sprintf(work,"say %s",w2);
-            else
-                sprintf(work,"tss %s",w2);
-        }
-        """
-        """
-        nadj:if(curmode==1) gamecom(work);
-        else
-        {
-            if(((strcmp(work,".Q"))&&(strcmp(work,".q")))&& (!!strlen(work)))
-            {
-                a=special(work,name);
-            }
-        }
-        """
-        """
-        if(fighting>-1)
-        {
-            if(!strlen(pname(fighting))) 
-            {
-                in_fight=0;
-                fighting= -1;
-            }
-            if(ploc(fighting)!=curch) 
-            {
-                in_fight=0;
-                fighting= -1;
-            }
-        }
-        if(in_fight) in_fight-=1;
-        return((!strcmp(work,".Q"))||(!strcmp(work,".q")));
-        
-        :return: 
-        """
-        work = self.show_input()
-        self.show_top()
-        return self.talker.process_cmd(work)
+        self.bbc.add_buffer("<l>{}\n<\l>".format(command), True)
+        return self.talker.process_command(command)
 
     def on_loose(self):
         self.bbc.events.is_active = False
-
-    def on_before_input(self, prompt):
-        self.bbc.add_buffer(prompt)
-        self.bbc.show_buffer()
-        self.bbc.is_dirty = True
-
-    # Unsorted
-    def show_input(self):
-        self.bbc.show_buffer()
-
-        username = self.talker.player.name
-        if self.talker.player.visible > 9999:
-            self.bbc.title = "-csh"
-        elif self.talker.player.visible == 0:
-            self.bbc.title = "   --}}----- ABERMUD -----{{--     Playing as {}".format(username)
-
-        self.bbc.events.is_active = True
-        work = self.bbc.get_input(self.talker.prompt, on_input=self.on_before_input)
-        self.bbc.events.on_timer()
-        self.bbc.events.is_active = False
-
-        return work
-
-    def show_top(self):
-        self.bbc.show_top_screen()

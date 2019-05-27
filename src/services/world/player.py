@@ -215,3 +215,43 @@ class Player:
         #     return None
 
         return player_id
+
+    def as_dict(self):
+        return {
+            'player_id': self.player_id,
+            'name': self.name,
+            'location': self.location,
+            'position': self.position,
+            #
+            'strength': self.strength,
+            'visible': self.visible,
+            'sex': self.sex_all,
+            'level': self.level,
+            'weapon': self.weapon,
+            #
+            'helping': self.helping,
+        }
+
+    def from_dict(self, data):
+        self.name = data.get('name', self.name)
+        self.location = data.get('location', self.location)
+        self.position = data.get('position', self.position)
+        self.strength = data.get('strength', self.strength)
+        self.visible = data.get('visible', self.visible)
+        self.sex_all = data.get('sex', self.sex_all)
+        self.level = data.get('level', self.level)
+        self.weapon = data.get('weapon', self.weapon)
+        self.helping = data.get('helping', self.helping)
+
+
+Player.fill()
+
+
+class PlayerServices:
+    @classmethod
+    def get_player(cls, player_id):
+        return Player.players[player_id].as_dict()
+
+    @classmethod
+    def put_player(cls, player_id, data):
+        return Player.players[player_id].from_dict(data)
