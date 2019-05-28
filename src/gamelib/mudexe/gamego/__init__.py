@@ -2,12 +2,12 @@
 Two Phase Game System
 """
 import logging
-from services.errors import CrapupError
+from services.errors import CrapupError, GameStopped
 from services.mud_exe import MudExeServices
 from services.world import WorldService
 from ..bbc import BBC
 from ..tk import Talker
-from .errors import GameStopped, CloseException, StopException, QuitException, ContinueException
+from .errors import CloseException, StopException, QuitException, ContinueException
 from . import signals
 
 
@@ -37,6 +37,7 @@ class GameGo:
             on_loose=self.on_loose,
             get_cmd=self.get_command,
             # show_buffer=self.bbc.show_buffer,
+            output=self.bbc.add_buffer,
         )
 
     @property
@@ -61,7 +62,7 @@ class GameGo:
             try:
                 self.bbc.run(self.talker.show)
             except CrapupError as e:
-                self.game_over(e)
+                return self.game_over(e)
             except GameStopped as e:
                 return e
 
@@ -75,7 +76,7 @@ class GameGo:
         print(message)
         print()
         print(dashes)
-        raise GameStopped(0)
+        return 0
 
     # Events
     def on_error(self):
@@ -94,9 +95,13 @@ class GameGo:
     def on_timer(self):
         with WorldService():
             self.bbc.events.interrupt = True
-            # self.talker.rte(interrupt=self.bbc.events.interrupt)
+            self.talker.interrupt = self.bbc.events.interrupt
+
             self.talker.rte()
+
             self.bbc.events.interrupt = False
+            self.talker.interrupt = self.bbc.events.interrupt
+
             # self.talker.on_time()
             # on_timing()
         self.bbc.reprint()

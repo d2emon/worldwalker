@@ -81,6 +81,7 @@ class BBC:
 
     def show_top_screen(self):
         logging.debug("Top Screen[%s]", self.__tty)
+        print()
         print(self.title)
         print("/" + "-" * 80 + "\\")
         if self.__tty != 4:
@@ -91,6 +92,7 @@ class BBC:
             self.show_buffer()
 
         logging.debug("Bottom Screen[%s]", self.__tty)
+        print()
         print("\\" + "-" * 80 + "/")
         if self.__tty != 4:
             return

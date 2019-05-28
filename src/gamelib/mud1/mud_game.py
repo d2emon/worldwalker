@@ -4,7 +4,7 @@ Program starts Here!
 This forms the main loop of the code, as well as calling
 all the initialising pieces
 """
-from services.errors import CrapupError, RetryError
+from services.errors import CrapupError, RetryError, GameStopped
 from services.mud1 import Mud1Services
 from ..mudexe import GameGo
 from .options import OPTIONS
@@ -108,6 +108,10 @@ class MudGame:
                 message="Bye Bye"
             )
         except CrapupError as e:
+            GameOver.show_message(
+                message=e
+            )
+        except GameStopped as e:
             GameOver.show_message(
                 message=e
             )

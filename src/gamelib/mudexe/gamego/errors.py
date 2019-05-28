@@ -1,7 +1,3 @@
-class GameStopped(Exception):
-    pass
-
-
 class CloseException(Exception):
     pass
 

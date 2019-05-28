@@ -1,3 +1,7 @@
+class GameStopped(Exception):
+    pass
+
+
 class CrapupError(Exception):
     pass
 

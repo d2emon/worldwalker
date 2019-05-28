@@ -1,6 +1,10 @@
 """
 globme holds global me data
 """
+import logging
+from services.mud_exe import MudExeServices
+from ..blood import Blood
+from ..tk.special import gamecom
 
 
 # OBMUL = 8
@@ -19,6 +23,37 @@ Objects in text file in form
 
 Stam:state:loc:flag
 """
+
+
+GWIZ = None
+
+
+def dosumm(*args):
+    logging.debug("dosumm(%s)", args)
+
+
+def iswornby(*args):
+    logging.debug("iswornby(%s)", args)
+
+
+def randperc(*args):
+    logging.debug("randperc(%s)", args)
+    return 1
+
+
+def forchk(*args):
+    logging.debug("forchk(%s)", args)
+
+
+def disle3(*args):
+    logging.debug("disle3(%s)", args)
+
+
+class NewUaf:
+    my_str = 0
+    my_sco = 0
+    my_lev = 0
+    my_sex = 0
 
 
 class Parser:
@@ -47,8 +82,6 @@ class Parser:
     zapped = False
 
     me_ivct = 0
-    last_io_interrupt = 0
-
 
     me_drunk = 0
 
@@ -56,29 +89,84 @@ class Parser:
 
     brmode = 0
 
+    # Exported
+    __ail_dumb = False
+
+    @classmethod
+    def __update_invisibility(cls, user):
+        if cls.me_ivct:
+            cls.me_ivct -= 1
+        if cls.me_ivct == 1:
+            user.player.visible = 0
+
+    @classmethod
+    def __calibrate(cls, user):
+        if not cls.me_cal:
+            return
+        cls.me_cal = False
+        calibme(user)
+
+    @classmethod
+    def __summon(cls, user):
+        if not cls.tdes:
+            return
+        dosumm(cls.ades)
+
+    @classmethod
+    def __update_items(cls, user):
+        if not iswornby(18, user.player.player_id) and randperc() >= 10:
+            return
+        NewUaf.my_str += 1
+        calibme(user)
+
+    @classmethod
+    def __check_force(cls, user):
+        forchk()
+
+    @classmethod
+    def __update_drunk(cls, user):
+        if cls.me_drunk <= 0:
+            return
+        cls.me_drunk -= 1
+        if not cls.__ail_dumb:
+            gamecom(user, "hiccup")
+
+    @classmethod
+    def next_turn(cls, user, interrupt=False):
+        cls.__update_invisibility(user)
+        cls.__calibrate(user)
+        cls.__summon(user)
+        Blood.next_turn(user.channel, interrupt)
+        cls.__update_items(user)
+        cls.__check_force(user)
+        cls.__update_drunk(user)
+
+    @classmethod
+    def clear_des(cls):
+        cls.tdes = 0
+        cls.rdes = cls.vdes = False
+
+
+class Message:
+    def __init__(self, to__, from__, codeword, channel, text):
+        self.channel = channel
+        self.codeword = codeword
+        self.users = "{}.{}.".format(to__, from__)
+        if codeword != -9900 and codeword != -10021:
+            self.payload = text
+        else:
+            self.payload = text[0], text[1], text[2]
+
+    def send(self, user):
+        user.send2([
+            self.channel,
+            self.codeword,
+            self.users,
+            self.payload,
+        ])
+
 
 """
-void sendsys(to,from,codeword,chan,text)
-char *to,*from;
-long codeword,chan;
-char *text;
-    {
-    long  block[128];
-    long *i;
-    i=(long *)text;
-    block[1]=codeword;
-    block[0]=chan;
-    sprintf((char *)(block+2),"%s%s%s%s",to,".",from,".");
-    if((codeword!= -9900)&&(codeword!= -10021)) strcpy((char *)(block+64),text);
-    else
-       {
-       block[64]=i[0];
-       block[65]=i[1];
-       block[66]=i[2];
-       }
-    send2(block);
-    }
-
 void pncom()
 {
 	extern long my_lev;
@@ -278,9 +366,9 @@ long exitnum[]={1,2,3,4,5,6,1,2,3,4,5,6};
              }
           sprintf(xx,"%s has left the game\n",globme);
           bprintf("Ok");
-          sendsys(globme,globme,-10000,curch,xx);
+          Message(globme,globme,-10000,curch,xx).send(Talker);
           sprintf(xx,"[ Quitting Game : %s ]\n",globme);
-          sendsys(globme,globme,-10113,0,xx);
+          Message(globme,globme,-10113,0,xx).send(Talker);
           dumpitems();
           setpstr(mynum,-1);
           pname(mynum)[0]=0;
@@ -648,8 +736,8 @@ long exitnum[]={1,2,3,4,5,6,1,2,3,4,5,6};
                 break;
                 }
              sprintf(ar,"\001c%s\001 drops everything in a frantic attempt to escape\n",globme);
-             sendsys(globme,globme,-10000,curch,ar);
-             sendsys(globme,globme,-20000,curch,"");
+             Message(globme,globme,-10000,curch,ar).send(Talker);
+             Message(globme,globme,-20000,curch,"").send(Talker);
              my_sco-=my_sco/33; /* loose 3% */
              calibme();
              in_fight=0;
@@ -795,10 +883,10 @@ dogocom(n)
     else
        {
        sprintf(block,"%s%s%s%s%s%s%s%s%s%s","\001s",pname(mynum),"\001",globme," has gone ",exittxt[n]," ",out_ms,".","\n\001");
-       sendsys(globme,globme,-10000,curch,block);
+       Message(globme,globme,-10000,curch,block).send(Talker);
        curch=newch;
        sprintf(block,"%s%s%s%s %s%s","\001s",globme,"\001",globme,in_ms,"\n\001");
-       sendsys(globme,globme,-10000,newch,block);
+       Message(globme,globme,-10000,newch,block).send(Talker);
        trapch(curch);
        }
     }
@@ -913,12 +1001,12 @@ dogocom(n)
                 bprintf("A massive lightning bolt arcs down out of the sky to strike");
                 sprintf(zb,"[ \001p%s\001 has just been zapped by \001p%s\001 and terminated ]\n",
                     globme, nam2);
-                sendsys(globme,globme,-10113,curch,zb);
+                Message(globme,globme,-10113,curch,zb).send(Talker)
                 bprintf(" you between\nthe eyes\n");
                 parser.zapped = True
                 delpers(globme);
                 sprintf(zb,"\001s%s\001%s has just died.\n\001",globme,globme);
-                sendsys(globme,globme,-10000,curch,zb);
+                Message(globme,globme,-10000,curch,zb).send(Talker)
                 loseme();
                 bprintf("You have been utterly destroyed by %s\n",nam2);
 
@@ -966,55 +1054,6 @@ dogocom(n)
           }
     }
 """
-
-
-def eorte(talker, blood, timer):
-    """
-
-    :param talker:
-    :param blood:
-    :return:
-    """
-    time = timer.time
-    if time - Parser.last_io_interrupt > 2:
-        timer.interrupt = True
-    if talker.interrupt:
-        time.last_io_interrupt = ctm
-
-    if Parser.me_ivct:
-        Parser.me_ivct -= 1
-    if Parser.me_ivct == 1:
-        talker.player.visible = 0
-
-    if Parser.me_cal:
-        Parser.me_cal = False
-        calibme()
-
-    if self.tdes:
-        dosumm(self.ades)
-
-    if blood.in_fight:
-        if Player.players[fighting].location != talker.curch:
-            blood.fighting = None
-            blood.in_fight = 0
-        if not Player.players[fighting].exists:
-            blood.fighting = None
-            blood.in_fight = 0
-        if blood.in_fight:
-            if talker.interrupt:
-                blood.in_fight = 0
-                hitplayer(blood.fighting, blood.wpnheld)
-
-    if iswornby(18, talker.mynum) or randperc() < 10:
-        my_str += 1
-        calibme()
-    forchk()
-    if Parser.me_drunk > 0:
-        Parser.me_drunk -= 1
-        if not ail_dumb:
-            gamecom("hiccup")
-
-    talker.interrupt = False
 
 
 """
@@ -1078,7 +1117,7 @@ FILE *openroom(n,mod)
        bprintf("There is no one on with that name\n");
        return;
        }
-    sendsys(pname(vic),globme,-10001,ploc(vic),"");
+    Message(pname(vic),globme,-10001,ploc(vic),"").send(Talker);
     syslog("%s zapped %s",globme,pname(vic));
     if(vic>15)woundmn(vic,10000); /* DIE */
     broad("\001dYou hear an ominous clap of thunder in the distance\n\001");
@@ -1150,46 +1189,46 @@ FILE *openroom(n,mod)
 """
 
 
-def calibme():
+def calibme(user):
     """
     Routine to correct me in user file
 
     :return:
     """
-    if not talker.active:
+    if not user.active:
         return True
 
-    level = level_of(__my_sco)
-    if level != __my_lev:
-        __my_lev = level
+    level = level_of(NewUaf.my_sco)
+    if level != NewUaf.my_lev:
+        NewUaf.my_lev = level
 
-        bprintf("You are now {} ".format(talker.name))
-        self.services.post_log("{} to level {}".format(talker.name, level))
-        disle3(level, __my_sex)
-        sp = "<p>{}</p> is now level {}\n".format(talker.name, __my_lev)
-        sendsys(
-            talker.name,
-            talker.name,
+        user.output("You are now {} ".format(user.name))
+        MudExeServices.post_log("{} to level {}".format(user.name, level))
+        disle3(level, NewUaf.my_sex)
+        sp = "<p>{}</p> is now level {}\n".format(user.name, NewUaf.my_lev)
+        Message(
+            user.name,
+            user.name,
             -10113,
-            talker.player.location,
-            "<p>{}</p> is now level {}\n".format(talker.name, __my_lev),
-        )
+            user.player.location,
+            "<p>{}</p> is now level {}\n".format(user.name, NewUaf.my_lev),
+        ).send(user)
         if level == 10:
-            bprintf("<f>{}</f>", GWIZ)
+            user.output("<f>{}</f>".format(GWIZ))
 
-    if __my_str > 30 + 10 * __my_lev:
-        __my_str = 30 + 10 * __my_lev
+    if NewUaf.my_str > 30 + 10 * NewUaf.my_lev:
+        NewUaf.my_str = 30 + 10 * NewUaf.my_lev
 
-    talker.player.level = __my_lev
-    talker.player.strength = __my_str
-    talker.player.sex = __my_sex
-    talker.player.weapon = __wpnheld
+    user.player.level = NewUaf.my_lev
+    user.player.strength = NewUaf.my_str
+    user.player.sex = NewUaf.my_sex
+    user.player.weapon = Blood.wpnheld
 
 
 def level_of(score):
-    score  = score / 2  # Scaling factor
-    if __my__lev > 10:
-        return __my_lev
+    score = score / 2  # Scaling factor
+    if NewUaf.my_lev > 10:
+        return NewUaf.my_lev
     if score < 500:
         return 1
     if score < 1000:
@@ -1253,9 +1292,9 @@ def level_of(score):
     if(chkdumb()) return;
     getreinput(blob);
     if(my_lev>9)
-       sendsys(globme,globme,-10104,curch,blob);
+       Message(globme,globme,-10104,curch,blob).send(Talker);
     else
-       sendsys(globme,globme,-10002,curch,blob);
+       Message(globme,globme,-10002,curch,blob).send(Talker);
     bprintf("Ok\n");
     }
  
@@ -1266,7 +1305,7 @@ def level_of(score):
     auto char blob[200];
     if(chkdumb()) return;
     getreinput(blob);
-    sendsys(globme,globme,-10003,curch,blob);
+    Message(globme,globme,-10003,curch,blob).send(Talker);
     bprintf("You say '%s'\n",blob);
     }
 
@@ -1289,7 +1328,7 @@ def level_of(score):
        return;
        }
     getreinput(blob);
-    sendsys(pname(b),globme,-10004,curch,blob);
+    Message(pname(b),globme,-10004,curch,blob).send(Talker);
     }
  
  scorecom()
@@ -1338,7 +1377,7 @@ def level_of(score):
        	}
     syslog("%s exorcised %s",globme,pname(x));
     dumpstuff(x,ploc(x));
-    sendsys(pname(x),globme,-10010,curch,"");
+    Message(pname(x),globme,-10010,curch,"").send(Talker);
     pname(x)[0]=0;
     }
  
@@ -1430,7 +1469,7 @@ def level_of(score):
        }
     setoloc(ob,pl,1);
     sprintf(z,"\001p%s\001 gives you the %s\n",globme,oname(ob));
-    sendsys(pname(pl),globme,-10011,curch,z);
+    Message(pname(pl),globme,-10011,curch,z).send(Talker);
     return;
     }
 
@@ -1505,7 +1544,7 @@ def level_of(score):
        {
        sprintf(tb,"\001p%s\001 steals the %s from you !\n",globme,oname(a));
        if(f&1){
-       	 sendsys(pname(c),globme,-10011,curch,tb);
+       	 Message(pname(c),globme,-10011,curch,tb).send(Talker);
        	 if(c>15) woundmn(c,0);
        	}
        setoloc(a,mynum,1);
@@ -1524,11 +1563,11 @@ def level_of(score):
     extern long curch;
     extern char globme[];
     sprintf(ms,"\001s%s\001%s vanishes in a puff of smoke\n\001",globme,globme);
-    sendsys(globme,globme,-10000,curch,ms);
+    Message(globme,globme,-10000,curch,ms).send(Talker);
     sprintf(ms,"\001s%s\001%s appears in a puff of smoke\n\001",globme,globme);
     dumpitems();
     curch=loc;
-    sendsys(globme,globme,-10000,curch,ms);
+    Message(globme,globme,-10000,curch,ms).send(Talker);
     trapch(curch);
     }
  
@@ -1563,7 +1602,7 @@ def level_of(score):
        }
       
     sprintf(ms,"\001s%s\001%s fades out of reality\n\001",globme,globme);
-    sendsys(globme,globme,-10113,0,ms); /* Info */
+    Message(globme,globme,-10113,0,ms).send(Talker); /* Info */
     cms= -2;/* CODE NUMBER */
     Talker.update(globme);
     pbfr();
@@ -1579,7 +1618,7 @@ def level_of(score):
        crapup("You have been kicked off");
        }
     sprintf(ms,"\001s%s\001%s re-enters the normal universe\n\001",globme,globme);
-    sendsys(globme,globme,-10113,0,ms);
+    Message(globme,globme,-10113,0,ms).send(Talker);
     Talker.rte();
     }
  
@@ -1597,7 +1636,7 @@ def level_of(score):
     cms= -2;
     Talker.update(globme);
     sprintf(x,"%s%s%s%s%s","\001s",globme,"\001",globme," has dropped into BB\n\001");
-    sendsys(globme,globme,-10113,0,x);
+    Message(globme,globme,-10113,0,x).send(Talker);
     closeworld();
     system("/cs_d/aberstudent/yr2/iy7/bt");
     openworld();
@@ -1610,7 +1649,7 @@ def level_of(score):
     Talker.rte();
     openworld();
     sprintf(x,"%s%s%s%s%s","\001s",globme,"\001",globme," has returned to AberMud\n\001");
-    sendsys(globme,globme,-10113,0,x);
+    Message(globme,globme,-10113,0,x).send(Talker);
     }
  
  inumcom()
@@ -1642,7 +1681,7 @@ def level_of(score):
        }
     loseme();
     sprintf(x,"[ %s has updated ]\n",globme);
-    sendsys(globme,globme,-10113,0,x);
+    Message(globme,globme,-10113,0,x).send(Talker);
     closeworld();
     sprintf(x,"%s",globme);
     execl(EXE,
@@ -1668,7 +1707,7 @@ def level_of(score):
        return;
        }
     sprintf(x,"%s has quit, via BECOME\n",globme);
-    sendsys("","",-10113,0,x);
+    Message("","",-10113,0,x).send(Talker);
     keysetback();
     loseme();
     closeworld();

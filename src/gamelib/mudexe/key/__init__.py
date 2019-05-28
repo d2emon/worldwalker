@@ -24,7 +24,7 @@ class Key:
     MODE_OUTPUT = 0
     MODE_INPUT = 1
 
-    __save_flag = None
+    __save_flag = dict()
 
     __mode = MODE_OUTPUT
     __prompt = ""

@@ -13,53 +13,24 @@ from services.errors import CrapupError, FileServiceError
 from services.mud_exe import MudExeServices
 from services.world import WorldService
 from services.world.player import PlayerServices
+from ..blood import Blood
+from ..parse import Message, Parser
+from ..support import Player
 from ..weather import is_dark
 from .special import process_command, special, NewUaf
-from ..support import Player
-
-
-class Blood:
-    fighting = None
-    in_fight = None
-
-    @classmethod
-    def fighting_with(cls):
-        return WorldService.get_player(cls.fighting)
-
-    @classmethod
-    def stop_fight(cls):
-        cls.in_fight = 0
-        cls.fighting = None
-
-    @classmethod
-    def update(cls, channel):
-        if cls.fighting is not None:
-            if not cls.fighting_with().exists:
-                cls.stop_fight()
-            if cls.fighting_with().location != channel:
-                cls.stop_fight()
-        if cls.in_fight:
-            cls.in_fight -= 1
 
 
 class New1:
     ail_blind = False
 
 
-class Parser:
-    zapped = False
+def initme(*args):
+    logging.debug("initme(%s)", args)
 
-    tdes = 0
-    vdes = False
-    rdes = False
-    # ades = 0
 
-    debug_mode = 0
-
-    @classmethod
-    def clear_des(cls):
-        cls.tdes = 0
-        cls.rdes = cls.vdes = False
+def randperc(*args):
+    logging.debug("randperc(%s)", args)
+    return 1
 
 
 def dumpitems(*args):
@@ -76,10 +47,6 @@ def chksnp(*args):
 
 def on_timing(*args):
     logging.debug("on_timing(%s)", args)
-
-
-def eorte(*args):
-    logging.debug("eorte(%s)", args)
 
 
 def lookin(*args):
@@ -116,26 +83,6 @@ long offd,offs,len;
        c++;
        }
     }
-
-
- send2(block)
- long *block;
-    {
-    FILE * unit;
-    long number;
-    long inpbk[128];
-    extern char globme[];
-    extern char *echoback;
-    	unit=openworld();
-    if (unit<0) {loseme();crapup("\nAberMUD: FILE_ACCESS : Access failed\n");}
-    sec_read(unit,inpbk,0,64);
-    number=2*inpbk[1]-inpbk[0];inpbk[1]++;
-    sec_write(unit,block,number,128);
-    sec_write(unit,inpbk,0,64);
-    if (number>=199) cleanup(inpbk);
-    if(number>=199) longwthr();
-    }
-
 """
 
 
@@ -159,6 +106,7 @@ class Talker:
         on_loose=lambda: None,
         get_cmd=lambda: None,
         show_buffer=lambda: None,
+        output=lambda message: None,
     ):
         """
 
@@ -167,6 +115,8 @@ class Talker:
         self.on_loose = on_loose
         self.get_cmd = get_cmd
         self.show_buffer = show_buffer
+        self.output = output
+        self.interrupt = False
 
         self.__player = None
 
@@ -250,12 +200,12 @@ class Talker:
         :return:
         """
         block0, code, text = message
-        # if Parser.debug_mode:
-        #     bprintf("\n&lt;{}&gt;".format(code))
+        if Parser.debug_mode:
+            self.output("\n&lt;{}&gt;".format(code))
         # if code < -3:
         #     sysctrl(message, self.__name.lower())
         # else:
-        #     bprintf(text)
+        #     self.output(text)
 
     def __make_command(self, command):
         if not command:
@@ -285,6 +235,35 @@ class Talker:
         result = process_command(self, self.__make_command(command))
         Blood.update(self.__channel)
         return result
+
+    def start(self, uaf):
+        self.__mode = self.MODE_GAME
+        self.channel = 5
+        initme()
+        WorldService.connect()
+
+        self.player.start(uaf)
+
+        Message(
+            self.name,
+            self.name,
+            -10113,
+            self.channel,
+            "<s user=\"{user}\">[ {user}  has entered the game ]\n</s>".format(user=self.name),
+        ).send(self)
+
+        self.rte()
+        if randperc() <= 50:
+            self.channel = -183
+        self.trapch(self.channel)
+
+        Message(
+            self.name,
+            self.name,
+            -10000,
+            self.channel,
+            "<s user=\"{user}\">{user}  has entered the game\n</s>".format(user=self.name),
+        ).send(self)
 
     def show(self):
         """
@@ -321,13 +300,13 @@ class Talker:
         with WorldService():
             dumpitems()
             if self.player.visible < 10000:
-                sendsys(
-                    self.__name,
-                    self.__name,
+                Message(
+                    self.name,
+                    self.name,
                     -10113,
                     0,
-                    "{} has departed from AberMUDII\n".format(self.__name),
-                )
+                    "{} has departed from AberMUDII\n".format(self.name),
+                ).send(self)
             self.player.remove()
 
         if not Parser.zapped:
@@ -342,7 +321,7 @@ class Talker:
                 self.__mstoout(message)
 
             self.update()
-            eorte()
+            Parser.next_turn(self, interrupt=self.interrupt)
             Parser.clear_des()
         except FileServiceError as e:
             raise CrapupError(e)
@@ -397,6 +376,23 @@ class Talker:
 
         self.set_name(player)
         return True
+
+    def send2(self, block):
+        try:
+            unit = WorldService.connect()
+            logging.debug(unit)
+            logging.debug("send2(%s)", block)
+            # first_message, last_message = sec_read(unit, None, 0, 64)
+            # number = 2 * last_message - first_message
+            # last_message += 1
+            # sec_write(unit, block, number, 128)
+            # sec_write(unit, (first_message, last_message), 0, 64)
+            # if number > 199:
+            #     cleanup((first_message, last_message))
+            #     longwthr()
+        except FileServiceError:
+            self.loseme()
+            raise CrapupError("\nAberMUD: FILE_ACCESS : Access failed\n")
 
     # def fpbn(self, name):
     #     player = Player.fpbns(name)
@@ -509,7 +505,7 @@ if(!strcmp(lowercase(nam1+4),lowercase(luser))) return(1);
     closeworld();
     if(New1.ail_blind)
     {
-    	bprintf("You are blind... you can't see a thing!\n");
+    	self.output("You are blind... you can't see a thing!\n");
     }
     if(NewUaf.level>9) showname(room);
     un1=openroom(room,"r");
@@ -520,7 +516,7 @@ xx1:   xxx=0;
        	if(WeatherServices.get_is_dark(talker.channel))
        	{
           		fclose(un1);
-          		bprintf("It is dark\n");
+          		self.output("It is dark\n");
                         openworld();
           		onlook();
           		return;
@@ -530,7 +526,7 @@ xx1:   xxx=0;
           if(!strcmp(str,"#DIE"))
              {
              if(New1.ail_blind) {rewind(un1);New1.ail_blind=0;goto xx1;}
-             if(NewUaf.level>9)bprintf("<DEATH ROOM>\n");
+             if(NewUaf.level>9) self.output("<DEATH ROOM>\n");
              else
                 {
                 loseme(globme);
@@ -541,13 +537,13 @@ xx1:   xxx=0;
 {
 if(!strcmp(str,"#NOBR")) brmode=0;
 else
-             if((!New1.ail_blind)&&(!xxx))bprintf("%s\n",str);
+             if((!New1.ail_blind)&&(!xxx)) self.output("%s\n",str);
           xxx=brmode;
 }
           }
        }
     else
-       bprintf("\nYou are on channel %d\n",room);
+       self.output("\nYou are on channel %d\n",room);
     fclose(un1);
     openworld();
     if(!New1.ail_blind)
@@ -555,7 +551,7 @@ else
 	    lisobs();
 	    if(self.mode==self.MODE_GAME) lispeople();
     }
-    bprintf("\n");
+    self.output("\n");
     onlook();
     }
  loodrv()

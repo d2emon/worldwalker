@@ -1,4 +1,5 @@
 import logging
+from threading import Timer
 
 
 SIGINT = 'SIGINT'
@@ -10,7 +11,7 @@ SIGCONT = 'SIGCONT'
 SIGALRM = 'SIGALRM'
 
 
-class Timer:
+class SignalTimer:
     DEFAULT_INTERVAL = 2
     BLOCKED_INTERVAL = 2147487643
 
@@ -23,6 +24,8 @@ class Timer:
 
         self.__is_active = False
         self.__is_blocked = True
+
+        self.__timer = Timer(self.BLOCKED_INTERVAL, self.on_timer)
 
     @property
     def time(self):
@@ -47,10 +50,16 @@ class Timer:
 
     @is_active.setter
     def is_active(self, value):
+        logging.debug("is active\t%s", value)
         self.__is_active = value
         self.__is_blocked = not value
+        logging.debug("is active\t%s", value)
         if not value:
-            self.__interval = self.BLOCKED_INTERVAL
+            logging.debug("set timer blocked")
+            self.__set_timer(self.BLOCKED_INTERVAL)
+        else:
+            logging.debug("set timer unblocked")
+            self.__set_timer(self.DEFAULT_INTERVAL)
 
     @property
     def is_blocked(self):
@@ -60,7 +69,17 @@ class Timer:
     def is_blocked(self, value):
         self.__is_blocked = value
         if not value and self.__is_active:
-            self.__interval = self.DEFAULT_INTERVAL
+            logging.debug("set timer unblocked")
+            self.__set_timer(self.DEFAULT_INTERVAL)
+
+    def __set_timer(self, interval):
+        logging.debug('set interval to:\t%s', interval)
+
+        self.__interval = interval
+        self.__timer.cancel()
+        if interval != self.BLOCKED_INTERVAL:
+            self.__timer = Timer(interval, self.on_timer)
+            self.__timer.start()
 
     def on_timer(self):
         logging.debug('alarm: %s', self.__interval)
@@ -75,8 +94,11 @@ class Timer:
         self.__handler()
         self.is_active = True
 
+        logging.debug("set timer %s", self.__interval)
+        self.__set_timer(self.__interval)
 
-class Events(Timer):
+
+class Events(SignalTimer):
     def __init__(
         self,
         on_error=lambda: None,
@@ -97,4 +119,4 @@ class Events(Timer):
         handler = self.__signals.get(signal)
         if handler is None:
             return
-        handler(self)
+        handler()

@@ -26,11 +26,11 @@ def main():
 
     user = User()
 
-    print(">", "mud.1")
-    MudGame(user).play()
+    # print(">", "mud.1")
+    # MudGame(user).play()
 
-    # print(">", "mud.1", "-nName")
-    # mud1(env, 'mud.1', '-nName')
+    print(">", "mud.1", "-nName")
+    MudGame(user, "Phantom").play()
 
     # print(">", "mud.1", "-nName", 1)
     # mud1(env, 'mud.1', '-nName', 1)
