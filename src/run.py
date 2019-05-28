@@ -1,6 +1,7 @@
 import config
 # from games.breakout import Breakout as Game
-from games.middleearth import MiddleEarth as Game
+# from games.middleearth import MiddleEarth as Game
+from games.space import Space as Game
 
 
 if __name__ == "__main__":

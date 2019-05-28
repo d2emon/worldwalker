@@ -30,7 +30,7 @@ class Player(DirtySprite):
             self.speed = 0, 0
 
     def update(self):
-        self.rect.move(self.speed)
+        self.rect = self.rect.move(self.speed)
         if self.rect.x <= CONSTS[0][0]:
             self.rect.x = CONSTS[0][0] + 1
         if self.rect.x >= CONSTS[0][1]:

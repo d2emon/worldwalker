@@ -1,12 +1,10 @@
 #! /usr/bin/python
-import config
 import pygame
 import random
-from games.middleearth.player import Player
-# from bgmap import BgMap
-# from background import Background
-# from grid import MapGrid
-from pygame.time import Clock
+from game_utils import Game
+from pygame import Surface
+from pygame.sprite import Sprite, Group
+from ..middleearth.player import Player
 
 from scales.yotta import ObservableUniverse, SloanGreatWall, PerseusCetusSuperclusterComplex, EridanusSupervoid, VirgoSupercluster
 from nestedscript import CosmicWall, GalaxyFilament, Supervoid, Supercluster
@@ -53,7 +51,7 @@ class CosmicWebItem(pygame.Surface):
         pygame.draw.ellipse(self, color, self.get_rect())
 
 
-class GameUniverse(pygame.Surface):
+class GameUniverse(Sprite):
     COLOR = 32, 32, 32
 
     def __init__(self):
@@ -70,139 +68,128 @@ class GameUniverse(pygame.Surface):
             VirgoSupercluster,
         ] + web
 
-        super().__init__(self.universe.size[:2])
+        super().__init__()
 
-        self.position = -self.universe.size[0] / 2, -self.universe.size[1] / 2
-        # self.universe_rect = (0, 0, self.universe.size[0], self.universe.size[1])
-
-        # bg = Background((config.WIN_WIDTH, config.WIN_HEIGHT))
-
-        # game_map = BgMap(*config.MAP_POS)
+        self.image = Surface(self.universe.size[:2])
+        self.rect = self.image.get_rect()
 
         self.items = [CosmicWebItem(item, self.random_point()) for item in self.universe.web]
 
-        self.update()
-
-    def make_position(self, position):
-        return [self.position[i] - position[i] for i in range(2)]
+        self.first_update()
 
     def random_point(self):
         point = [random.randrange(self.universe.size[i]) for i in range(2)]
         return point
 
-    def update(self):
-        pygame.draw.ellipse(self, self.COLOR, self.get_rect())
+    def first_update(self):
+        pygame.draw.ellipse(self.image, self.COLOR, self.rect)
 
         for item in self.items:
             # position = self.universe.size[0] / 2, self.universe.size[1] / 2
             position = item.position
             # print("Item is at ", position)
-            self.blit(item, position)
-
-        # bg.draw(screen)
-
-        # game_map.update(xvel, yvel)
-        # game_map.draw(screen)
-
-        # if show_grid:
-        #     map_grid.draw(screen)
+            self.image.blit(item, position)
 
 
-class GameHero:
+class GamePlayer(Player):
+    def update(self):
+        self.rect = self.rect.move(self.speed)
+
+
+class GameScreen(Surface):
     def __init__(self):
-        self.hero = Player(*config.PLAYER_POS)
-        self.velocity = [0, 0]
-        self.position = [0, 0]
+        self.universe = GameUniverse()
+        self.hero = GamePlayer(self.universe.rect.centerx, self.universe.rect.centery)
+        super().__init__((self.universe.rect.width, self.universe.rect.height))
+
+        self.sprites = Group(self.universe, self.hero)
+
+    @property
+    def offset_position(self):
+        # return self.position[0] - self.hero.rect.left, self.position[1] - self.hero.rect.top
+        return 200 - self.hero.rect.left, 200 - self.hero.rect.top
 
     def update(self):
-        # print(self.velocity, self.position)
-        self.position[0] += self.velocity[0]
-        self.position[1] += self.velocity[1]
-        if self.position[0] < -MAX_X:
-            self.position[0] = MAX_X
-        if self.position[1] < -MAX_Y:
-            self.position[1] = MAX_Y
-        if self.position[0] > MAX_X:
-            self.position[0] = -MAX_X
-        if self.position[1] > MAX_Y:
-            self.position[1] = -MAX_Y
+        self.sprites.update()
 
-    def draw(self, screen):
-        self.hero.draw(screen)
+        if self.hero.rect.left < 0:
+            self.hero.rect.left = 0
+        if self.hero.rect.right > self.universe.rect.width:
+            self.hero.rect.right = self.universe.rect.width
+        if self.hero.rect.top < 0:
+            self.hero.rect.top = 0
+        if self.hero.rect.bottom > self.universe.rect.height:
+            self.hero.rect.bottom = self.universe.rect.height
 
+        self.sprites.draw(self)
 
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode(config.DISPLAY)
-    pygame.display.set_caption(config.TITLE)
-
-    # pygame.font.init()
-    # myfont = pygame.font.SysFont('Sans', 16)
-
-    universe = GameUniverse()
-    hero = GameHero()
-
-    # show_grid = False
-    # map_grid = MapGrid(game_map.rect.width, game_map.rect.height, config.GRID_SIZE)
-
-    timer = Clock()
-
-    while True:
-        for event in pygame.event.get():
-            event_exit(event)
-            hero.velocity = event_move(event, hero.velocity)
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_h:
-                # game_map.x = config.MAP_POS[0]
-                # game_map.y = config.MAP_POS[1]
-                pass
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
-                # show_grid = not show_grid
-                pass
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                print(universe.universe.size)
-                print("Player is at ", hero.position)
-                print("Universe is at ", (-hero.position[0], -hero.position[1]))
-
-        hero.update()
-        # universe.update()
-
-        screen.fill((0, 0, 0))
-        screen.blit(universe, universe.make_position(hero.position))
-
-        hero.draw(screen)
-
-        # coords = "{}, {}".format(game_map.x, game_map.y)
-        # text_surface = myfont.render(coords, False, (0, 0, 0))
-        # screen.blit(text_surface, (0, 0))
-
-        pygame.display.update()
-        timer.tick(24)
+    def show_position(self):
+        print(self.universe.universe.size)
+        print("Player is at ", self.hero.rect.left, self.hero.rect.top)
+        print("Universe is at ", self.offset_position)
 
 
-def event_exit(event):
-    if event.type == pygame.QUIT:
-        pygame.quit()
-        raise SystemExit("QUIT")
-    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-        raise SystemExit("QUIT")
+class MainSurface(Surface):
+    def __init__(self, size, **config):
+        super().__init__(size)
+
+        self.screen = GameScreen()
+        self.hero = self.screen.hero
+
+        self.event_handlers = {
+            pygame.KEYDOWN: (self.on_key_down, ),
+            pygame.KEYUP: (self.on_key_up, ),
+        }
+
+    def on_key_down(self, event):
+        if event.key in CONTROLS.keys():
+            dx, dy = CONTROLS[event.key]
+            if dx is not None:
+                self.hero.speed = dx, self.hero.speed[1]
+            if dy is not None:
+                self.hero.speed = self.hero.speed[0], dy
+        if event.key == pygame.K_SPACE:
+            self.screen.show_position()
+
+    def on_key_up(self, event):
+        if event.key in CONTROLS.keys():
+            dx, dy = CONTROLS[event.key]
+            if dx is not None:
+                self.hero.speed = 0, self.hero.speed[1]
+            if dy is not None:
+                self.hero.speed = self.hero.speed[0], 0
+
+    def update(self):
+        self.fill((0, 0, 0))
+        self.screen.update()
+        self.blit(self.screen, self.screen.offset_position)
 
 
-def event_move(event, velocity):
-    if event.type == pygame.KEYDOWN and event.key in CONTROLS.keys():
-        c = CONTROLS[event.key]
-        if c[0] is not None:
-            velocity[0] = c[0]
-        if c[1] is not None:
-            velocity[1] = c[1]
+class Space(Game):
+    def __init__(self, **config):
+        super().__init__(**config)
 
-    if event.type == pygame.KEYUP and event.key in CONTROLS.keys():
-        c = CONTROLS[event.key]
-        if c[0] is not None:
-            velocity[0] = 0
-        if c[1] is not None:
-            velocity[1] = 0
-    return velocity
+        self.surface = MainSurface((self.width, self.height), **config)
 
+    def handle_event(self, event):
+        super().handle_event(event)
 
-if __name__ == "__main__":
-    main()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self.game_over()
+
+        if self.surface is None:
+            return
+        handlers = self.surface.event_handlers.get(event.type)
+        if handlers is None:
+            return
+        for handler in handlers:
+            handler(event)
+
+    def update(self):
+        if self.surface is not None:
+            self.surface.update()
+        super().update()
+
+    def game_over(self, *args):
+        self.state = self.STATE_EXIT
