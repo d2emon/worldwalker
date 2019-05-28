@@ -1,4 +1,4 @@
-# UAF_RAND = "/cygdrive/c/Programs/Adv/AberMUD2/mud/uaf.rand"
+from .person import Uaf, Pfl
 # ROOMS = "/cygdrive/c/Programs/Adv/AberMUD2/mud/TEXT/ROOMS/"
 from .log_file import LogFile
 from .ban_file import BanFile
@@ -15,8 +15,6 @@ from .motd import MotD
 # CREDITS = "/cygdrive/c/Programs/Adv/AberMUD2/mud/TEXT/credits"
 # EXAMINES = "/cygdrive/c/Programs/Adv/AberMUD2/mud/EXAMINES/"
 # LEVELS = "/cygdrive/c/Programs/Adv/AberMUD2/mud/TEXT/level.txt"
-from services.file_services.person.pfl import Pfl
-# from services.file_services.person.pft import Pft
 from .exe import Exe
 # EXE2 = "/cygdrive/c/Programs/Adv/AberMUD2/mud/mud.1"
 from .snoop import Snoop

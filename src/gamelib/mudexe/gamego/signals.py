@@ -50,15 +50,11 @@ class SignalTimer:
 
     @is_active.setter
     def is_active(self, value):
-        logging.debug("is active\t%s", value)
         self.__is_active = value
         self.__is_blocked = not value
-        logging.debug("is active\t%s", value)
         if not value:
-            logging.debug("set timer blocked")
             self.__set_timer(self.BLOCKED_INTERVAL)
         else:
-            logging.debug("set timer unblocked")
             self.__set_timer(self.DEFAULT_INTERVAL)
 
     @property
@@ -69,12 +65,9 @@ class SignalTimer:
     def is_blocked(self, value):
         self.__is_blocked = value
         if not value and self.__is_active:
-            logging.debug("set timer unblocked")
             self.__set_timer(self.DEFAULT_INTERVAL)
 
     def __set_timer(self, interval):
-        logging.debug('set interval to:\t%s', interval)
-
         self.__interval = interval
         self.__timer.cancel()
         if interval != self.BLOCKED_INTERVAL:
