@@ -119,7 +119,7 @@ class BBC:
             action()
             self.show_buffer()
 
-            self.events.execute(SIGALRM)
+            # self.events.execute(SIGALRM)
         except KeyboardInterrupt as e:
             self.events.execute(SIGINT, e)
         except (ValueError, SystemExit) as e:
