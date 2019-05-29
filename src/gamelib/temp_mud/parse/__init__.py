@@ -1,3 +1,8 @@
+"""
+globme holds global me data
+"""
+
+
 class Parse:
     wordbuf = None
     me_cal = None
@@ -25,7 +30,6 @@ def getreinput(*args):
 
  /*
  
- globme holds global me data
  
  */
 #define  OBMUL 8
@@ -203,7 +207,8 @@ char *x,*y;
     extern int verbnum[];
     return(chklist(wordbuf,verbtxt,verbnum));
     }
- 
+"""
+"""
 char *verbtxt[]={"go","climb","n","e","s","w","u","d",
     "north","east","south","west","up","down",
     "quit",
@@ -713,6 +718,8 @@ long exitnum[]={1,2,3,4,5,6,1,2,3,4,5,6};
           break;
        }
     }
+"""
+"""
  
 char in_ms[81]="has arrived.";
 char out_ms[81]="";
@@ -821,6 +828,8 @@ long rdes=0;
 long ades=0;
 long zapped;
 
+"""
+"""
  gamrcv(blok)
  long *blok;
     {
@@ -983,7 +992,9 @@ long zapped;
           break;
           }
     }
- 
+"""
+"""
+
 long me_ivct=0;
 long last_io_interrupt=0;
 
