@@ -1,0 +1,97 @@
+from ..errors import CommandError
+
+from ..bprintf import bprintf
+from ..magic import randperc
+from ..newuaf import NewUaf
+from ..opensys import openworld
+from ..objsys import iscarrby
+from ..parse import Parse, brkword
+from ..support import Item, Player
+from ..tk import Tk, sendsys
+
+
+def get_item():
+    if brkword() is None:
+        raise CommandError("Tell me more ?\n")
+    openworld()
+    item = Item.fobna(Parse.wordbuf)
+    if item is None:
+        raise CommandError("There isn't one of those here\n")
+    return item
+
+
+def __victim_base():
+    if brkword() is None:
+        raise CommandError("Who ?\n")
+    openworld()
+    if Parse.wordbuf == "at":
+        return __victim_base()  # STARE AT etc
+    player = Player.fpbn(Parse.wordbuf)
+    if player is None:
+        raise CommandError("Who ?\n")
+    return player
+
+
+def __victim_magic(reflectable=True):
+    player = __victim_base()
+    if NewUaf.my_str < 10:
+        raise CommandError("You are too weak to cast magic\n")
+    if NewUaf.my_lev < 10:
+        NewUaf.my_str -= 2
+
+    i = 5
+    if iscarrby(111, Tk.mynum):
+        i += 1
+    if iscarrby(121, Tk.mynum):
+        i += 1
+    if iscarrby(163, Tk.mynum):
+        i += 1
+
+    if NewUaf.my_lev < 10 and randperc() > i * NewUaf.my_lev:
+        bprintf("You fumble the magic\n")
+        if reflectable:
+            bprintf("The spell reflects back\n")
+            return Player(Tk.mynum)
+        else:
+            raise CommandError()
+    else:
+        if NewUaf.my_lev < 10:
+            bprintf("The spell succeeds!!\n")
+    return player
+
+
+def __victim_no_reflect():
+    return __victim_magic(False)
+
+
+# This one isnt for magic
+def victim_is_here():
+    victim = __victim_base()
+    if victim.location != Tk.curch:
+        raise CommandError("They are not here\n")
+    return victim
+
+
+def victim_magic_is_here():
+    victim = __victim_no_reflect()
+    if victim.location != Tk.curch:
+        raise CommandError("They are not here\n")
+    return victim
+
+
+def victim_magic():
+    return __victim_magic(True)
+
+
+def social(victim, message):
+    if message[:4] == "star":
+        bk = "\001s{name}\001{name} {message}\n\001".format(name=Tk.globme, message=message)
+    else:
+        bk = "\001p{name}\001 {message}\n\001".format(name=Tk.globme, message=message)
+    sendsys(
+        victim.name,
+        Tk.globme,
+        -10111,
+        Tk.curch,
+        bk,
+    )
