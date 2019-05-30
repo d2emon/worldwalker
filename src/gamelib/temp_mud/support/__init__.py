@@ -1,9 +1,19 @@
+from ..errors import CommandError
+
 from ..objsys import ObjSys, iscarrby
+
+
+def is_dark(*args):
+    raise NotImplementedError
 
 
 class Player:
     def __init__(self, player_id):
         self.player_id = player_id
+
+    @property
+    def exists(self):
+        return self.name is not None
 
     @property
     def location(self):
@@ -87,6 +97,10 @@ class Item:
         ObjSys.objinfo[4 * self.item_id + 3] = value
 
     @property
+    def name(self):
+        raise NotImplementedError()
+
+    @property
     def loc(self):
         raise NotImplementedError()
 
@@ -119,9 +133,31 @@ class Item:
     def setoloc(self, *args):
         raise NotImplementedError()
 
+    def longt(self, *args):
+        raise NotImplementedError()
+
     @classmethod
     def fobna(cls, name):
         raise NotImplementedError()
+
+
+class Door(Item):
+    @property
+    def other_id(self):
+        return self.item_id ^ 1  # other door side
+
+    @property
+    def other(self):
+        return Item(self.other_id)
+
+    def go_through(self):
+        if self.state == 0:
+            return self.other.loc
+
+        if self.name != "door" or is_dark() or not self.longt(self.state):
+            raise CommandError("You can't go that way\n")  # Invis doors
+        else:
+            raise CommandError("The door is not open\n")
 
 
 def ohany(*args):

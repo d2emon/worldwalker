@@ -1,12 +1,15 @@
-from . import New1
 from ..errors import CommandError, CrapupError
 from ..blood import Blood
 from ..mobile import dragget
 from ..newuaf import NewUaf
-from ..parse import Parse, brkword, getreinput
+from ..parse.messages import Message
 from ..support import Item, Player, ohany, iscarrby
-from ..tk import Tk, sendsys, broad, loseme, trapch
+from ..tk import Tk, broad, loseme, trapch
 from ..weather import sillycom
+from . import teletrap, woundmn
+from .disease import DISEASES
+from .messages import MSG_GLOBAL, MSG_CURE, MSG_CRIPPLE, MSG_DUMB, MSG_FORCE, MSG_BOLT, MSG_BLIND, MSG_CHANGE, \
+    MSG_FIREBALL, MSG_SHOCK, MSG_DEAF
 from .utils import get_item, victim_is_here, victim_magic, victim_magic_is_here, social
 
 
@@ -16,19 +19,19 @@ def bouncecom():
 
 
 def sighcom():
-    New1.ail_dumb.check()
+    DISEASES.dumb.check()
     sillycom("\001P%s\001\001d sighs loudly\n\001")
     yield "You sigh\n"
 
 
 def screamcom():
-    New1.ail_dumb.check()
+    DISEASES.dumb.check()
     sillycom("\001P%s\001\001d screams loudly\n\001")
     yield "ARRRGGGGHHHHHHHHHHHH!!!!!!\n"
 
 
-def opencom():
-    item = get_item()
+def opencom(parser):
+    item = get_item(parser)
     if item.item_id == 21:
         if Item(21).state == 0:
             raise CommandError("It is\n")
@@ -54,8 +57,8 @@ def opencom():
             yield "Ok\n"
 
 
-def closecom():
-    item = get_item()
+def closecom(parser):
+    item = get_item(parser)
     if item.item_id == 1:
         if Item(1).state == 0:
             raise CommandError("It is closed, silly!\n")
@@ -72,8 +75,8 @@ def closecom():
             yield "Ok\n"
 
 
-def lockcom():
-    item = get_item()
+def lockcom(parser):
+    item = get_item(parser)
     if not ohany(1 << 11):
         raise CommandError("You haven't got a key\n")
     else:
@@ -86,8 +89,8 @@ def lockcom():
             yield "Ok\n"
 
 
-def unlockcom():
-    item = get_item()
+def unlockcom(parser):
+    item = get_item(parser)
     if not ohany(1 << 11):
         raise CommandError("You have no keys\n")
     else:
@@ -100,8 +103,8 @@ def unlockcom():
             yield "Ok...\n"
 
 
-def wavecom():
-    item = get_item()
+def wavecom(parser):
+    item = get_item(parser)
     if item.item_id == 136:
         if Item(151).state == 1 and Item(151).loc == Tk.curch:
             Item(150).state = 0
@@ -109,26 +112,28 @@ def wavecom():
         return
     elif item.item_id == 158:
         yield "You are teleported!\n"
-        New1.teletrap(-114)
+        teletrap(-114)
         return
     else:
         yield "Nothing happens\n"
 
 
-def blowcom():
-    get_item()
+def blowcom(parser):
+    get_item(parser)
     raise CommandError("You can't blow that\n")
 
 
-def putcom():
-    item = get_item()
-    if brkword() is None:
+def putcom(parser):
+    item = get_item(parser)
+    word = parser.brkword()
+    if word is None:
         raise CommandError("where ?\n")
-    elif Parse.wordbuf in ['on', 'in']:
-        if brkword() is None:
-            raise CommandError("What ?\n")
+    if word in ['on', 'in']:
+        word = parser.brkword()
+    if word is None:
+        raise CommandError("What ?\n")
 
-    c = Item.fobna(Parse.wordbuf)
+    c = Item.fobna(word)
     if c is None:
         raise CommandError("There isn't one of those here.\n")
     elif c.item_id == 10:
@@ -167,13 +172,13 @@ def putcom():
         if item.item_id == 32:
             raise CommandError("You can't let go of it!\n")
         yield "It vanishes down the chute....\n"
-        sendsys(
-            '',
-            '',
-            -10000,
+        Message(
+            None,
+            None,
+            MSG_GLOBAL,
             Item(193).loc,
             "The {} comes out of the chute!\n".format(item.name)
-        )
+        ).send()
         item.setloc(Item(193).loc, 0)
         return
     elif c.item_id == 23:
@@ -196,13 +201,13 @@ def putcom():
             raise CommandError("You can't let go of it!\n")
         item.setoloc(c.item_id, 23)
         yield "Ok.\n"
-        sendsys(
-            Tk.globme,
-            Tk.globme,
-            -10000,
+        Message(
+            Tk,
+            Tk,
+            MSG_GLOBAL,
             Tk.curch,
             "\001D{}\001\001c puts the {} in the {}.\n\001".format(Tk.globme, item.name, c.name)
-        )
+        ).send()
         if item.tstbit(12):
             item.state = 0
         if Tk.curch == -1081:
@@ -210,8 +215,8 @@ def putcom():
             yield "The door clicks shut....\n"
 
 
-def lightcom():
-    item = get_item()
+def lightcom(parser):
+    item = get_item(parser)
     if not ohany(1 << 13):
         raise CommandError("You have nothing to light things from\n")
     else:
@@ -224,8 +229,8 @@ def lightcom():
         yield "Ok\n"
 
 
-def extinguishcom():
-    item = get_item()
+def extinguishcom(parser):
+    item = get_item(parser)
     if not item.tstbit(13):
         raise CommandError("That isn't lit\n")
     if not item.tstbit(10):
@@ -235,10 +240,11 @@ def extinguishcom():
     yield "Ok\n"
 
 
-def pushcom():
-    if brkword() is None:
+def pushcom(parser):
+    word = parser.brkword()
+    if word is None:
         raise CommandError("Push what ?\n")
-    x = Item.fobna(Parse.wordbuf)
+    x = Item.fobna(word)
     if x is None:
         raise CommandError("That is not here\n")
     elif x.item_id == 126:
@@ -273,67 +279,67 @@ def pushcom():
     elif x.item_id == 30:
         Item(28).state = 1 - Item(28).state
         if Item(28).state:
-            sendsys(
-                "",
-                "",
-                -10000,
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(28).loc,
                 "\001cThe portcullis falls\n\001",
-            )
-            sendsys(
-                "",
-                "",
-                -10000,
+            ).send()
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(29).loc,
                 "\001cThe portcullis falls\n\001",
-            )
+            ).send()
         else:
-            sendsys(
-                "",
-                "",
-                -10000,
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(28).loc,
                 "\001cThe portcullis rises\n\001",
-            )
-            sendsys(
-                "",
-                "",
-                -10000,
+            ).send()
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(29).loc,
                 "\001cThe portcullis rises\n\001",
-            )
+            ).send()
     elif x.item_id == 149:
         Item(150).state = 1 - Item(150).state
         if Item(150).state:
-            sendsys(
-                "",
-                "",
-                -10000,
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(150).loc,
                 "\001cThe drawbridge rises\n\001",
-            )
-            sendsys(
-                "",
-                "",
-                -10000,
+            ).send()
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(151).loc,
                 "\001cThe drawbridge rises\n\001",
-            )
+            ).send()
         else:
-            sendsys(
-                "",
-                "",
-                -10000,
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(150).loc,
                 "\001cThe drawbridge is lowered\n\001",
-            )
-            sendsys(
-                "",
-                "",
-                -10000,
+            ).send()
+            Message(
+                None,
+                None,
+                MSG_GLOBAL,
                 Item(151).loc,
                 "\001cThe drawbridge is lowered\n\001",
-            )
+            ).send()
     elif x.item_id == 24:
         if Item(26).state == 1:
             Item(26).state = 0
@@ -359,59 +365,59 @@ def pushcom():
         yield "Nothing happens\n"
 
 
-def cripplecom():
-    victim = victim_magic()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10101,
+def cripplecom(parser):
+    victim = victim_magic(parser)
+    Message(
+        victim,
+        Tk,
+        MSG_CRIPPLE,
         Tk.curch,
         "",
-    )
+    ).send()
 
 
-def curecom():
-    victim = victim_magic_is_here()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10100,
+def curecom(parser):
+    victim = victim_magic_is_here(parser)
+    Message(
+        victim,
+        Tk,
+        MSG_CURE,
         Tk.curch,
         "",
-    )
+    ).send()
 
 
-def dumbcom():
-    victim = victim_magic()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10102,
+def dumbcom(parser):
+    victim = victim_magic(parser)
+    Message(
+        victim,
+        Tk,
+        MSG_DUMB,
         Tk.curch,
         "",
-    )
+    ).send()
 
 
-def forcecom():
-    victim = victim_magic()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10103,
+def forcecom(parser):
+    victim = victim_magic(parser)
+    Message(
+        victim,
+        Tk,
+        MSG_FORCE,
         Tk.curch,
-        getreinput(),
-    )
+        parser.getreinput(),
+    ).send()
 
 
-def missilecom():
-    victim = victim_magic_is_here()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10106,
+def missilecom(parser):
+    victim = victim_magic_is_here(parser)
+    Message(
+        victim,
+        Tk,
+        MSG_BOLT,
         Tk.curch,
         NewUaf.my_lev * 2,
-    )
+    ).send()
     if victim.strength - 2 * NewUaf.my_lev < 0:
         yield "Your last spell did the trick\n"
         if victim.strength >= 0:
@@ -424,29 +430,30 @@ def missilecom():
         Blood.in_fight = 0
         Blood.fighting = -1
     if victim.player_id > 15:
-        New1.woundmn(victim, 2 * NewUaf.my_lev)
+        woundmn(victim, 2 * NewUaf.my_lev)
 
 
-def changecom():
-    if brkword() is None:
+def changecom(parser):
+    word = parser.brkword()
+    if word is None:
         raise CommandError("change what (Sex ?) ?\n")
-    if Parse.wordbuf != 'sex':
+    if word != 'sex':
         raise CommandError("I don't know how to change that\n")
-    victim = victim_magic()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10107,
+    victim = victim_magic(parser)
+    Message(
+        victim,
+        Tk,
+        MSG_CHANGE,
         Tk.curch,
         "",
-    )
+    ).send()
     if victim.player_id < 16:
         return
     victim.sex = 1 - victim.sex
 
 
-def fireballcom():
-    victim = victim_magic_is_here()
+def fireballcom(parser):
+    victim = victim_magic_is_here(parser)
     if Tk.mynum == victim.player_id:
         raise CommandError("Seems rather dangerous to me....\n")
     wound = 6 if victim.player_id == Player.fpbns('yeti').player_id else 2
@@ -461,22 +468,22 @@ def fireballcom():
         victim.strength = -1  # MARK ALREADY DEAD
         Blood.in_fight = 0
         Blood.fighting = -1
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10109,
+    Message(
+        victim,
+        Tk,
+        MSG_FIREBALL,
         Tk.curch,
         2 * NewUaf.my_lev,
-    )
+    ).send()
     if victim.player_id == Player.fpbns('yeti').player_id:
-        New1.woundmn(victim, 6 * NewUaf.my_lev)
+        woundmn(victim, 6 * NewUaf.my_lev)
         return
     if victim.player_id > 15:
-        New1.woundmn(victim, 2 * NewUaf.my_lev)
+        woundmn(victim, 2 * NewUaf.my_lev)
 
 
-def shockcom():
-    victim = victim_magic_is_here()
+def shockcom(parser):
+    victim = victim_magic_is_here(parser)
     if victim.player_id == Tk.mynum:
         raise CommandError("You are supposed to be killing other people not yourself\n")
     if victim.strength - 2 * NewUaf.my_lev < 0:
@@ -490,29 +497,29 @@ def shockcom():
         victim.strength = -1  # MARK ALREADY DEAD
         Blood.in_fight = 0
         Blood.fighting = -1
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10110,
+    Message(
+        victim,
+        Tk,
+        MSG_SHOCK,
         Tk.curch,
         2 * NewUaf.my_lev,
-    )
+    ).send()
     if victim.player_id > 15:
-        New1.woundmn(victim, 2 * NewUaf.my_lev)
+        woundmn(victim, 2 * NewUaf.my_lev)
 
 
-def starecom():
-    victim = victim_is_here()
+def starecom(parser):
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         raise CommandError("That is pretty neat if you can do it!\n")
     social(victim, "stares deep into your eyes\n")
     yield "You stare at \001p{}\001\n".format(victim.name)
 
 
-def gropecom():
-    if New1.is_force:
+def gropecom(parser):
+    if DISEASES.force.is_force:
         raise CommandError("You can't be forced to do that\n")
-    victim = victim_is_here()
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         yield "With a sudden attack of morality the machine edits your persona\n"
         loseme()
@@ -521,54 +528,54 @@ def gropecom():
     yield "<Well what sort of noise do you want here ?>\n"
 
 
-def squeezecom():
-    victim = victim_is_here()
+def squeezecom(parser):
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         yield "Ok....\n"
     social(victim, "gives you a squeeze\n")
     yield "You give them a squeeze\n"
 
 
-def kisscom():
-    victim = victim_is_here()
+def kisscom(parser):
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         raise CommandError("Weird!\n")
     social(victim, "kisses you")
     yield "Slurp!\n"
 
 
-def cuddlecom():
-    victim = victim_is_here()
+def cuddlecom(parser):
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         raise CommandError("You aren't that lonely are you ?\n")
     social(victim, "cuddles you")
 
 
-def hugcom():
-    victim = victim_is_here()
+def hugcom(parser):
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         raise CommandError("Ohhh flowerr!\n")
     social(victim, "hugs you")
 
 
-def slapcom():
-    victim = victim_is_here()
+def slapcom(parser):
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         yield "You slap yourself\n"
         return
     social(victim, "slaps you")
 
 
-def ticklecom():
-    victim = victim_is_here()
+def ticklecom(parser):
+    victim = victim_is_here(parser)
     if victim.player_id == Tk.mynum:
         yield "You tickle yourself\n"
         return
     social(victim, "tickles you")
 
 
-def wearcom():
-    item = get_item()
+def wearcom(parser):
+    item = get_item(parser)
     if not iscarrby(item.item_id, Tk.mynum):
         raise CommandError("You are not carrying this\n")
     if item.is_worn_by(Tk.mynum):
@@ -582,8 +589,8 @@ def wearcom():
     yield "OK\n"
 
 
-def removecom():
-    item = get_item()
+def removecom(parser):
+    item = get_item(parser)
     if item.is_worn_by(Tk.mynum):
         raise CommandError("You are not wearing this\n")
     item.carry_flag = 1
@@ -591,21 +598,21 @@ def removecom():
 
 def deafcom():
     victim = victim_magic()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10120,
+    Message(
+        victim,
+        Tk,
+        MSG_DEAF,
         Tk.curch,
         "",
-    )
+    ).send()
 
 
 def blindcom():
     victim = victim_magic()
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10105,
+    Message(
+        victim,
+        Tk,
+        MSG_BLIND,
         Tk.curch,
         "",
-    )
+    ).send()

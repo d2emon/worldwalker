@@ -1,17 +1,14 @@
 """
 Extensions section 1
 """
-from ..errors import CrapupError
-
-from ..bprintf import bprintf
 from ..magic import randperc
-from ..newuaf import NewUaf, delpers
-from ..objsys import ObjSys, dumpitems, dumpstuff, iscarrby
-from ..opensys import closeworld, openworld
-from ..parse import Parse, calibme
-from ..support import Item, Player, syslog
-from ..tk import Tk, loseme, sendsys, trapch
+from ..newuaf import NewUaf
+from ..objsys import ObjSys, dumpstuff, iscarrby
+from ..parse.messages import Message
+from ..support import Item, Player
+from ..tk import Tk, trapch
 from .disease import Diseases
+from .messages import MSG_GLOBAL, MSG_WIZARD, MSG_WOUND
 from .utils import get_item
 
 
@@ -69,131 +66,6 @@ MOBILES = [
 ]
 
 
-DISEASES = Diseases()
-
-
-def __iam(name):
-    search = name.lower()
-    my_name = Tk.globme.lower()
-    if search == my_name:
-        return True
-    if my_name[:4] == "the " and search == my_name[4:]:
-        return True
-    return False
-
-
-def __wounded(damage, message):
-    bprintf(message)
-
-    if NewUaf.my_lev > 9:
-        return
-    NewUaf.my_str -= damage
-    Parse.me_cal = 1
-    if NewUaf.my_str >= 0:
-        return
-    closeworld()
-
-    syslog("{} slain magically".format(Tk.globme))
-    delpers(Tk.globme)
-    Parse.zapped = True
-
-    openworld()
-    dumpitems()
-    loseme()
-    sendsys(
-        Tk.globme,
-        Tk.globme,
-        -10000,
-        Tk.curch,
-        "{} has just died\n".format(Tk.globme),
-    )
-    sendsys(
-        Tk.globme,
-        Tk.globme,
-        -10113,
-        Tk.curch,
-        "[ {} has just died ]\n".format(Tk.globme),
-    )
-    raise CrapupError("Oh dear you just died\n")
-
-
-def new1_receive(is_me, channel, to__, from__, code, text):
-    if code == -10100:
-        if is_me != 1:
-            return
-        bprintf("All your ailments have been cured\n")
-
-        DISEASES.cure()
-    elif code == -10101:
-        if is_me != 1:
-            return
-        DISEASES.crippled.magic(from__)
-    elif code == -10102:
-        if is_me != 1:
-            return
-        DISEASES.dumb.magic(from__)
-    elif code == -10103:
-        if is_me != 1:
-            return
-        DISEASES.force.magic(from__, text)
-    elif code == -10104:
-        if is_me == 1:
-            return
-        bprintf("\001p{}\001 shouts '{}'\n".format(from__, text))
-    elif code == -10105:
-        if is_me != 1:
-            return
-        DISEASES.blind.magic(from__)
-    elif code == -10106:
-        if __iam(from__):
-            return
-        if Tk.curch != channel:
-            return
-        bprintf("Bolts of fire leap from the fingers of \001p{}\001\n".format(from__))
-        if is_me == 1:
-            __wounded(int(text), "You are struck!\n")
-        else:
-            bprintf("\001p{}\001 is struck\n".format(to__))
-    elif code == -10107:
-        if is_me != 1:
-            return
-        bprintf("Your sex has been magically changed!\n")
-        NewUaf.my_sex = 1 - NewUaf.my_sex
-        bprintf("You are now ")
-        if NewUaf.my_sex:
-            bprintf("Female\n")
-        else:
-            bprintf("Male\n")
-        calibme()
-    elif code == -10109:
-        if __iam(from__):
-            return
-        if Tk.curch != channel:
-            return
-        bprintf("\001p{}\001 casts a fireball\n".format(from__))
-        if is_me == 1:
-            __wounded(int(text), "You are struck!\n")
-        else:
-            bprintf("\001p{}\001 is struck\n".format(to__))
-    elif code == -10110:
-        if __iam(from__):
-            return
-        if is_me != 1:
-            return
-        __wounded(int(text), "\001p{}\001 touches you giving you a sudden electric shock!\n".format(from__))
-    elif code == -10111:
-        if is_me != 1:
-            return
-        bprintf("{}\n".format(text))
-    elif code == -10113:
-        if NewUaf.my_lev > 9:
-            bprintf(text)
-    elif code == -10120:
-        if is_me != 1:
-            return
-        DISEASES.deaf.magic(from__)
-
-
 def tscale():
     players = len(list(filter(lambda player: len(player.name) > 0, [Player(b) for b in range(16)])))
     return SCALES.get(players, 7)
@@ -207,21 +79,21 @@ def woundmn(enemy, damage):
         return mhitplayer(enemy)
 
     dumpstuff(enemy, enemy.location)
-    sendsys(
-        "",
-        "",
-        -10000,
+    Message(
+        None,
+        None,
+        MSG_GLOBAL,
         enemy.location,
         "{} has just died\n".format(enemy.name),
-    )
+    ).send()
     enemy.name = ""
-    sendsys(
-        "",
-        "",
-        -10113,
+    Message(
+        None,
+        None,
+        MSG_WIZARD,
         enemy.location,
         "[ {} has just died ]\n".format(enemy.name),
-    )
+    ).send()
 
 
 def mhitplayer(enemy):
@@ -245,13 +117,13 @@ def mhitplayer(enemy):
             -1,
             -1,
         ]
-    sendsys(
-        Tk.globme,
-        enemy.name,
-        -10021,
+    Message(
+        Tk,
+        enemy,
+        MSG_WOUND,
         enemy.location,
         data,
-    )
+    ).send()
 
 
 def resetplayers():
@@ -269,21 +141,21 @@ def resetplayers():
 
 
 def teletrap(new_channel):
-    sendsys(
-        Tk.globme,
-        Tk.globme,
-        -10000,
+    Message(
+        Tk,
+        Tk,
+        MSG_GLOBAL,
         Tk.curch,
         "\001s{name}\001{name} has left.\n\001".format(name=Tk.globme),
-    )
+    ).send()
     Tk.curch = new_channel
-    sendsys(
-        Tk.globme,
-        Tk.globme,
-        -10000,
+    Message(
+        Tk,
+        Tk,
+        MSG_GLOBAL,
         Tk.curch,
         "\001s{name}\001{name} has arrived.\n\001".format(name=Tk.globme),
-    )
+    ).send()
     trapch(Tk.curch)
 
 

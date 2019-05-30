@@ -12,9 +12,5 @@ def loseme(*args):
     raise NotImplementedError()
 
 
-def sendsys(*args):
-    raise NotImplementedError()
-
-
 def trapch(*args):
     raise NotImplementedError()

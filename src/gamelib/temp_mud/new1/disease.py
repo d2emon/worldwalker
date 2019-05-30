@@ -1,7 +1,7 @@
 from ..errors import CommandError
 from ..bprintf import bprintf
 from ..newuaf import NewUaf
-from ..parse import gamecom
+from ..parse import Parse
 
 
 class Disease:
@@ -93,7 +93,7 @@ class Force:
     def check(self):
         self.is_force = True
         if self.__action:
-            gamecom(self.__action)
+            Parse.gamecom(self.__action)
             self.__action = None
         self.is_force = False
 
@@ -118,3 +118,6 @@ class Diseases:
         self.crippled.cure()
         self.blind.cure()
         self.deaf.cure()
+
+
+DISEASES = Diseases()

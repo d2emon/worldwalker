@@ -5,35 +5,38 @@ from ..magic import randperc
 from ..newuaf import NewUaf
 from ..opensys import openworld
 from ..objsys import iscarrby
-from ..parse import Parse, brkword
+from ..parse.messages import Message
 from ..support import Item, Player
-from ..tk import Tk, sendsys
+from ..tk import Tk
+from .messages import MSG_PRIVATE
 
 
-def get_item():
-    if brkword() is None:
+def get_item(parser):
+    word = parser.brkword()
+    if word is None:
         raise CommandError("Tell me more ?\n")
     openworld()
-    item = Item.fobna(Parse.wordbuf)
+    item = Item.fobna(word)
     if item is None:
         raise CommandError("There isn't one of those here\n")
     return item
 
 
-def __victim_base():
-    if brkword() is None:
+def __victim_base(parser):
+    word = parser.brkword()
+    if word is None:
         raise CommandError("Who ?\n")
     openworld()
-    if Parse.wordbuf == "at":
-        return __victim_base()  # STARE AT etc
-    player = Player.fpbn(Parse.wordbuf)
+    if word == "at":
+        return __victim_base(parser)  # STARE AT etc
+    player = Player.fpbn(word)
     if player is None:
         raise CommandError("Who ?\n")
     return player
 
 
-def __victim_magic(reflectable=True):
-    player = __victim_base()
+def __victim_magic(parser, reflectable=True):
+    player = __victim_base(parser)
     if NewUaf.my_str < 10:
         raise CommandError("You are too weak to cast magic\n")
     if NewUaf.my_lev < 10:
@@ -60,27 +63,27 @@ def __victim_magic(reflectable=True):
     return player
 
 
-def __victim_no_reflect():
-    return __victim_magic(False)
+def __victim_no_reflect(parser):
+    return __victim_magic(parser, False)
 
 
 # This one isnt for magic
-def victim_is_here():
-    victim = __victim_base()
+def victim_is_here(parser):
+    victim = __victim_base(parser)
     if victim.location != Tk.curch:
         raise CommandError("They are not here\n")
     return victim
 
 
-def victim_magic_is_here():
-    victim = __victim_no_reflect()
+def victim_magic_is_here(parser):
+    victim = __victim_no_reflect(parser)
     if victim.location != Tk.curch:
         raise CommandError("They are not here\n")
     return victim
 
 
-def victim_magic():
-    return __victim_magic(True)
+def victim_magic(parser):
+    return __victim_magic(parser, True)
 
 
 def social(victim, message):
@@ -88,10 +91,10 @@ def social(victim, message):
         bk = "\001s{name}\001{name} {message}\n\001".format(name=Tk.globme, message=message)
     else:
         bk = "\001p{name}\001 {message}\n\001".format(name=Tk.globme, message=message)
-    sendsys(
-        victim.name,
-        Tk.globme,
-        -10111,
+    Message(
+        victim,
+        Tk,
+        MSG_PRIVATE,
         Tk.curch,
         bk,
-    )
+    ).send()
