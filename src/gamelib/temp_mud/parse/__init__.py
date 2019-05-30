@@ -1,17 +1,19 @@
 """
 globme holds global me data
 """
-from ..errors import CommandError
+from ..errors import CommandError, CrapupError
 
 from ..blood import Blood
 from ..bprintf import bprintf
 from ..magic import randperc
 from ..new1.disease import DISEASES
 from ..new1.messages import MSG_WIZARD, MSG_GLOBAL
+from ..new1.utils import get_item
 from ..newuaf import NewUaf
-from ..objsys import dumpitems
+from ..objsys import ObjSys, dumpitems
+from ..opensys import closeworld, openworld
 from ..support import Item, Player, syslog, iscarrby
-from ..tk import Tk, trapch, broad
+from ..tk import Tk, trapch, broad, loseme
 from .commands import COMMANDS
 from .messages import Message
 
@@ -36,9 +38,27 @@ class Extras:
     i_setup = None
     ROOMS = None
     GWIZ = None
+    EXE = None
+    EXE2 = None
+
+
+def chdir(*args):
+    raise NotImplementedError()
+
+
+def debug2(*args):
+    raise NotImplementedError()
 
 
 def disle3(*args):
+    raise NotImplementedError()
+
+
+def examcom(*args):
+    raise NotImplementedError()
+
+
+def execl(*args):
     raise NotImplementedError()
 
 
@@ -46,11 +66,51 @@ def fopen(*args):
     raise NotImplementedError()
 
 
+def geteuid(*args):
+    raise NotImplementedError()
+
+
+def getuid(*args):
+    raise NotImplementedError()
+
+
 def hitplayer(*args):
     raise NotImplementedError()
 
 
+def iscontin(*args):
+    raise NotImplementedError()
+
+
+def keysetback(*args):
+    raise NotImplementedError()
+
+
+def keysetup(*args):
+    raise NotImplementedError()
+
+
+def lookin(*args):
+    raise NotImplementedError()
+
+
+def pbfr(*args):
+    raise NotImplementedError()
+
+
+def rte(*args):
+    raise NotImplementedError()
+
+
+def system(*args):
+    raise NotImplementedError()
+
+
 def time(*args):
+    raise NotImplementedError()
+
+
+def update(*args):
     raise NotImplementedError()
 
 
@@ -74,9 +134,9 @@ class Parse:
 
     in_ms = "has arrived."
     out_ms = ""
-    __mout_ms = "vanishes in a puff of smoke."
-    __min_ms = "appears with an ear-splitting bang."
-    __here_ms = "is here"
+    mout_ms = "vanishes in a puff of smoke."
+    min_ms = "appears with an ear-splitting bang."
+    here_ms = "is here"
 
     __tdes = 0
     __vdes = 0
@@ -505,7 +565,7 @@ def rawcom(parser):
 
 
 def rollcom(parser):
-    item = get_item()
+    item = get_item(parser)
     if item.item_id in [122, 123]:
         parser.gamecom("push pillar")
     else:
@@ -526,146 +586,86 @@ def typocom(parser):
     syslog("Typo by {} in {} : {}".format(Tk.globme, Tk.curch, parser.getreinput()))
 
 
-"""
-look_cmd()
-{
-	int a;
-	long brhold;
-	extern long brmode;
-	extern char wordbuf[];
-        extern long curch;
-    wordbuf = cls.brkword()
-    if wordbuf is None:
-	{
-          brhold=brmode;
-          brmode=0;
-          lookin(curch);
-          brmode=brhold;
-          return;
-        }
-        if(strcmp(wordbuf,"at")==0)
-        {
-        	examcom();
-        	return;
-        }
-        if((strcmp(wordbuf,"in"))&&(strcmp(wordbuf,"into")))
-        {
-        	return;
-        }
-    wordbuf = cls.brkword()
-    if wordbuf is None:
-        {
-        	bprintf("In what ?\n");
-        	return;
-        }
-        a=fobna(wordbuf);
-	if(a==-1)
-	{
-		bprintf("What ?\n");
-		return;
-	}
-	if(!otstbit(a,14))
-	{
-		bprintf("That isn't a container\n");
-		return;
-	}
-	if((otstbit(a,2))&&(state(a)!=0))
-	{
-		bprintf("It's closed!\n");
-		return;
-	}
-	bprintf("The %s contains:\n",oname(a));
-	aobjsat(a,3);
-}
-	
-set_ms(x)
-char *x;
-{
-	extern long my_lev;
-	extern char globme[];
-	if((my_lev<10)&&(strcmp(globme,"Lorry")))
-	{
-		bprintf("No way !\n");
-	}
-	else
-	{
-        x = cls.getreinput();
-	}
-	return;
-}
+def look_cmd(parser):
+    word = parser.brkword()
+    if word is None:
+        brhold = parser.brmode
+        parser.brmode = 0
+        lookin(Tk.curch)
+        parser.brmode = brhold
+        return
+    if word == "at":
+        return examcom()
+    if word != "in" and word != "into":
+        return
 
-setmincom()
-{
-	extern char min_ms[];
-	set_ms(min_ms);
-}
-setincom()
-{
-	extern char min_ms[];
-	set_ms(in_ms);
-}
-setoutcom()
-{
-	extern char out_ms[];
-	set_ms(out_ms);
-}
-setmoutcom()
-{
-	extern char mout_ms[];
-	set_ms(mout_ms);
-}
+    word = parser.brkword()
+    if word is None:
+        raise CommandError("In what ?\n")
 
-setherecom()
-{
-	extern char here_ms[];
-	set_ms(here_ms);
-}
+    item = Item.fobna(word)
+    if item is None:
+        raise CommandError("What ?\n")
+    if not item.tstbit(14):
+        raise CommandError("That isn't a container\n")
+    if item.tstbit(2) and item.state != 0:
+        raise CommandError("It's closed!\n")
 
-digcom()
-{
-        extern long curch;
-	if((oloc(186)==curch)&&(isdest(186)))
-	{
-		bprintf("You uncover a stone slab!\n");
-		ocreate(186);
-		return;
-	}
-	if((curch!=-172)&&(curch!=-192))
-	{
-		bprintf("You find nothing.\n");
-		return;
-	}
-	if(state(176)==0)
-	{
-		bprintf("You widen the hole, but with little effect.\n");
-		return;
-	}
-	setstate(176,0);
-	bprintf("You rapidly dig through to another passage.\n");
-}
-"""
-"""
+    yield "The {} contains:\n".format(item.name)
+    item.aobjsat(3)
 
-emptycom()
-{
-	long a,b;
-	extern long numobs;
-        extern long mynum;
-	char x[81];
-    a = get_item()
-	b=0;
-	while(b<numobs)
-	{
-		if(iscontin(b,a))
-		{
-			setoloc(b,mynum,1);
-			bprintf("You empty the %s from the %s\n",oname(b),oname(a));
-			sprintf(x,"drop %s",oname(b));
-			cls.gamecom(x);
-			pbfr();
-			openworld();
-		}
-		b++;
-	}
-}
-"""
+
+def set_ms(parser):
+    if NewUaf.my_lev < 10 and Tk.globme != "Lorry":
+        raise CommandError("No way !\n")
+    else:
+        return parser.getreinput()
+
+
+def setmincom(parser):
+    parser.min_ms = set_ms(parser)
+
+
+def setincom(parser):
+    parser.in_ms = set_ms(parser)
+
+
+def setoutcom(parser):
+    parser.out_ms = set_ms(parser)
+
+
+def setmoutcom(parser):
+    parser.mout_ms = set_ms(parser)
+
+
+def setherecom(parser):
+    parser.here_ms = set_ms(parser)
+
+
+def digcom(parser):
+    item = Item(186)
+    if item.loc == Tk.curch and item.is_destroyed:
+        yield "You uncover a stone slab!\n"
+        item.create()
+        return
+
+    if Tk.curch != -172 and Tk.curch != -192:
+        raise CommandError("You find nothing.\n")
+
+    item = Item(176)
+    if item.state == 0:
+        raise CommandError("You widen the hole, but with little effect.\n")
+    item.state = 0
+    yield "You rapidly dig through to another passage.\n"
+
+
+def emptycom(parser):
+    container = get_item(parser)
+    for item_id in range(ObjSys.numobs):
+        item = Item(item_id)
+        if not iscontin(item, container):
+            item.setoloc(Tk.mynum, 1)
+            yield "You empty the {} from the {}\n".format(item.name, container.name)
+            parser.gamecom("drop {}".format(item.name))
+            pbfr()
+            openworld()

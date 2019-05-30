@@ -44,6 +44,10 @@ class Player:
         raise NotImplementedError()
 
     @property
+    def tstflg(self):
+        raise NotImplementedError()
+
+    @property
     def damage(self):
         if self.player_id in (18, 19, 20, 21, 22):
             return 6
@@ -105,6 +109,10 @@ class Item:
         raise NotImplementedError()
 
     @property
+    def is_destroyed(self):
+        raise NotImplementedError()
+
+    @property
     def can_wear(self):
         return self.tstbit(8)
 
@@ -134,6 +142,13 @@ class Item:
         raise NotImplementedError()
 
     def longt(self, *args):
+        raise NotImplementedError()
+
+    def create(self, *args):
+        raise NotImplementedError()
+
+    @classmethod
+    def fobn(cls, name):
         raise NotImplementedError()
 
     @classmethod
