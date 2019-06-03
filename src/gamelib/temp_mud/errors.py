@@ -5,3 +5,6 @@ class CommandError(Exception):
 class CrapupError(Exception):
     pass
 
+
+class NotFoundError(Exception):
+    pass

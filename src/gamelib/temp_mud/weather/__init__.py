@@ -1,6 +1,12 @@
 """
 The next part of the universe...
 """
+from ..action import Action
+from ..errors import CommandError, NotFoundError
+from ..item import Item
+from ..message import Message, MSG_WEATHER, MSG_GLOBAL
+from ..player import Player
+from ..weather_data import WEATHER_SUN, WEATHER_RAIN, WEATHER_STORM, WEATHER_SNOW, WEATHER_BLIZZARD, WEATHER_START
 
 """
 Weather Routines
@@ -16,65 +22,44 @@ states are
 """
 
 
-MSG_GLOBAL = -10000
-MSG_WEATHER = -10030
-
-WEATHER_SUN = 0
-WEATHER_RAIN = 1
-WEATHER_STORM = 2
-WEATHER_SNOW = 3
-WEATHER_BLIZZARD = 4
-
-WEATHER_START = {
-    WEATHER_SUN: "\001cThe sun comes out of the clouds\n\001",
-    WEATHER_RAIN: "\001cIt has started to rain\n\001",
-    WEATHER_SNOW: "\001cIt has started to snow\n\001",
-    WEATHER_BLIZZARD: "\001cYou are half blinded by drifting snow, as a white, icy blizzard sweeps across\nthe "
-                      "land\n\001",
-}
-
-WEATHER_TEXT = {
-    WEATHER_STORM: "\001cThe skies are dark and stormy\n\001",
-    WEATHER_SNOW: "\001cIt is snowing\001\n",
-    WEATHER_BLIZZARD: "\001cA blizzard is howling around you\001\n",
-}
+def adjust_weather(user, new_weather):
+    weather = Item(0)
+    old_weather = weather.state
+    if new_weather != old_weather:
+        weather.state = new_weather
+        Message.send(
+            user,
+            user,
+            MSG_WEATHER,
+            None,
+            new_weather,
+        )
 
 
-class User:
-    def __init__(self):
-        self.has_farted = False
-        self.channel_id = 0
-
-    @property
-    def location(self):
-        return Location(self.channel_id)
-
-
-class Location:
-    def __init__(self, location_id):
-        self.location_id = location_id
-
-    @property
-    def outdoors(self):
-        if self.location_id in [-100, -101, -102]:
-            return True
-        elif self.location_id in [-170, -183]:
-            return True
-        elif -168 > self.location_id > -191:
-            return True
-        elif -181 > self.location_id > -172:
-            return True
-        else:
-            return False
+def autochange_weather(user):
+    chance = randperc()
+    if chance < 50:
+        return adjust_weather(user, 1)
+    elif chance > 90:
+        return adjust_weather(user, 2)
+    else:
+        return adjust_weather(user, 0)
 
 
-class __Weather:
+def receive_weather(user, weather_id):
+    if not user.location.outdoors():
+        return
+
+    weather_id = user.location.validate_weather_id(weather_id)
+    yield WEATHER_START.get(weather_id, "")
+
+
+class __Weather(Action):
     weather_id = None
+    wizard_only = "What ?\n"
 
     @classmethod
-    def action(cls, user):
-        if not user.is_wizard:
-            raise Exception("What ?\n")
+    def action(cls, parser, user):
         adjust_weather(user, cls.weather_id)
 
 
@@ -98,68 +83,31 @@ class Blizzard(__Weather):
     weather_id = WEATHER_BLIZZARD
 
 
-def adjust_weather(user, new_weather):
-    weather = Item(0)
-    old_weather = weather.state
-    if new_weather != old_weather:
-        weather.state = new_weather
-        Message(
-            user,
-            user,
-            MSG_WEATHER,
-            new_weather,
-        ).send()
-
-
-def longwthr(user):
-    chance = randperc()
-    if chance < 50:
-        return adjust_weather(user, 1)
-    elif chance > 90:
-        return adjust_weather(user, 2)
-    else:
-        return adjust_weather(user, 0)
-
-
-def weather_receive(user, weather_id):
-    if not user.location.outdoors():
-        return
-    weather_id = modifwthr(weather_id)
-    yield WEATHER_START.get(weather_id, "")
-
-
-def show_weather(user, weather_id):
-    if not user.location.outdoors():
-        return
-    weather_id = modifwthr(weather_id)
-    if weather_id == WEATHER_RAIN:
-        if -178 > user.channel_id > -199:
-            yield "It is raining, a gentle mist of rain, which sticks to everything around\n"
-            yield "you making it glisten and shine. High in the skies above you is a rainbow\n"
-        else:
-            yield "\001cIt is raining\n\001"
-        return
-    yield WEATHER_TEXT.get(weather_id, "")
-
-
 # Silly Section
-
-class Silly:
+class Silly(Action):
     not_dumb = False
     message = ""
     result = ""
 
     @classmethod
-    def action(cls, user):
-        if cls.not_dumb:
-            user.diseases.dumb.check()
-        Message(
+    def silly(cls, user, message):
+        Message.send(
             user,
             user,
             MSG_GLOBAL,
             user.channel_id,
-            cls.message.format(user=user),
+            message.format(user=user),
         )
+
+    @classmethod
+    def validate(cls, user):
+        super().validate(user)
+        if cls.not_dumb:
+            user.diseases.dumb.check()
+
+    @classmethod
+    def action(cls, parser, user):
+        cls.silly(user, cls.message)
         yield cls.result
 
 
@@ -203,9 +151,9 @@ class Fart(Silly):
     result = "Fine...\n"
 
     @classmethod
-    def action(cls, user):
+    def action(cls, parser, user):
         user.has_farted = True
-        super().action(user)
+        super().action(parser, user)
 
 
 class Grin(Silly):
@@ -230,284 +178,161 @@ class Snigger(Silly):
     result = "You snigger\n"
 
 
-"""
- posecom()
-    {
-    long a;
-    extern long my_lev;
-    if(my_lev<10)
-       {
-       bprintf("You are just not up to this yet\n");
-       return;
-       }
-    time(&a);
-    srand(a);
-    a=randperc();
-    a=a%5;
-    bprintf("POSE :%d\n",a);
-    switch(a)
-       {
-       case 0:
-          break;
-       case 1:
-	sillycom("\001s%s\001%s throws out one arm and sends a huge bolt of fire high\n\
-into the sky\n\001");
-          broad("\001cA massive ball of fire explodes high up in the sky\n\001");
-          break;
-       case 2:
-          sillycom("\001s%s\001%s turns casually into a hamster before resuming normal shape\n\001");
-          break;
-       case 3:
-          sillycom("\001s%s\001%s \
-starts sizzling with magical energy\n\001");
-          break;
-       case 4:
-          sillycom("\001s%s\001%s begins to crackle with magical fire\n\001");
-          break;
-          }
-    }
+class Pose(Silly):
+    wizard_only = "You are just not up to this yet\n"
 
- emotecom()
- /*
-  (C) Jim Finnis
- */
- {
- 	extern long my_lev;
- 	char buf[100];
- 	strcpy(buf,"\001P%s\001 ");
- 	getreinput(buf+6);
- 	strcat(buf,"\n");
- 	if (my_lev<10000)
- 		bprintf("Your emotions are strictly limited!\n");
-	else
-		sillycom(buf);
-}
-		
- praycom()
-    {
-    extern long curch;
-    sillycom("\001s%s\001%s falls down and grovels in the dirt\n\001");
-    bprintf("Ok\n");
-    }
+    @classmethod
+    def action(cls, parser, user):
+        pose_id = randperc() % 5
 
- yawncom()
-    {
-    sillycom("\001P%s\001\001d yawns\n\001");
-    }
- 
- groancom()
-    {
-    sillycom("\001P%s\001\001d groans loudly\n\001");
-    bprintf("You groan\n");
-    }
- 
- moancom()
-    {
-    sillycom("\001P%s\001\001d starts making moaning noises\n\001");
-    bprintf("You start to moan\n");
-    }
- 
- cancarry(plyr)
-    {
-    extern long numobs;
-    long a,b;
-    a=0;
-    b=0;
-    if(plev(plyr)>9) return(1);
-    if(plev(plyr)<0) return(1);
-    while(a<numobs)
-       {
-       if((iscarrby(a,plyr))&&(!isdest(a))) b++;
-       a++;
-       }
-    if(b<plev(plyr)+5) return(1);
-    return(0);
-    }
- 
- 
- setcom()
-    {
-    long a,b,c;
-    extern long my_lev;
-    extern char wordbuf[];
-    if(brkword()== -1)
-       {
-       bprintf("set what\n");
-       return;
-       }
-    if(my_lev<10)
-       {
-       bprintf("Sorry, wizards only\n");
-       return;
-       }
-    a=fobna(wordbuf);
-    if(a== -1)
-       {
-         goto setmobile;
-       }
-    if(brkword()== -1)
-       {
-       bprintf("Set to what value ?\n");
-       return;
-       }
-       if(strcmp(wordbuf,"bit")==0) goto bitset;
-       if(strcmp(wordbuf,"byte")==0) goto byteset;
-    b=numarg(wordbuf);
-    if(b>omaxstate(a))
-       {
-       bprintf("Sorry max state for that is %d\n",omaxstate(a));
-       return;
-       }
-    if(b<0)
-       {
-       bprintf("States start at 0\n");
-       return;
-       }
-    setstate(a,b);
-    return;
-bitset:if(brkword()==-1)
-       {
-       	   bprintf("Which bit ?\n");
-       	   return;
-       	}
-       	b=numarg(wordbuf);
-       	if(brkword()==-1)
-       	{
-       	   bprintf("The bit is %s\n",otstbit(a,b)?"TRUE":"FALSE");
-       	   return;
-       	}
-       	c=numarg(wordbuf);
-       	if((c<0)||(c>1)||(b<0)||(b>15))
-       	{
-       		bprintf("Number out of range\n");
-       		return;
-       	}
-       	if(c==0) oclrbit(a,b);
-       	else osetbit(a,b);
-       	return;
-byteset:if(brkword()==-1)
-       {
-       	   bprintf("Which byte ?\n");
-       	   return;
-       	}
-       	b=numarg(wordbuf);
-       	if(brkword()==-1)
-       	{
-       	   bprintf("Current Value is : %d\n",obyte(a,b));
-       	   return;
-       	}
-       	c=numarg(wordbuf);
-       	if((b<0)||(b>1)||(c<0)||(c>255))
-       	{
-       		bprintf("Number out of range\n");
-       		return;
-       	}
-	osetbyte(a,b,c);
-       	return;       
-setmobile:a=fpbn(wordbuf);
-           if(a==-1)
-           {
-           	bprintf("Set what ?\n");
-           	return;
-           }
-           if(a<16)
-           {
-           	bprintf("Mobiles only\n");
-           	return;
-           }
-           if(brkword()==-1)
-           {
-           	bprintf("To what value ?\n");
-           	return;
-           }
-           b=numarg(wordbuf);
-           setpstr(a,b);
-    }
- 
- 
- 
-isdark()
-    {
-long c;
-extern long curch,my_lev;
-extern long numobs;
-if(my_lev>9) return(0);
-if((curch==-1100)||(curch==-1101)) return(0);
-if((curch<=-1113)&&(curch>=-1123)) goto idk;
-if((curch<-399)||(curch>-300)) return(0);
-idk:c=0;
-while(c<numobs)
-{
-if((c!=32)&&(otstbit(c,13)==0)) {c++;continue;}
-if(ishere(c)) return(0);
-if((ocarrf(c)==0)||(ocarrf(c)==3)) {c++;continue;}
-if(ploc(oloc(c))!=curch) {c++;continue;}
-return(0);
-}
-return(1);
-}
- 
- 
- 
-modifwthr(n)
-{
-extern long curch;
-switch(curch)
-{
-default:
-if((curch>=-179)&&(curch<=-199)) 
-{
-	if(n>1)return(n%2);
-	else return(n);
-}
-if((curch>=-178)&&(curch<=-100))
-{
-	if((n==1)||(n==2)) n+=2;
-	return(n);
-}
-return(n);
-}
-}
+        yield "POSE :{}\n".format(pose_id)
 
-setpflags()
-{
-	long a,b,c,d;
-	extern long mynum;
-	extern char wordbuf[];
-	if(!ptstbit(mynum,2))
-	{
-		bprintf("You can't do that\n");
-		return;
-	}
-	if(brkword()==-1) 
-	{
-		bprintf("Whose PFlags ?\n");
-		return;
-	}
-	a=fpbn(wordbuf);
-	if(a==-1)
-	{
-		bprintf("Who is that ?\n");
-		return;
-	}
-	if(brkword()==-1)
-	{
-		bprintf("Flag number ?\n");
-		return;
-	}
-	b=numarg(wordbuf);
-	if(brkword()==-1)
-	{
-		bprintf("Value is %s\n",ptstflg(a,b)?"TRUE":"FALSE");
-		return;
-	}
-	c=numarg(wordbuf);
-	if((c<0)||(c>1)||(b<0)||(b>31))
-	{
-		bprintf("Out of range\n");
-		return;
-	}
-	if(c) psetflg(a,b);
-	else pclrflg(a,b);
-}
-"""
+        if pose_id == 0:
+            pass
+        elif pose_id == 1:
+            cls.silly(user, "\001s{user.name}\001{user.name} throws out one arm and sends a huge bolt of fire high\n"
+                            "into the sky\n\001")
+            broad("\001cA massive ball of fire explodes high up in the sky\n\001")
+        elif pose_id == 2:
+            cls.silly(user, "\001s{user.name}\001{user.name} turns casually into a hamster before resuming normal "
+                            "shape\n\001")
+        elif pose_id == 3:
+            cls.silly(user, "\001s{user.name}\001{user.name} starts sizzling with magical energy\n\001")
+        elif pose_id == 4:
+            cls.silly(user, "\001s{user.name}\001{user.name} begins to crackle with magical fire\n\001")
+
+
+class Emote(Silly):
+    """
+    (C) Jim Finnis
+    """
+    god_only = "Your emotions are strictly limited!\n"
+
+    @classmethod
+    def action(cls, parser, user):
+        cls.silly(user, "\001P{}\001 " + parser.getreinput() + "\n")
+
+
+class Pray(Silly):
+    message = "\001s{user.name}\001{user.name} falls down and grovels in the dirt\n\001"
+    result = "Ok\n"
+
+
+class Yawn(Silly):
+    message = "\001P{user.name}\001\001d yawns\n\001"
+
+
+class Groan(Silly):
+    message = "\001P{user.name}\001\001d groans loudly\n\001"
+    result = "You groan\n"
+
+
+class Moan(Silly):
+    message = "\001P{user.name}\001\001d starts making moaning noises\n\001"
+    result = "You start to moan\n"
+
+
+class SetValue(Action):
+    @classmethod
+    def __set_bit(cls, parser, item):
+        bit_id = int(parser.require_next("Which bit ?\n"))
+
+        value = next(parser)
+        if value is None:
+            yield "The bit is {}\n".format("TRUE" if item.test_bit(bit_id) else "FALSE")
+            return
+        else:
+            value = int(value)
+
+        if value not in range(2) or bit_id not in range(16):
+            raise CommandError("Number out of range\n")
+
+        if not value:
+            item.clear_bit(bit_id)
+        else:
+            item.set_bit(bit_id)
+
+    @classmethod
+    def __set_byte(cls, parser, item):
+        byte_id = int(parser.require_next("Which byte ?\n"))
+
+        value = next(parser)
+        if value is None:
+            yield "Current Value is : {}\n".format(item.byte(byte_id))
+            return
+        else:
+            value = int(value)
+
+        if value not in range(256) or byte_id not in range(2):
+            raise CommandError("Number out of range\n")
+
+        item.set_byte(byte_id, value)
+
+    @classmethod
+    def __set_mobile(cls, parser, mobile):
+        try:
+            player = Player.fpbn(mobile)
+        except NotFoundError:
+            raise CommandError("Set what ?\n")
+
+        if not player.is_mobile:
+            raise CommandError("Mobiles only\n")
+
+        player.strength = int(parser.require_next("To what value ?\n"))
+
+    @classmethod
+    def __set_state(cls, item, state):
+        if state < 0:
+            raise CommandError("States start at 0\n")
+        if state > item.max_state:
+            raise CommandError("Sorry max state for that is {}\n".format(item.max_state))
+        item.state = state
+
+    @classmethod
+    def action(cls, parser, user):
+        item_name = parser.require_next("set what\n")
+        if not user.is_wizard:
+            raise CommandError("Sorry, wizards only\n")
+
+        item = Item.fobna(item_name)
+        if item is None:
+            return cls.__set_mobile(parser, item_name)
+
+        value = parser.require_next("Set to what value ?\n")
+        if value == "bit":
+            return cls.__set_bit(parser, item)
+        elif value == "byte":
+            return cls.__set_byte(parser, item)
+        else:
+            return cls.__set_state(item, int(value))
+
+
+class SetPFlags(Action):
+    @classmethod
+    def validate(cls, user):
+        if not user.player.test_bit(2):
+            raise CommandError("You can't do that\n")
+
+    @classmethod
+    def action(cls, parser, user):
+        try:
+            player = Player.fpbn(parser.require_next("Whose PFlags ?\n"))
+        except NotFoundError:
+            raise CommandError("Who is that ?\n")
+
+        flag_id = parser.require_next("Flag number ?\n")
+
+        value = next(parser)
+        if value is None:
+            yield "Value is : {}\n".format("TRUE" if player.test_flag(flag_id) else "FALSE")
+            return
+        else:
+            value = int(value)
+
+        if value not in range(2) or player.player_id not in range(31):
+            raise CommandError("Out of range\n")
+
+        if value:
+            player.set_flag(flag_id)
+        else:
+            player.clear_flag(flag_id)
