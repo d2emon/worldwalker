@@ -3,6 +3,18 @@ class Player:
         self.player_id = player_id
 
     @property
+    def name(self):
+        raise NotImplementedError()
+
+    @property
+    def location(self):
+        raise NotImplementedError()
+
+    @property
+    def is_alive(self):
+        return bool(self.name)
+
+    @property
     def is_mobile(self):
         return self.player_id >= 16
 
