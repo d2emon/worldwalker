@@ -20,15 +20,32 @@ class User:
             cls.in_fight = 0
             cls.fighting = None
 
-    def __init__(self):
-        self.__in_setup = False
+    def __init__(self, name):
+        self.in_setup = False
 
         self.has_farted = False
         self.__player_id = 0
 
         self.__location_id = 0
+
         self.__message_id = None
-        self.__name = ""
+        self.__putmeon()
+
+        try:
+            openworld()
+        except FileNotFoundError:
+            raise CrapupError("Sorry AberMUD is currently unavailable")
+        if self.__player_id >= maxu:
+            raise Exception("\nSorry AberMUD is full at the moment\n")
+        self.__name = name
+        self.read_messages()
+        closeworld()
+
+        self.__message_id = None
+
+    @property
+    def name(self):
+        return self.__name
 
     @property
     def is_wizard(self):
@@ -140,3 +157,10 @@ class User:
         rdes = 0
         tdes = 0
         vdes = 0
+
+    def cleanup(self, message_data):
+        world = openworld()
+        for i in range(100):
+            world[i] = world[100 + i + 1]
+        message_data[0] += 100
+        revise(message_data[0])
