@@ -1,3 +1,4 @@
+from .message import Message, MSG_BROADCAST
 from .user import User
 
 
@@ -22,14 +23,12 @@ class Buffer:
 
 
 class Screen:
-    def __init__(self, tty=0):
+    def __init__(self, username, tty=0):
         self.tty = tty
 
         self.__key_buffer = ""
 
-        self.__rd_qd = False
-
-        self.user = User()
+        self.user = User(username)
         self.buffer = Buffer()
         self.parser = Parser(self.user)
 
@@ -74,16 +73,15 @@ class Screen:
     def main(self):
         self.buffer.show()
         self.send_message()
-        if self.__rd_qd:
-            self.user.read_messages()
-        self.__rd_qd = False
-        closeworld()
+        self.parser.read_messages(False)
         self.buffer.show()
 
 
 class Parser:
     def __init__(self, user):
         self.user = user
+
+        self.__rd_qd = False
 
         self.__conversation_flag = 0
         self.__mode = 0
@@ -119,8 +117,7 @@ class Parser:
 
     def parse(self, work, on_reinput):
         openworld()
-        self.user.read_messages()
-        closeworld()
+        self.read_messages()
 
         if work:
             if work == "**" and self.reset_conversation_mode():
@@ -151,28 +148,27 @@ class Parser:
         action = action[1:]
         if action == "g":
             self.__mode = 1
-            user.location_id = -5
-            user.initme()
-            world = openworld()
-            user.player.strength = user.NewUaf.strength
-            user.player.level = user.NewUaf.level
-            """
- if(my_lev<10000) setpvis(mynum,0);
-    else setpvis(mynum,10000);
-          setpwpn(mynum,-1);
-          setpsexall(mynum,my_sex);
-          setphelping(mynum,-1);
-          cuserid(us);
-          sprintf(xy,"\001s%s\001%s  has entered the game\n\001",name,name);
-          sprintf(xx,"\001s%s\001[ %s  has entered the game ]\n\001",name,name);
-          sendsys(name,name,-10113,curch,xx);
-          rte(name);
-          if(randperc()>50)trapch(-5);
-else{curch= -183;trapch(-183);}
-sendsys(name,name,-10000,curch,xy);
-          break;
-            """
-            pass
+            user.start_game()
         else:
             print("\nUnknown . option\n")
         return True
+
+    def read_messages(self, to_read=True):
+        if not to_read and self.__rd_qd:
+            self.__rd_qd = False
+            to_read = True
+
+        if to_read:
+            self.user.read_messages()
+
+        closeworld()
+
+    def broad(self, message):
+        self.__rd_qd = True
+        self.user.send2(Message(
+            None,
+            None,
+            MSG_BROADCAST,
+            None,
+            message,
+        ))

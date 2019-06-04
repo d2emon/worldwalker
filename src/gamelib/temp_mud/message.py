@@ -1,8 +1,18 @@
+MSG_BROADCAST = -1
 MSG_GLOBAL = -10000
 MSG_WEATHER = -10030
+MSG_WIZARD = -10113
 
 
 class Message:
+    def __init__(self, user_from, user_to, code, channel_id, message):
+        self.user_from = user_from
+        self.user_to = user_to
+        self.code = code
+        self.channel_id = channel_id
+        self.message = message
+
+
     @classmethod
     def send(cls, user_from, user_to, code, channel_id, message):
         raise NotImplementedError()
@@ -19,7 +29,7 @@ class Message:
     def read(cls, world, message_id):
         return world[cls.get_position(world, message_id)]
 
-    def send2(self, world):
+    def save(self, world):
         message_id = self.get_position(world, self.last(world))
         message_data = self.get_message_data(world)
         message_data[1] += 1
