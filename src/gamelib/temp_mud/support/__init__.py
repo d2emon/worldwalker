@@ -1,3 +1,14 @@
+"""
+Some more basic functions
+
+Note
+
+state(obj)
+setstate(obj,val)
+destroy(obj)
+
+are elsewhere
+"""
 from ..errors import CommandError
 
 from ..objsys import ObjSys, iscarrby
@@ -10,42 +21,6 @@ def is_dark(*args):
 class Player:
     def __init__(self, player_id):
         self.player_id = player_id
-
-    @property
-    def exists(self):
-        return self.name is not None
-
-    @property
-    def location(self):
-        raise NotImplementedError()
-
-    @location.setter
-    def location(self, value):
-        raise NotImplementedError()
-
-    @property
-    def strength(self):
-        raise NotImplementedError()
-
-    @strength.setter
-    def strength(self, value):
-        raise NotImplementedError()
-
-    @property
-    def name(self):
-        raise NotImplementedError()
-
-    @name.setter
-    def name(self, value):
-        raise NotImplementedError()
-
-    @property
-    def tothlp(self):
-        raise NotImplementedError()
-
-    @property
-    def tstflg(self):
-        raise NotImplementedError()
 
     @property
     def damage(self):
@@ -92,27 +67,6 @@ class Item:
             ObjSys.objinfo[4 * (self.item_id ^ 1) + 1] = value
 
     @property
-    def carry_flag(self):
-        # return ObjSys.objinfo[4 * self.item_id + 1]
-        raise NotImplementedError()
-
-    @carry_flag.setter
-    def carry_flag(self, value):
-        ObjSys.objinfo[4 * self.item_id + 3] = value
-
-    @property
-    def name(self):
-        raise NotImplementedError()
-
-    @property
-    def loc(self):
-        raise NotImplementedError()
-
-    @property
-    def is_destroyed(self):
-        raise NotImplementedError()
-
-    @property
     def can_wear(self):
         return self.tstbit(8)
 
@@ -125,27 +79,6 @@ class Item:
         if self.carry_flag != 2:
             return False
         return True
-
-    def tstbit(self, *args):
-        raise NotImplementedError()
-
-    def setbit(self, *args):
-        raise NotImplementedError()
-
-    def clearbit(self, *args):
-        raise NotImplementedError()
-
-    def setbyte(self, *args):
-        raise NotImplementedError()
-
-    def setoloc(self, *args):
-        raise NotImplementedError()
-
-    def longt(self, *args):
-        raise NotImplementedError()
-
-    def create(self, *args):
-        raise NotImplementedError()
 
     @classmethod
     def fobn(cls, name):
@@ -175,9 +108,11 @@ class Door(Item):
             raise CommandError("The door is not open\n")
 
 
-def ohany(*args):
-    raise NotImplementedError()
-
-
-def syslog(*args):
-    raise NotImplementedError()
+def syslog(user, message):
+    try:
+        x = openlock(LOG_FILE, "a")
+        fprintf(x, "{}:  {}\n".format(time(), message))
+        fclose(x)
+    except FileNotFoundError:
+        user.loose()
+        raise CrapupError("Log fault : Access Failure")

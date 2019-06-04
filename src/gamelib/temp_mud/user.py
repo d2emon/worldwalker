@@ -1,4 +1,5 @@
 from .errors import CrapupError
+from .item import Item
 from .location import Location
 from .message import Message, MSG_GLOBAL, MSG_WIZARD
 from .player import Player
@@ -64,7 +65,7 @@ class User:
         max_items = self.max_items
         if max_items is None:
             return True
-        items_count = sum(not item.is_destroyed and item.is_carried_by(self.player) for item in ITEMS)
+        items_count = sum(not item.is_destroyed and item.is_carried_by(self.player) for item in Item.items)
         return items_count < max_items
 
     @property
@@ -73,7 +74,7 @@ class User:
             return False
         if not self.location.is_dark:
             return False
-        for item in filter(lambda i: i.is_light, ITEMS):
+        for item in filter(lambda i: i.is_light, Item.items):
             if is_here(item):
                 return False
             owner = item.owner
@@ -304,3 +305,12 @@ class User:
                 lispeople()
         yield "\n"
         on_look()
+
+    def is_available(self, item):
+        if self.is_here(item):
+            return True
+        return item.is_carried_by(self.player)
+
+    def has_any(self, mask):
+        items = (item for item in Item.items if item.is_carried_by(self.__player_id) or self.is_here(self.__player_id))
+        return any(item for item in items if item.test_mask(mask))
