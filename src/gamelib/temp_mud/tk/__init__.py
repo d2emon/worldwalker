@@ -22,6 +22,8 @@ Sectors 1-n  in pairs ie [128 words]
 0 = Text
 - 1 = general request
 """
+from ..player import Player
+from ..support import syslog
 
 
 def split(block, luser):
@@ -35,5 +37,5 @@ def split(block, luser):
 def userwrap(user):
     if Player.fpbns(user.name) is None:
         return
-    loseme()
-    syslog("System Wrapup exorcised {}".format(user.name))
+    user.loose()
+    syslog(user, "System Wrapup exorcised {}".format(user.name))

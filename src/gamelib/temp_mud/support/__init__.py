@@ -9,13 +9,8 @@ destroy(obj)
 
 are elsewhere
 """
-from ..errors import CommandError
-
+from ..errors import CommandError, CrapupError
 from ..objsys import ObjSys, iscarrby
-
-
-def is_dark(*args):
-    raise NotImplementedError
 
 
 class Player:

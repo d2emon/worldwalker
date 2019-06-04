@@ -3,24 +3,19 @@ class Zone:
         self.name = name
         self.last = last
 
+    def __str__(self):
+        return self.name
+
     @property
     def first(self):
         if not self.last:
             return 0
+        return next((zone for zone in reversed(ZONES) if zone.last < self.last), DEFAULT_ZONE).last + 1
 
-        zones = list(filter(lambda z: z.last < self.last, ZONES))
-        if len(zones) < 1:
-            return 0
-        return zones[-1].last + 1
-
-    def __str__(self):
-        return self.name
-
-    def in_zone(self, location_id):
+    def in_zone(self, channel_id):
         if not self.first:
             return 0
-
-        return location_id - self.first
+        return channel_id - self.first
 
     def location_id(self, offset):
         if not offset:
@@ -33,17 +28,11 @@ class Zone:
         location_id = -channel_id
         if location_id <= 0:
             return DEFAULT_ZONE
-
-        zones = list(filter(lambda z: z.first < location_id < z.last, ZONES))
-        return DEFAULT_ZONE if len(zones) < 1 else zones[0]
+        return next((zone for zone in ZONES if zone.first < location_id < zone.last), DEFAULT_ZONE)
 
     @classmethod
     def by_name(cls, name):
-        zones = list(filter(lambda z: z.name.lower() == name, ZONES))
-
-        if len(zones) < 1:
-            return None
-        return zones[0]
+        return next((zone for zone in ZONES if zone.name.lower() == name), None)
 
 
 DEFAULT_ZONE = Zone("TCHAN")

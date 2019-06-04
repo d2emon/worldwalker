@@ -1,9 +1,10 @@
-from .errors import CrapupError
+from .errors import CrapupError, ServiceError
 from .item import Item
 from .location import Location
-from .message import Message, MSG_GLOBAL, MSG_WIZARD
+from .message import Message, MSG_GLOBAL, MSG_WIZARD, MSG_BROADCAST
 from .player import Player
 from .weather import autochange_weather
+from .world import World
 
 
 class User:
@@ -35,17 +36,17 @@ class User:
 
         self.__updated = 0
 
+        self.rd_qd = False
+
         self.__message_id = None
         self.__put_on()
-
         try:
-            openworld()
-        except FileNotFoundError:
+            World.load()
+            self.__name = name
+            self.read_messages()
+            World.save()
+        except ServiceError:
             raise CrapupError("Sorry AberMUD is currently unavailable")
-        self.__name = name
-        self.read_messages()
-        closeworld()
-
         self.__message_id = None
 
     @property
@@ -65,8 +66,7 @@ class User:
         max_items = self.max_items
         if max_items is None:
             return True
-        items_count = sum(not item.is_destroyed and item.is_carried_by(self.player) for item in Item.items)
-        return items_count < max_items
+        return sum(not item.is_destroyed and item.is_carried_by(self.player) for item in Item.items()) < max_items
 
     @property
     def is_dark(self):
@@ -74,11 +74,10 @@ class User:
             return False
         if not self.location.is_dark:
             return False
-        for item in filter(lambda i: i.is_light, Item.items):
+        for item in (item for item in Item.items() if item.is_light):
             if is_here(item):
                 return False
-            owner = item.owner
-            if owner is not None and owner.location == self.__location_id:
+            if item.owner is not None and item.owner.location == self.__location_id:
                 return False
         return True
 
@@ -134,46 +133,53 @@ class User:
 
     def send2(self, message):
         try:
-            world = openworld()
-        except FileNotFoundError:
+            World.load()
+
+            message_id = message.save()
+            if message_id >= 199:
+                for message in World.cleanup():
+                    self.broad(message)
+                autochange_weather(self)
+        except ServiceError:
             self.loose()
             raise CrapupError("\nAberMUD: FILE_ACCESS : Access failed\n")
 
-        message_id = message.send2(world)
+    def broad(self, message):
+        self.rd_qd = True
+        self.send2(Message(
+            None,
+            None,
+            MSG_BROADCAST,
+            None,
+            message,
+        ))
 
-        if message_id >= 199:
-            cleanup(message.get_message_data(world))
+    def read_messages(self, to_read=True):
+        if not to_read:
+            to_read = self.rd_qd
+            self.rd_qd = False
 
-        if message_id >= 199:
-            autochange_weather(self)
+        if not to_read:
+            return
 
-    def read_messages(self):
         try:
-            world = openworld()
-        except FileNotFoundError:
+            World.load()
+            for message in Message.messages(self.__message_id):
+                self.output_message(message)
+                self.__message_id = message.message_id
+
+            self.update()
+            eorte()
+            rdes = 0
+            tdes = 0
+            vdes = 0
+        except ServiceError:
             raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
-
-        for message in Message.read_all(world, self.__message_id):
-            self.output_message(message)
-            self.__message_id = message.message_id
-
-        self.update()
-        eorte()
-        rdes = 0
-        tdes = 0
-        vdes = 0
-
-    def cleanup(self, message_data):
-        world = openworld()
-        for i in range(100):
-            world[i] = world[100 + i + 1]
-        message_data[0] += 100
-        self.revise(message_data[0])
 
     def start_game(self):
         self.__location_id = -5
         self.initme()
-        world = openworld()
+        World.load()
         visible = 0 if not self.is_god else 10000
         self.player.start(self.NewUaf.strength, self.NewUaf.level, visible, self.NewUaf.sex)
         Message.send(
@@ -183,12 +189,12 @@ class User:
             self.__location_id,
             "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self),
         )
-        user.read_messages()
+        self.read_messages()
         if randperc() > 50:
-            trapch(-5)
+            self.__location_id = -5
         else:
             self.__location_id = -183
-            trapch(-183)
+        self.go_to_channel(self.__location_id)
         Message.send(
             self,
             self,
@@ -198,13 +204,13 @@ class User:
         )
 
     def go_to_channel(self, channel_id):
-        openworld()
+        World.load()
         self.player.location = channel_id
         self.look_in(self.location)
 
     def __put_on(self):
         self.__is_on = False
-        world = openworld()
+        World.load()
         if Player.fpbn(self.name) is not None:
             raise CrapupError("You are already on the system - you may only be on once at a time")
 
@@ -220,7 +226,8 @@ class User:
         # No interruptions while you are busy dying
         # ABOUT 2 MINUTES OR SO
         self.in_setup = False
-        world = openworld()
+
+        World.load()
         dumpitems()
         if self.player.visible < 10000:
             Message.send(
@@ -231,7 +238,8 @@ class User:
                 "{} has departed from AberMUDII\n".format(self.name)
             )
         self.player.remove()
-        closeworld()
+        World.save()
+
         if not self.__zapped:
             saveme()
         chksnp()
@@ -240,25 +248,13 @@ class User:
         if abs(self.__message_id - self.__updated) < 10:
             return
 
-        openworld()
+        World.load()
         self.player.position = self.__message_id
         self.__updated = self.__message_id
 
-    def revise(self, timeout):
-        openworld()
-        for player in PLAYERS[:16]:
-            if not player.is_alive:
-                continue
-            if player.position == -2:
-                continue
-            if player.position >= timeout / 2:
-                continue
-            self.broad("{} has been timed out\n".format(player.name))
-            dumpstuff(player, player.location)
-            player.remove()
-
     def look_in(self, location):
-        closeworld()
+        World.save()
+
         if self.__ail_blind:
             yield "You are blind... you can't see a thing!\n"
 
@@ -273,9 +269,11 @@ class User:
             if self.is_dark:
                 fclose(un1)
                 yield "It is dark\n"
-                openworld()
+
+                World.load()
                 on_look()
                 return
+
             for s in un1:
                 if s == "#DIE":
                     if self.__ail_blind:
@@ -298,7 +296,7 @@ class User:
             yield "\nYou are on channel {}\n".format(location.location_id)
         fclose(un1)
 
-        openworld()
+        World.load()
         if not self.__ail_blind:
             lisobs()
             if self.mode == 1:
@@ -312,5 +310,6 @@ class User:
         return item.is_carried_by(self.player)
 
     def has_any(self, mask):
-        items = (item for item in Item.items if item.is_carried_by(self.__player_id) or self.is_here(self.__player_id))
+        items = Item.items()
+        items = (item for item in items if item.is_carried_by(self.__player_id) or self.is_here(self.__player_id))
         return any(item for item in items if item.test_mask(mask))

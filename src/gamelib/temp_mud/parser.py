@@ -1,13 +1,5 @@
-from .message import Message, MSG_BROADCAST
 from .user import User
-
-
-def openworld():
-    raise NotImplementedError()
-
-
-def closeworld():
-    raise NotImplementedError()
+from .world import World
 
 
 class Buffer:
@@ -81,8 +73,6 @@ class Parser:
     def __init__(self, user):
         self.user = user
 
-        self.__rd_qd = False
-
         self.__conversation_flag = 0
         self.__mode = 0
 
@@ -116,7 +106,7 @@ class Parser:
         return False
 
     def parse(self, work, on_reinput):
-        openworld()
+        World.load()
         self.read_messages()
 
         if work:
@@ -154,21 +144,5 @@ class Parser:
         return True
 
     def read_messages(self, to_read=True):
-        if not to_read and self.__rd_qd:
-            self.__rd_qd = False
-            to_read = True
-
-        if to_read:
-            self.user.read_messages()
-
-        closeworld()
-
-    def broad(self, message):
-        self.__rd_qd = True
-        self.user.send2(Message(
-            None,
-            None,
-            MSG_BROADCAST,
-            None,
-            message,
-        ))
+        self.user.read_messages(to_read)
+        World.save()

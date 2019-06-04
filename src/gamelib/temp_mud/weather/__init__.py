@@ -192,7 +192,7 @@ class Pose(Silly):
         elif pose_id == 1:
             cls.silly(user, "\001s{user.name}\001{user.name} throws out one arm and sends a huge bolt of fire high\n"
                             "into the sky\n\001")
-            parser.broad("\001cA massive ball of fire explodes high up in the sky\n\001")
+            user.broad("\001cA massive ball of fire explodes high up in the sky\n\001")
         elif pose_id == 2:
             cls.silly(user, "\001s{user.name}\001{user.name} turns casually into a hamster before resuming normal "
                             "shape\n\001")

@@ -1,25 +1,22 @@
 from .player import Player
+from .world import World
 
 
 class Item:
-    __objects = []
-    __objinfo = []
-    __item_ids = len(__objects)
-
     def __init__(self, item_id):
         self.item_id = item_id
 
-    @property
-    def items(self):
-        return (Item(item_id) for item_id in range(self.__item_ids))
+    @classmethod
+    def items(cls):
+        return (Item(item_id) for item_id in range(World.item_ids))
 
     @property
     def __object(self):
-        return self.__objects[self.item_id]
+        return World.objects[self.item_id]
 
     @property
     def __data(self):
-        return self.__objinfo[self.item_id]
+        return World.objinfo[self.item_id]
 
     @property
     def name(self):

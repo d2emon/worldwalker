@@ -1,17 +1,17 @@
-class Player:
-    __ublock = []
-    __player_ids = len(__ublock)
+from .world import World
 
+
+class Player:
     def __init__(self, player_id):
         self.player_id = player_id
 
-    @property
-    def players(self):
-        return (Player(player_id) for player_id in range(self.__player_ids))
+    @classmethod
+    def players(cls):
+        return (Player(player_id) for player_id in range(World.player_ids))
 
     @property
     def __data(self):
-        return self.__ublock[self.player_id]
+        return World.ublock[self.player_id]
 
     @property
     def name(self):
@@ -107,7 +107,11 @@ class Player:
 
     @property
     def helper(self):
-        return next((player for player in self.players if player.is_helping(self)), None)
+        return next((player for player in self.players() if player.is_helping(self)), None)
+
+    @property
+    def is_timed_out(self):
+        return self.is_alive and self.position != 2
 
     @classmethod
     def fpbn(cls, player_name, not_found_error=None):
@@ -161,3 +165,16 @@ class Player:
         if flag_id == 2 and self.name == "Debugger":
             return True
         return self.sex_all[flag_id]
+
+    @classmethod
+    def cleanup(cls):
+        cls.__revise(World.cleanup())
+
+    @classmethod
+    def __revise(cls, timeout):
+        World.load()
+        players = (player for player in cls.players()[:16] if player.is_timed_out and player.position >= timeout / 2)
+        for player in players:
+            yield "{} has been timed out\n".format(player.name)
+            dumpstuff(player, player.location)
+            player.remove()

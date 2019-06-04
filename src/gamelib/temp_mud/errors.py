@@ -8,3 +8,7 @@ class CrapupError(Exception):
 
 class NotFoundError(Exception):
     pass
+
+
+class ServiceError(Exception):
+    pass
