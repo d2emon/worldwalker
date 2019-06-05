@@ -740,7 +740,7 @@ class Reset(Command):
         if NewUaf.my_lev < 10:
             raise CommandError("What ?\n")
 
-        broad("Reset in progress....\nReset Completed....\n")
+        Broadcast("Reset in progress....\nReset Completed....\n").send(user)
 
         b = openlock(Extras.RESET_DATA, "r")
         sec_read(b, ObjSys.objinfo, 0, 4 * ObjSys.numobs)
@@ -787,7 +787,7 @@ class Zap(Command):
         if victim.player_id > 15:
             woundmn(victim, 10000)  # DIE
 
-        broad("\001dYou hear an ominous clap of thunder in the distance\n\001")
+        Broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001").send(user)
 
 
 class Eat(Command):

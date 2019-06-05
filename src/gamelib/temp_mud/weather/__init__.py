@@ -4,9 +4,10 @@ The next part of the universe...
 from ..action import Action
 from ..errors import CommandError, NotFoundError
 from ..item import Item
-from ..message import Message, MSG_WEATHER, MSG_GLOBAL
+from ..message import MSG_WEATHER
 from ..player import Player
-from ..weather_data import WEATHER_SUN, WEATHER_RAIN, WEATHER_STORM, WEATHER_SNOW, WEATHER_BLIZZARD, WEATHER_START
+from ..weather_data import WEATHER_SUN, WEATHER_RAIN, WEATHER_STORM, WEATHER_SNOW, WEATHER_BLIZZARD, WEATHER_START, \
+    WEATHER_TEXT
 
 """
 Weather Routines
@@ -22,36 +23,88 @@ states are
 """
 
 
-def adjust_weather(user, new_weather):
-    weather = Item(0)
-    old_weather = weather.state
-    if new_weather != old_weather:
-        weather.state = new_weather
-        Message.send(
-            user,
-            user,
-            MSG_WEATHER,
-            None,
-            new_weather,
-        )
+class Climate:
+    @classmethod
+    def get_weather_description(cls, weather_id):
+        return WEATHER_TEXT.get(weather_id, ""),
+
+    @classmethod
+    def get_weather_id(cls, weather_id):
+        return weather_id
+
+    @classmethod
+    def show_weather_start(cls, weather_id):
+        yield WEATHER_START.get(cls.get_weather_id(weather_id))
+
+    @classmethod
+    def show_weather(cls, weather_id):
+        yield from cls.get_weather_description(cls.get_weather_id(weather_id))
 
 
-def autochange_weather(user):
-    chance = randperc()
-    if chance < 50:
-        return adjust_weather(user, 1)
-    elif chance > 90:
-        return adjust_weather(user, 2)
-    else:
-        return adjust_weather(user, 0)
+class ClimateWarm(Climate):
+    @classmethod
+    def get_weather_description(cls, weather_id):
+        if weather_id == WEATHER_RAIN:
+            return (
+                "It is raining, a gentle mist of rain, which sticks to everything around\n",
+                "you making it glisten and shine. High in the skies above you is a rainbow\n",
+            )
+        return super().get_weather_description(weather_id),
+
+    @classmethod
+    def get_weather_id(cls, weather_id):
+        return weather_id % 2
 
 
-def receive_weather(user, weather_id):
-    if not user.location.outdoors():
-        return
+class ClimateCold(Climate):
+    @classmethod
+    def get_weather_id(cls, weather_id):
+        if weather_id in (1, 2):
+            return weather_id + 2
+        return weather_id
 
-    weather_id = user.location.validate_weather_id(weather_id)
-    yield WEATHER_START.get(weather_id, "")
+
+class Indoors(Climate):
+    @classmethod
+    def show_weather_start(cls, weather_id):
+        return None
+
+    @classmethod
+    def show_weather(cls, weather_id):
+        return None
+
+
+class Weather:
+    __weather = None
+
+    @property
+    def weather(self):
+        if self.__weather is None:
+            self.__weather = Item(0)
+        return self.__weather
+
+    def send_weather(self, user, new_weather):
+        if self.weather.state == new_weather:
+            return
+
+        self.weather.state = new_weather
+        user.send_message(user, MSG_WEATHER, None, new_weather)
+
+    def autochange(self, user):
+        chance = randperc()
+        if chance < 50:
+            return self.send_weather(user, 1)
+        elif chance > 90:
+            return self.send_weather(user, 2)
+        else:
+            return self.send_weather(user, 0)
+
+    @classmethod
+    def receive(cls, user, weather_id):
+        if not user.location.outdoors():
+            return
+
+        yield from user.location.climate.show_weather_start(weather_id)
 
 
 class __Weather(Action):
@@ -60,7 +113,7 @@ class __Weather(Action):
 
     @classmethod
     def action(cls, parser, user):
-        adjust_weather(user, cls.weather_id)
+        user.location.weather.send_weather(user, cls.weather_id)
 
 
 class Sun(__Weather):
@@ -86,18 +139,11 @@ class Blizzard(__Weather):
 # Silly Section
 class Silly(Action):
     not_dumb = False
+
+    sound = None
+    visual = None
     message = ""
     result = ""
-
-    @classmethod
-    def silly(cls, user, message):
-        Message.send(
-            user,
-            user,
-            MSG_GLOBAL,
-            user.channel_id,
-            message.format(user=user),
-        )
 
     @classmethod
     def validate(cls, user):
@@ -107,47 +153,52 @@ class Silly(Action):
 
     @classmethod
     def action(cls, parser, user):
-        cls.silly(user, cls.message)
+        message = cls.message
+        if cls.sound is not None:
+            message += "\001P{user.name}\001\001d " + cls.sound + "\n\001"
+        if cls.visual is not None:
+            message += "\001s{user.name}\001{user.name} " + cls.visual + "\n\001"
+        user.silly(message)
         yield cls.result
 
 
 class Laugh(Silly):
     not_dumb = True
-    message = "\001P{user.name}\001\001d falls over laughing\n\001"
+    sound = "falls over laughing"
     result = "You start to laugh\n"
 
 
 class Purr(Silly):
     not_dumb = True
-    message = "\001P{user.name}\001\001d starts purring\n\001"
+    sound = "starts purring"
     result = "MMMMEMEEEEEEEOOOOOOOWWWWWWW!!\n"
 
 
 class Cry(Silly):
     not_dumb = True
-    message = "\001s{user.name}\001{user.name} bursts into tears\n\001"
+    visual = "bursts into tears"
     result = "You burst into tears\n"
 
 
 class Sulk(Silly):
-    message = "\001s{user.name}\001{user.name} sulks\n\001"
+    visual = "sulks"
     result = "You sulk....\n"
 
 
 class Burp(Silly):
     not_dumb = True
-    message = "\001P{user.name}\001\001d burps loudly\n\001"
+    sound = "burps loudly"
     result = "You burp rudely\n"
 
 
 class Hiccup(Silly):
     not_dumb = True
-    message = "\001P{user.name}\001\001d hiccups\n\001"
+    sound = "\001d hiccups"
     result = "You hiccup\n"
 
 
 class Fart(Silly):
-    message = "\001P{user.name}\001\001d lets off a real rip roarer\n\001"
+    sound = "lets off a real rip roarer"
     result = "Fine...\n"
 
     @classmethod
@@ -157,24 +208,24 @@ class Fart(Silly):
 
 
 class Grin(Silly):
-    message = "\001s{user.name}\001{user.name} grins evilly\n\001"
+    visual = "grins evilly"
     result = "You grin evilly\n"
 
 
 class Smile(Silly):
-    message = "\001s{user.name}\001{user.name} smiles happily\n\001"
+    visual = "smiles happily"
     result = "You smile happily\n"
 
 
 class Wink(Silly):
     # At person later maybe ?
-    message = "\001s{user.name}\001{user.name} winks suggestively\n\001"
+    visual = "winks suggestively"
     result = "You wink\n"
 
 
 class Snigger(Silly):
     not_dumb = True
-    message = "\001P{user.name}\001\001d sniggers\n\001"
+    sound = "sniggers"
     result = "You snigger\n"
 
 
@@ -190,16 +241,16 @@ class Pose(Silly):
         if pose_id == 0:
             pass
         elif pose_id == 1:
-            cls.silly(user, "\001s{user.name}\001{user.name} throws out one arm and sends a huge bolt of fire high\n"
-                            "into the sky\n\001")
-            user.broad("\001cA massive ball of fire explodes high up in the sky\n\001")
+            user.silly("\001s{user.name}\001{user.name} throws out one arm and sends a huge bolt of fire high\n"
+                       "into the sky\n\001")
+            user.broadcast("\001cA massive ball of fire explodes high up in the sky\n\001")
         elif pose_id == 2:
-            cls.silly(user, "\001s{user.name}\001{user.name} turns casually into a hamster before resuming normal "
-                            "shape\n\001")
+            user.silly("\001s{user.name}\001{user.name} turns casually into a hamster before resuming normal "
+                       "shape\n\001")
         elif pose_id == 3:
-            cls.silly(user, "\001s{user.name}\001{user.name} starts sizzling with magical energy\n\001")
+            user.silly("\001s{user.name}\001{user.name} starts sizzling with magical energy\n\001")
         elif pose_id == 4:
-            cls.silly(user, "\001s{user.name}\001{user.name} begins to crackle with magical fire\n\001")
+            user.silly("\001s{user.name}\001{user.name} begins to crackle with magical fire\n\001")
 
 
 class Emote(Silly):
@@ -210,25 +261,25 @@ class Emote(Silly):
 
     @classmethod
     def action(cls, parser, user):
-        cls.silly(user, "\001P{}\001 " + parser.getreinput() + "\n")
+        user.silly("\001P{user.name}\001 " + parser.getreinput() + "\n")
 
 
 class Pray(Silly):
-    message = "\001s{user.name}\001{user.name} falls down and grovels in the dirt\n\001"
+    visual = "falls down and grovels in the dirt"
     result = "Ok\n"
 
 
 class Yawn(Silly):
-    message = "\001P{user.name}\001\001d yawns\n\001"
+    sound = "yawns"
 
 
 class Groan(Silly):
-    message = "\001P{user.name}\001\001d groans loudly\n\001"
+    sound = "groans loudly"
     result = "You groan\n"
 
 
 class Moan(Silly):
-    message = "\001P{user.name}\001\001d starts making moaning noises\n\001"
+    sound = "starts making moaning noises"
     result = "You start to moan\n"
 
 

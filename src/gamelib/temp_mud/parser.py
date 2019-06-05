@@ -1,4 +1,6 @@
-from .user import User
+from .action import Action, Special
+from .errors import ServiceError, CrapupError
+from .user import User, StartGame
 from .world import World
 
 
@@ -10,8 +12,11 @@ class Buffer:
     def show(self):
         raise NotImplementedError()
 
-    def add(self, text):
-        self.__sysbuf += text
+    def add(self, *text, raw=False):
+        if raw:
+            self.__sysbuf += "".join(text)
+        else:
+            print("".join(text))
 
 
 class Screen:
@@ -23,6 +28,13 @@ class Screen:
         self.user = User(username)
         self.buffer = Buffer()
         self.parser = Parser(self.user)
+
+        try:
+            World.load()
+            self.buffer.add(*self.user.read_messages(reset_after_read=True))
+            World.save()
+        except ServiceError:
+            raise CrapupError("Sorry AberMUD is currently unavailable")
 
     def top(self):
         if self.tty != 4:
@@ -58,91 +70,168 @@ class Screen:
 
         self.top()
 
-        self.buffer.add("\001l{}\n\001".format(work))
+        self.buffer.add("\001l{}\n\001".format(work), raw=True)
 
-        self.parser.parse(work, self.send_message)
+        World.load()
+        self.buffer.add(*self.parser.read_messages())
+        if self.parser.parse(work) is None:
+            return self.send_message()
 
     def main(self):
         self.buffer.show()
         self.send_message()
-        self.parser.read_messages(False)
+        self.buffer.add(*self.parser.read_messages(True))
+        World.save()
         self.buffer.show()
 
 
 class Parser:
+    CONVERSATION_NONE = 0
+    CONVERSATION_SAY = 1
+    CONVERSATION_TSS = 2
+
+    MODE_SPECIAL = 0
+    MODE_GAME = 0
+
+    __PROMPT = {
+        CONVERSATION_NONE: ">",
+        CONVERSATION_SAY: "\"",
+        CONVERSATION_TSS: "*",
+    }
+    __CONVERT = {
+        CONVERSATION_NONE: "{}",
+        CONVERSATION_SAY: "say {}",
+        CONVERSATION_TSS: "tss {}",
+    }
+
     def __init__(self, user):
         self.user = user
 
-        self.__conversation_flag = 0
-        self.__mode = 0
+        self.__conversation_mode = self.CONVERSATION_NONE
+        self.mode = self.MODE_SPECIAL
+        self.__debug_mode = False
 
         self.__special(self.user, ".g")
         self.user.in_setup = True
 
+        self.string_buffer = ""
+        self.__word_buffer = ""
+        self.__position = 0
+
+        self.pronouns = {
+            "it": "",
+            "him": "",
+            "her": "",
+            "them": "",
+            "there": "",
+        }
+
     @property
     def prompt(self):
-        if self.__conversation_flag == 0:
-            prompt = ">"
-        elif self.__conversation_flag == 1:
-            prompt = "\""
-        elif self.__conversation_flag == 2:
-            prompt = "*"
-        else:
-            prompt = "?"
-
+        prompt = self.__PROMPT.get(self.__conversation_mode, "?")
         if self.user.is_wizard:
             prompt = "----" + prompt
-        if self.user.debug_mode:
+        if self.__debug_mode:
             prompt = "#" + prompt
-
         if self.user.player.visible:
             prompt = "(" + prompt + ")"
         return prompt
 
-    def reset_conversation_mode(self):
-        if self.__conversation_flag:
-            self.__conversation_flag = 0
-            return True
-        return False
+    def __modify_action(self, action):
+        if not action:
+            return ""
+        if action == "**" and self.__conversation_mode != self.CONVERSATION_NONE:
+            self.__conversation_mode = self.CONVERSATION_NONE
+            return None
+        if action[0] == "*" and action != "*":
+            return action[1:]
+        return self.__CONVERT.get(self.__conversation_mode, "{}").format(action)
 
-    def parse(self, work, on_reinput):
-        World.load()
-        self.read_messages()
+    def parse(self, action):
+        action = self.__modify_action(action)
+        if action is None:
+            return None
 
-        if work:
-            if work == "**" and self.reset_conversation_mode():
-                on_reinput()
-            elif work[0] == "*" and work != "*":
-                work = work[1:]
-            elif self.__conversation_flag == 1:
-                work = "say {}".format(work)
-            elif self.__conversation_flag == 2:
-                work = "tss {}".format(work)
-
-        if self.__mode == 1:
-            self.__gamecom(self.user, work)
-        elif work and work.lower != ".q":
-            self.__special(self.user, work)
+        result = action.lower() == ".q"
+        if self.mode == self.MODE_GAME:
+            self.__gamecom(self.user, action)
+        elif not result:
+            self.__special(self.user, action)
 
         self.user.check_fight()
+        return result
 
-        return work.lower() == ".q"
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.pronouns.update({
+            "me": self.user.name,
+            "myself": self.user.name,
+        })
+
+        for word in self.string_buffer[self.__position:].split(" "):
+            self.__position += len(word) + 1
+            self.__word_buffer += word
+            if word:
+                break
+        self.__word_buffer = self.__word_buffer.lower()
+
+        replace = self.pronouns.get(self.__word_buffer, None)
+        if replace is not None:
+            self.__word_buffer = replace
+
+        if len(self.__word_buffer) <= 0:
+            return None
+        return self.__word_buffer
 
     def __gamecom(self, user, action):
-        raise NotImplementedError()
+        action = Action.prepare(self, action)
+        if not action:
+            return
+
+        self.string_buffer = action
+        self.__position = 0
+        word = next(self)
+
+        try:
+            if word is None:
+                raise CommandError("Pardon ?\n")
+
+            verb = self.__chkverb(word)
+
+            if verb is None:
+                raise CommandError("I don't know that verb\n")
+
+            yield from verb.do_action(self)
+        except CommandError as e:
+            yield e
 
     def __special(self, user, action):
-        action = action.lower()
-        if action[0] != ".":
-            return False
-        action = action[1:]
-        if action == "g":
-            self.__mode = 1
-            user.start_game()
+        action = Special.prepare(self, action)
+        if not action:
+            return
+        elif action == "g":
+            StartGame.action(self, self.user)
         else:
             print("\nUnknown . option\n")
-        return True
 
-    def read_messages(self, to_read=True):
-        self.user.read_messages(to_read)
-        World.save()
+    def read_messages(self, unique=False):
+        if unique and self.user.rd_qd:
+            return
+
+        yield from self.output_messages(*self.user.read_messages())
+
+        if unique:
+            self.user.rd_qd = False
+
+    def output_messages(self, *messages):
+        """
+        Print appropriate stuff from data block
+
+        :return:
+        """
+        for message in messages:
+            if self.__debug_mode:
+                yield "\n<{}>".format(message.code)
+            yield from self.user.process_message(message)

@@ -249,7 +249,7 @@ def pushcom(parser):
         raise CommandError("That is not here\n")
     elif x.item_id == 126:
         yield "The tripwire moves and a huge stone crashes down from above!\n"
-        broad("\001dYou hear a thud and a squelch in the distance.\n\001")
+        Broadcast("\001dYou hear a thud and a squelch in the distance.\n\001").send(user)
         loseme()
         raise CrapupError("             S   P    L      A         T           !")
     elif x.item_id == 162:
@@ -347,11 +347,11 @@ def pushcom(parser):
         else:
             yield "It moves but nothing seems to happen\n"
     elif x.item_id == 49:
-        broad("\001dChurch bells ring out around you\n\001")
+        Broadcast("\001dChurch bells ring out around you\n\001").send(user)
     elif x.item_id == 104:
         if Player(Tk.mynum).tothlp == -1:
             raise CommandError("You can't shift it alone, maybe you need help\n")
-        broad("\001dChurch bells ring out around you\n\001")
+        Broadcast("\001dChurch bells ring out around you\n\001").send(user)
     else:
         # ELSE RUN INTO DEFAULT
         if x.tstbit(4):

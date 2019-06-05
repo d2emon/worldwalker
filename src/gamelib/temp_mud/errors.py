@@ -12,3 +12,7 @@ class NotFoundError(Exception):
 
 class ServiceError(Exception):
     pass
+
+
+class LooseError(CrapupError):
+    pass

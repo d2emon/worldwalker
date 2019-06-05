@@ -1,12 +1,8 @@
-from .weather_data import WEATHER_RAIN, WEATHER_TEXT
+from .weather import Weather, Indoors, Climate, ClimateCold, ClimateWarm
 from .zone import Zone
 
 
 class Location:
-    CLIMATE_DEFAULT = 0
-    CLIMATE_WARM = 1
-    CLIMATE_COLD = 2
-
     directions = [
         "North",
         "East ",
@@ -19,16 +15,19 @@ class Location:
     def __init__(self, location_id):
         self.location_id = location_id
         self.exits = [0] * 7
+        self.weather = Weather()
         self.__zone = None
 
     @property
     def climate(self):
-        if -179 <= self.location_id <= -199:
-            return self.CLIMATE_WARM
+        if not self.outdoors:
+            return Indoors
+        elif -179 <= self.location_id <= -199:
+            return ClimateWarm
         elif -100 <= self.location_id <= -178:
-            return self.CLIMATE_COLD
+            return ClimateCold
         else:
-            return self.CLIMATE_DEFAULT
+            return Climate
 
     @property
     def in_zone(self):
@@ -78,23 +77,4 @@ class Location:
         yield result + "\n"
 
     def show_weather(self, weather_id):
-        if not self.outdoors:
-            return
-
-        weather_id = self.validate_weather_id(weather_id)
-        if weather_id == WEATHER_RAIN:
-            if self.climate == self.CLIMATE_WARM:
-                yield "It is raining, a gentle mist of rain, which sticks to everything around\n"
-                yield "you making it glisten and shine. High in the skies above you is a rainbow\n"
-            else:
-                yield "\001cIt is raining\n\001"
-        else:
-            yield WEATHER_TEXT.get(weather_id, "")
-
-    def validate_weather_id(self, weather_id):
-        if self.CLIMATE_WARM:
-            weather_id %= 2
-        elif self.CLIMATE_COLD:
-            if weather_id in (1, 2):
-                weather_id += 2
-        return weather_id
+        yield from self.climate.show_weather(weather_id)

@@ -14,6 +14,7 @@ WEATHER_START = {
 }
 
 WEATHER_TEXT = {
+    WEATHER_RAIN: "\001cIt is raining\n\001",
     WEATHER_STORM: "\001cThe skies are dark and stormy\n\001",
     WEATHER_SNOW: "\001cIt is snowing\001\n",
     WEATHER_BLIZZARD: "\001cA blizzard is howling around you\001\n",

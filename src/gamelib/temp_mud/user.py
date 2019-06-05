@@ -1,7 +1,8 @@
+from .action import Special
 from .errors import CrapupError, ServiceError
 from .item import Item
 from .location import Location
-from .message import Message, MSG_GLOBAL, MSG_WIZARD, MSG_BROADCAST
+from .message import Broadcast, Message, Silly, MSG_GLOBAL, MSG_WIZARD
 from .player import Player
 from .weather import autochange_weather
 from .world import World
@@ -39,15 +40,7 @@ class User:
         self.rd_qd = False
 
         self.__message_id = None
-        self.__put_on()
-        try:
-            World.load()
-            self.__name = name
-            self.read_messages()
-            World.save()
-        except ServiceError:
-            raise CrapupError("Sorry AberMUD is currently unavailable")
-        self.__message_id = None
+        self.__name = name
 
     @property
     def name(self):
@@ -100,23 +93,6 @@ class User:
     def set_wd_there(self, zone, location_id):
         self.wd_there = zone + " " + location_id
 
-    def output_message(self, message_data):
-        """
-        Print appropriate stuff from data block
-
-        :param user:
-        :param message_data:
-        :return:
-        """
-        code = message_data[1]
-        text = message_data[2]
-        if self.debug_mode:
-            bprintf("\n<{}>".format(code))
-        if code < -3:
-            gamrcv(message_data, self.__name.lower())
-        else:
-            bprintf(text)
-
     @property
     def enemy(self):
         return Player(self.Blood.fighting)
@@ -131,77 +107,26 @@ class User:
         if self.Blood.in_fight:
             self.Blood.in_fight -= 1
 
-    def send2(self, message):
-        try:
-            World.load()
+    def read_messages(self, reset_after_read=False):
+        yield from self.get_messages()
 
-            message_id = message.save()
-            if message_id >= 199:
-                for message in World.cleanup():
-                    self.broad(message)
-                autochange_weather(self)
-        except ServiceError:
-            self.loose()
-            raise CrapupError("\nAberMUD: FILE_ACCESS : Access failed\n")
+        self.update()
+        eorte()
+        rdes = 0
+        tdes = 0
+        vdes = 0
+        if reset_after_read:
+            self.__message_id = None
 
-    def broad(self, message):
-        self.rd_qd = True
-        self.send2(Message(
-            None,
-            None,
-            MSG_BROADCAST,
-            None,
-            message,
-        ))
-
-    def read_messages(self, to_read=True):
-        if not to_read:
-            to_read = self.rd_qd
-            self.rd_qd = False
-
-        if not to_read:
-            return
-
-        try:
-            World.load()
-            for message in Message.messages(self.__message_id):
-                self.output_message(message)
-                self.__message_id = message.message_id
-
-            self.update()
-            eorte()
-            rdes = 0
-            tdes = 0
-            vdes = 0
-        except ServiceError:
-            raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
-
-    def start_game(self):
-        self.__location_id = -5
-        self.initme()
-        World.load()
-        visible = 0 if not self.is_god else 10000
-        self.player.start(self.NewUaf.strength, self.NewUaf.level, visible, self.NewUaf.sex)
-        Message.send(
-            self,
-            self,
-            MSG_WIZARD,
-            self.__location_id,
-            "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self),
-        )
-        self.read_messages()
-        if randperc() > 50:
-            self.__location_id = -5
+    def reset_location_id(self, is_random=False):
+        if is_random:
+            self.__location_id = -5 if randperc() > 50 else -183
         else:
-            self.__location_id = -183
-        self.go_to_channel(self.__location_id)
-        Message.send(
-            self,
-            self,
-            MSG_GLOBAL,
-            self.__location_id,
-            "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self),
-        )
+            self.__location_id = -5
+
+    def reset_message_id(self):
+        self.__message_id = None
+        self.__put_on()
 
     def go_to_channel(self, channel_id):
         World.load()
@@ -313,3 +238,60 @@ class User:
         items = Item.items()
         items = (item for item in items if item.is_carried_by(self.__player_id) or self.is_here(self.__player_id))
         return any(item for item in items if item.test_mask(mask))
+
+    # Messages
+    def send_message(self, to_user, code, channel_id, message):
+        Message(to_user, self, code, channel_id, message).send(self)
+
+    def broadcast(self, message):
+        self.rd_qd = True
+        Broadcast(message).send(self)
+
+    def silly(self, message):
+        Silly(self, message).send(self)
+
+    def get_messages(self):
+        try:
+            World.load()
+            return Message.messages(self.__message_id)
+        except ServiceError:
+            raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
+
+    def process_messages(self, *messages):
+        for message in messages:
+            self.__message_id = message.message_id
+            if message.code < -3:
+                yield from gamrcv(message, self.name.lower())
+            else:
+                yield message.text
+
+
+class StartGame(Special):
+    @classmethod
+    def action(cls, parser, user):
+        parser.mode = parser.MODE_GAME
+
+        user.reset_location_id()
+        user.initme()
+
+        World.load()
+        visible = 0 if not user.is_god else 10000
+        user.player.start(user.NewUaf.strength, user.NewUaf.level, visible, user.NewUaf.sex)
+
+        user.send_message(
+            user,
+            MSG_WIZARD,
+            user.location_id,
+            "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=user),
+        )
+
+        yield from parser.read_messages()
+        user.reset_location_id(True)
+        user.go_to_channel(user.location_id)
+
+        user.send_message(
+            user,
+            MSG_GLOBAL,
+            user.location_id,
+            "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=user),
+        )

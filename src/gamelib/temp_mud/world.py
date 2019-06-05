@@ -44,7 +44,7 @@ class World:
             yield cls.get_message(message_id)
 
     @classmethod
-    def cleanup(cls):
+    def clear_old_messages(cls):
         cls.load()
         for i in range(100):
             cls.__messages[i] = cls.__messages[100 + i]

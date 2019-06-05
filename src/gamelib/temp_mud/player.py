@@ -5,6 +5,9 @@ class Player:
     def __init__(self, player_id):
         self.player_id = player_id
 
+    def __str__(self):
+        return self.name
+
     @classmethod
     def players(cls):
         return (Player(player_id) for player_id in range(World.player_ids))
@@ -109,10 +112,6 @@ class Player:
     def helper(self):
         return next((player for player in self.players() if player.is_helping(self)), None)
 
-    @property
-    def is_timed_out(self):
-        return self.is_alive and self.position != 2
-
     @classmethod
     def fpbn(cls, player_name, not_found_error=None):
         raise NotImplementedError()
@@ -141,6 +140,9 @@ class Player:
     def is_helping(self, player):
         return self.location == player.location and self.helping == player.player_id
 
+    def is_timed_out(self, current_position):
+        return self.is_alive and self.position != 2 and self.position < current_position / 2
+
     def set_flag(self, flag_id):
         """
         Pflags
@@ -166,15 +168,10 @@ class Player:
             return True
         return self.sex_all[flag_id]
 
-    @classmethod
-    def cleanup(cls):
-        cls.__revise(World.cleanup())
+    def timeout_death(self):
+        dumpstuff(self, self.location)
+        self.remove()
 
     @classmethod
-    def __revise(cls, timeout):
-        World.load()
-        players = (player for player in cls.players()[:16] if player.is_timed_out and player.position >= timeout / 2)
-        for player in players:
-            yield "{} has been timed out\n".format(player.name)
-            dumpstuff(player, player.location)
-            player.remove()
+    def get_timed_out(cls, timeout):
+        return (player for player in cls.players()[:16] if player.is_timed_out(timeout))

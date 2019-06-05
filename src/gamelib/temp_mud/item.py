@@ -2,6 +2,20 @@ from .player import Player
 from .world import World
 
 
+"""
+Objects held in format
+
+[Short Text]
+[4 Long texts]
+[Max State]
+
+
+Objects in text file in form
+
+Stam:state:loc:flag
+"""
+
+
 class Item:
     def __init__(self, item_id):
         self.item_id = item_id
