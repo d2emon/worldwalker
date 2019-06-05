@@ -293,7 +293,7 @@ class Parse:
             raise CommandError("They can't carry that\n")
         if NewUaf.my_lev < 10 and item.item_id == 32:
             raise CommandError("It doesn't wish to be given away.....\n")
-        item.setoloc(player.player_id, 1)
+        item.set_location(player.player_id, 1)
         Message(
             player,
             user,
@@ -574,7 +574,7 @@ def emptycom(parser):
     for item_id in range(ObjSys.numobs):
         item = Item(item_id)
         if not iscontin(item, container):
-            item.setoloc(user.location_id, 1)
+            item.set_location(user.location_id, 1)
             yield "You empty the {} from the {}\n".format(item.name, container.name)
             parser.gamecom("drop {}".format(item.name))
             pbfr()
@@ -756,8 +756,8 @@ long exitnum[]={1,2,3,4,5,6,1,2,3,4,5,6};
           sprintf(xx,"[ Quitting Game : %s ]\n",globme);
           user.send_message(Message(globme,globme,-10113,0,xx);
           dumpitems();
-          setpstr(mynum,-1);
-          pname(mynum)[0]=0;
+          Player(mynum).die()
+          Player(mynum).remove()
           closeworld();
           curmode=0;curch=0;
           saveme();
@@ -1226,7 +1226,7 @@ dogocom(n)
        bprintf("If you wish to leave a fight, you must FLEE in a direction\n");
        return;
        }
-    if((iscarrby(32,mynum))&&(ploc(25)==curch)&&(!!strlen(pname(25))))
+    if((iscarrby(32,mynum))&&(Player(25).location==curch)&&(Player(25).exists))
        {
        bprintf("\001cThe Golem\001 bars the doorway!\n");
        return;
@@ -1241,7 +1241,7 @@ dogocom(n)
        droff=drnum^1;/* other door side */
        if(state(drnum)!=0)
           {
-	  if (strcmp(oname(drnum),"door")||isdark()||strlen(olongt(drnum,state(drnum)))==0)
+	  if (strcmp(Item(drnum).name,"door")||isdark()||strlen(Item(drnum).description))==0)
               {
               bprintf("You can't go that way\n");
               /* Invis doors */
@@ -1250,7 +1250,7 @@ dogocom(n)
               bprintf("The door is not open\n");
           return;
           }
-       newch=oloc(droff);
+       newch=Item(droff).location;
        }
     if(newch==-139)
        {
@@ -1264,7 +1264,7 @@ dogocom(n)
        }
     if(n==2)
        {
-         if(((i=fpbns("figure"))!=mynum)&&(i!=-1)&&(ploc(i)==curch)&&!iswornby(101,mynum)&&!iswornby(102,mynum)&&!iswornby(103,mynum))
+         if(((i=fpbns("figure"))!=mynum)&&(i!=-1)&&(Player(i).location==curch)&&!iswornby(101,mynum)&&!iswornby(102,mynum)&&!iswornby(103,mynum))
     	    {
             bprintf("\001pThe Figure\001 holds you back\n");
             bprintf("\001pThe Figure\001 says 'Only true sorcerors may pass'\n");
@@ -1274,7 +1274,7 @@ dogocom(n)
     if(newch>=0)bprintf("You can't go that way\n");
     else
        {
-       sprintf(block,"%s%s%s%s%s%s%s%s%s%s","\001s",pname(mynum),"\001",globme," has gone ",exittxt[n]," ",out_ms,".","\n\001");
+       sprintf(block,"%s%s%s%s%s%s%s%s%s%s","\001s",Player(mynum).name,"\001",globme," has gone ",exittxt[n]," ",out_ms,".","\n\001");
        user.send_message(Message(globme,globme,-10000,curch,block);
        curch=newch;
        sprintf(block,"%s%s%s%s %s%s","\001s",globme,"\001",globme,in_ms,"\n\001");
@@ -1324,7 +1324,7 @@ long zapped;
     switch(blok[1])
        {
        case -9900:
-          setpvis(i[0],i[1]);break;
+          Player(i[0]).visible = i[1];break;
        case -666:
           bprintf("Something Very Evil Has Just Happened...\n");
           loseme();
@@ -1472,7 +1472,7 @@ eorte()
     if(ctm-last_io_interrupt>2) interrupt=1;
     if(interrupt) last_io_interrupt=ctm;
     if(me_ivct) me_ivct--;
-    if(me_ivct==1) setpvis(mynum,0);
+    if(me_ivct==1) Player(mynum).visible = 0
     if(me_cal)
        {
        me_cal=0;
@@ -1481,12 +1481,12 @@ eorte()
     if(tdes) dosumm(ades);
     if(in_fight)
     {
-       if(ploc(fighting)!=curch)
+       if(Player(fighting).location!=curch)
           {
           fighting= -1;
           in_fight=0;
           }
-       if(!strlen(pname(fighting)))
+       if(not Player(fighting).exists)
           {
           fighting= -1;
           in_fight=0;
@@ -1577,8 +1577,8 @@ long me_cal=0;
        bprintf("There is no one on with that name\n");
        return;
        }
-    user.send_message(Message(pname(vic),globme,-10001,ploc(vic),"");
-    syslog("%s zapped %s",globme,pname(vic));
+    user.send_message(Message(Player(vic).name,globme,-10001,Player(vic).location,"");
+    syslog("%s zapped %s",globme,Player(vic).name);
     if(vic>15)woundmn(vic,10000); /* DIE */
     Broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001").send(user);
     }
@@ -1634,7 +1634,7 @@ long me_cal=0;
              }
           break;
        default:
-          if(otstbit(b,6))
+          if(Item(b).test_bit(6))
              {
              destroy(b);
              bprintf("Ok....\n");
@@ -1665,14 +1665,14 @@ long me_cal=0;
        syslog("%s to level %d",globme,b);
        disle3(b,my_sex);
        sprintf(sp,"\001p%s\001 is now level %d\n",globme,my_lev);
-       user.send_message(Message(globme,globme,-10113,ploc(mynum),sp);
+       user.send_message(Message(globme,globme,-10113,Player(mynum).location,sp);
        if(b==10) bprintf("\001f%s\001",GWIZ);
        }
-    setplev(mynum,my_lev);
+    Player(mynum).level = my_lev
     if(my_str>(30+10*my_lev)) my_str=30+10*my_lev;
-    setpstr(mynum,my_str);
-    setpsex(mynum,my_sex);
-    setpwpn(mynum,wpnheld);
+    Player(mynum).strength = my_str
+    Player(mynum).sex = my_sex
+    Player(mynum).weapon = wpnheld
     }
  
  levelof(score)
@@ -1709,7 +1709,7 @@ long me_cal=0;
        bprintf("That isn't here\n");
        return;
        }
-    if(!isavl(a))
+    if(!user.is_available(a))
        {
        bprintf("That isn't here\n");
        return;
@@ -1769,7 +1769,7 @@ long me_cal=0;
        return;
        }
     getreinput(blob);
-    user.send_message(Message(pname(b),globme,-10004,curch,blob);
+    user.send_message(Message(Player(b).name,globme,-10004,curch,blob);
     }
  
  scorecom()
@@ -1816,10 +1816,10 @@ long me_cal=0;
        	bprintf("You can't exorcise them, they dont want to be exorcised\n");
        	return;
        	}
-    syslog("%s exorcised %s",globme,pname(x));
-    dumpstuff(x,ploc(x));
-    user.send_message(Message(pname(x),globme,-10010,curch,"");
-    pname(x)[0]=0;
+    syslog("%s exorcised %s",globme,Player(x).name);
+    dumpstuff(x,Player(x).location);
+    user.send_message(Message(Player(x).name,globme,-10010,curch,"");
+    Player(x).remove()
     }
  
  givecom()
@@ -1889,7 +1889,7 @@ long me_cal=0;
     extern char globme[];
     extern long my_lev,curch;
     extern long mynum;
-    if((my_lev<10)&&(ploc(pl)!=curch))
+    if((my_lev<10)&&(Player(pl).location!=curch))
        {
        bprintf("They are not here\n");
        return;
@@ -1908,9 +1908,9 @@ long me_cal=0;
        bprintf("It doesn't wish to be given away.....\n");
        return;
        }
-    setoloc(ob,pl,1);
-    sprintf(z,"\001p%s\001 gives you the %s\n",globme,oname(ob));
-    user.send_message(Message(pname(pl),globme,-10011,curch,z);
+    Item(ob).location(pl,1);
+    sprintf(z,"\001p%s\001 gives you the %s\n",globme,Item(ob).name);
+    user.send_message(Message(Player(pl).name,globme,-10011,curch,z);
     return;
     }
 
@@ -1956,17 +1956,17 @@ long me_cal=0;
        bprintf("They are not carrying that\n");
        return;
        }
-    if((my_lev<10)&&(ploc(c)!=curch))
+    if((my_lev<10)&&(Player(c).location!=curch))
        {
        bprintf("But they aren't here\n");
        return;
        }
-    if(ocarrf(a)==2)
+    if(Item(a).carry_flag==2)
        {
        bprintf("They are wearing that\n");
        return;
        }
-    if(pwpn(c)==a)
+    if(Player(c).weapon==a)
        {
        bprintf("They have that firmly to hand .. for KILLING people with\n");
        	return;
@@ -1979,16 +1979,16 @@ long me_cal=0;
     time(&f);
     srand(f);
     f=randperc();
-    e=10+my_lev-plev(c);
+    e=10+my_lev-Player(c).level;
     e*=5;
     if(f<e)
        {
-       sprintf(tb,"\001p%s\001 steals the %s from you !\n",globme,oname(a));
+       sprintf(tb,"\001p%s\001 steals the %s from you !\n",globme,Item(a).name);
        if(f&1){
-       	 user.send_message(Message(pname(c),globme,-10011,curch,tb);
+       	 user.send_message(Message(Player(c).name,globme,-10011,curch,tb);
        	 if(c>15) woundmn(c,0);
        	}
-       setoloc(a,mynum,1);
+       Item(a).location(mynum,1);
        return;
        }
     else
@@ -2290,17 +2290,17 @@ look_cmd()
 		bprintf("What ?\n");
 		return;
 	}
-	if(!otstbit(a,14))
+	if(!Item(a).test_bit(14))
 	{
 		bprintf("That isn't a container\n");
 		return;
 	}
-	if((otstbit(a,2))&&(state(a)!=0))
+	if((Item(a).test_bit(2))&&(state(a)!=0))
 	{
 		bprintf("It's closed!\n");
 		return;
 	}
-	bprintf("The %s contains:\n",oname(a));
+	bprintf("The %s contains:\n",Item(a).name);
 	aobjsat(a,3);
 }
 	
@@ -2350,10 +2350,10 @@ setherecom()
 digcom()
 {
         extern long curch;
-	if((oloc(186)==curch)&&(isdest(186)))
+	if((Item(186).location==curch)&&(Item(186).is_destroyed))
 	{
 		bprintf("You uncover a stone slab!\n");
-		ocreate(186);
+		Item(186).create();
 		return;
 	}
 	if((curch!=-172)&&(curch!=-192))
@@ -2383,9 +2383,9 @@ emptycom()
 	{
 		if(iscontin(b,a))
 		{
-			setoloc(b,mynum,1);
-			bprintf("You empty the %s from the %s\n",oname(b),oname(a));
-			sprintf(x,"drop %s",oname(b));
+			Item(b).set_location(mynum,1);
+			bprintf("You empty the %s from the %s\n",Item(b).name,Item(a).name);
+			sprintf(x,"drop %s",Item(b).name);
 			gamecom(x);
 			pbfr();
 			openworld();

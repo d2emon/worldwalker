@@ -2,6 +2,9 @@ from .world import World
 
 
 class Player:
+    SEX_MALE = 0
+    SEX_FEMALE = 1
+
     def __init__(self, player_id):
         self.player_id = player_id
 
@@ -101,8 +104,16 @@ class Player:
         self.__data[13] = value
 
     @property
-    def is_alive(self):
-        return bool(self.name)
+    def exists(self):
+        return not self.name
+
+    @property
+    def is_dead(self):
+        return self.strength < 0
+
+    @property
+    def is_faded(self):
+        return self.position < 0
 
     @property
     def is_mobile(self):
@@ -115,6 +126,9 @@ class Player:
     @classmethod
     def fpbn(cls, player_name, not_found_error=None):
         raise NotImplementedError()
+
+    def die(self):
+        self.strength = -1
 
     def put_on(self, name, location, position):
         self.name = name

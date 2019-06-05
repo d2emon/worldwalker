@@ -17,6 +17,11 @@ Stam:state:loc:flag
 
 
 class Item:
+    CARRY_0 = 0
+    CARRY_1 = 1
+    WEARING = 2
+    IN_CONTAINER = 3
+
     def __init__(self, item_id):
         self.item_id = item_id
 
@@ -35,6 +40,10 @@ class Item:
     @property
     def name(self):
         return self.__object.name
+
+    @property
+    def description(self):
+        return self.__object.description[self.state]
 
     @property
     def max_state(self):
@@ -78,7 +87,7 @@ class Item:
 
     @property
     def owner(self):
-        if self.carry_flag in (0, 3):
+        if self.carry_flag in (self.CARRY_0, self.IN_CONTAINER):
             return None
         return Player(self.location)
 
@@ -88,9 +97,6 @@ class Item:
 
     def create(self):
         self.clear_bit(0)
-
-    def get_description(self, state):
-        return self.__object.description[state]
 
     def set_bit(self, bit_id):
         self.__data[2] = bit_set(bit_id)

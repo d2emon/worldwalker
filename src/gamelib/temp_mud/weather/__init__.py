@@ -309,7 +309,7 @@ class SetValue(Action):
 
         value = next(parser)
         if value is None:
-            yield "Current Value is : {}\n".format(item.byte(byte_id))
+            yield "Current Value is : {}\n".format(item.get_byte(byte_id))
             return
         else:
             value = int(value)
