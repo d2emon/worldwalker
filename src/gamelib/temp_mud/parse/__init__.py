@@ -1146,7 +1146,7 @@ long exitnum[]={1,2,3,4,5,6,1,2,3,4,5,6};
           edit_world();
           break;
        case 180:
-          if(ptstflg(mynum,4)) self.debug_mode=1-self.debug_mode;
+          if( if Player(mynum).test_flag(4)) self.debug_mode=1-self.debug_mode;
           break;
        case 181:
           setpflags();
@@ -1811,7 +1811,7 @@ long me_cal=0;
        bprintf("They aren't playing\n");
        return;
        }
-       if(ptstflg(x,1))
+       if(Player(x).test_flag(1))
        {
        	bprintf("You can't exorcise them, they dont want to be exorcised\n");
        	return;
@@ -2036,7 +2036,7 @@ long me_cal=0;
     extern long mynum;
     char ms[128];
     extern char globme[];
-    if(!ptstflg(mynum,3))
+    if(!Player(mynum).test_flag(3))
        {
        bprintf("Dum de dum.....\n");
        return;
