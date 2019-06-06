@@ -83,6 +83,10 @@ class Item:
     def state(self):
         raise NotImplementedError()
 
+    @state.setter
+    def state(self, value):
+        raise NotImplementedError()
+
     @property
     def is_light(self):
         if self.item_id == 32:

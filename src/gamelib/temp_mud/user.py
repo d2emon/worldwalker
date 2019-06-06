@@ -1,10 +1,8 @@
-from .action import Special
-from .errors import CrapupError, ServiceError
+from .errors import CrapupError, ServiceError, CommandError
 from .item import Item
 from .location import Location
-from .message import Broadcast, Message, Silly, MSG_GLOBAL, MSG_WIZARD
+from .message import Broadcast, Message, Silly, MSG_WIZARD, MSG_GLOBAL, MSG_FLEE
 from .player import Player
-from .weather import autochange_weather
 from .world import World
 
 
@@ -13,6 +11,7 @@ class User:
 
     class NewUaf:
         level = 0
+        score = 0
         sex = 0
         strength = 0
 
@@ -38,6 +37,12 @@ class User:
         self.__updated = 0
 
         self.rd_qd = False
+
+        self.__in_ms = "has arrived."
+        self.__out_ms = ""
+        self.__mout_ms = "vanishes in a puff of smoke."
+        self.__min_ms = "appears with an ear-splitting bang."
+        self.__here_ms = "is here"
 
         self.__message_id = None
         self.__name = name
@@ -265,3 +270,132 @@ class User:
                 yield from gamrcv(message, self.name.lower())
             else:
                 yield message.text
+
+    # For actions
+    def quit_game(self):
+        if self.Disease.is_force:
+            raise CommandError("You can't be forced to do that\n")
+
+        yield from self.read_messages()
+
+        if self.Blood.in_fight:
+            raise CommandError("Not in the middle of a fight!\n")
+
+        yield "Ok"
+        World.load()
+        self.send_message(
+            self,
+            MSG_GLOBAL,
+            self.__location_id,
+            "{} has left the game\n".format(self.name)
+        )
+        self.send_message(
+            self,
+            MSG_WIZARD,
+            0,
+            "[ Quitting Game : {} ]\n".format(self.name)
+        )
+        dumpitems()
+        self.player.die()
+        self.player.remove()
+        World.save()
+        self.__location_id = 0
+
+    def flee(self):
+        if not self.Blood.in_fight:
+            return
+
+        if Item(32).iscarrby(self.__player_id):
+            raise CommandError("The sword won't let you!!!!\n")
+
+        self.send_message(
+            self,
+            MSG_GLOBAL,
+            self.__location_id,
+            "\001c{}\001 drops everything in a frantic attempt to escape\n".format(self.name),
+        )
+        self.send_message(
+            self,
+            MSG_FLEE,
+            self.__location_id,
+            "",
+        )
+
+        self.NewUaf.score -= self.NewUaf.score / 33  # loose 3%
+        self.calibme()
+        self.Blood.in_fight = None
+        self.on_flee_event()
+
+    def go_in_direction(self, direction_id):
+        if self.Blood.in_fight > 0:
+            raise CommandError("You can't just stroll out of a fight!\n"
+                               "If you wish to leave a fight, you must FLEE in a direction\n")
+        if Item(32).iscarrby(self.player) and Player(25).exists and Player(25).location == self.__location_id:
+            raise CommandError("\001cThe Golem\001 bars the doorway!\n")
+
+        self.Disease.crippled.check()
+
+        new_location = ex_dat[direction_id]
+        if 999 < new_location < 2000:
+            """
+       auto long  drnum,droff;
+       drnum=newch-1000;
+       droff=drnum^1;/* other door side */
+       if(state(drnum)!=0)
+          {
+      if (strcmp(Item(drnum).name,"door")||isdark()||strlen(Item(drnum).description))==0)
+              {
+              bprintf("You can't go that way\n");
+              /* Invis doors */
+              }
+              else
+              bprintf("The door is not open\n");
+          return;
+          }
+       newch=Item(droff).location;
+            """
+            pass
+        if new_location == -139:
+            """
+       if((!iswornby(113,mynum))&&(!(iswornby(114,mynum)))&&(!iswornby(89,mynum)))
+          {
+          bprintf("The intense heat drives you back\n");
+          return;
+          }
+       else
+          bprintf("The shield protects you from the worst of the lava stream's heat\n");
+            """
+            pass
+        if direction_id == 2:
+            """
+         if(((i=fpbns("figure"))!=mynum)&&(i!=-1)&&(Player(i).location==curch)&&!iswornby(101,mynum)&&!iswornby(102,mynum)&&!iswornby(103,mynum))
+            {
+            bprintf("\001pThe Figure\001 holds you back\n");
+            bprintf("\001pThe Figure\001 says 'Only true sorcerors may pass'\n");
+            return;
+            }
+            """
+            pass
+        if new_location >= 0:
+            raise CommandError("You can't go that way\n")
+
+        self.send_message(
+            self,
+            MSG_GLOBAL,
+            self.__location_id,
+            "\001s{user.player.name}\001{user.name} has gone {direction} {user.out_ms}.\n\001".format(
+                user=self,
+                direction=exittxt[direction_id],
+            ),
+        )
+        self.__location_id = new_location
+        self.send_message(
+            self,
+            MSG_GLOBAL,
+            self.__location_id,
+            "\001s{user.name}\001{user.name}{user.in_ms}.\n\001".format(
+                user=self,
+                direction=exittxt[direction_id],
+            ),
+        )
+        self.trapch(self.__location_id)

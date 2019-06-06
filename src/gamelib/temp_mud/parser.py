@@ -1,9 +1,10 @@
-from .action import Action, Special
-from .errors import ServiceError, CrapupError
+from gamelib.temp_mud.actions.action import Action, Special
+from .errors import ServiceError, CrapupError, CommandError
 from .user import User, StartGame
 from .world import World
 
 
+# Unknown
 class Buffer:
     def __init__(self):
         self.__sysbuf = ""
@@ -91,7 +92,7 @@ class Parser:
     CONVERSATION_TSS = 2
 
     MODE_SPECIAL = 0
-    MODE_GAME = 0
+    MODE_GAME = 1
 
     __PROMPT = {
         CONVERSATION_NONE: ">",
@@ -125,6 +126,8 @@ class Parser:
             "them": "",
             "there": "",
         }
+
+        self.verbs = VerbsList()
 
     @property
     def prompt(self):
@@ -161,6 +164,7 @@ class Parser:
         self.user.check_fight()
         return result
 
+    # Parse
     def __iter__(self):
         return self
 
@@ -185,6 +189,12 @@ class Parser:
             return None
         return self.__word_buffer
 
+    def require_next(self, message):
+        word = next(self)
+        if word is None:
+            raise CommandError(message)
+        return word
+
     def __gamecom(self, user, action):
         action = Action.prepare(self, action)
         if not action:
@@ -198,15 +208,18 @@ class Parser:
             if word is None:
                 raise CommandError("Pardon ?\n")
 
-            verb = self.__chkverb(word)
+            verb = self.verbs.check(word)
 
             if verb is None:
                 raise CommandError("I don't know that verb\n")
 
-            yield from verb.do_action(self)
+            yield from verb.execute(self, self.user)
         except CommandError as e:
             yield e
+        except NotImplementedError as e:
+            yield e
 
+    # Unknown
     def __special(self, user, action):
         action = Special.prepare(self, action)
         if not action:
@@ -235,3 +248,9 @@ class Parser:
             if self.__debug_mode:
                 yield "\n<{}>".format(message.code)
             yield from self.user.process_message(message)
+
+    # For Actions
+    def switch_debug(self):
+        if not self.user.player.test_flag(4):
+            return
+        self.__debug_mode = not self.__debug_mode

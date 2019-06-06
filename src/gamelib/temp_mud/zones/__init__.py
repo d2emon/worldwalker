@@ -1,7 +1,7 @@
 """
 Zone based name generator
 """
-from ..action import Action
+from gamelib.temp_mud.actions.action import Action
 from ..location import Location
 from ..zone import Zone, ZONES
 

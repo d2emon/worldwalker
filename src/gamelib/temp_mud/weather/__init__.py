@@ -1,7 +1,7 @@
 """
 The next part of the universe...
 """
-from ..action import Action
+from gamelib.temp_mud.actions.action import Action
 from ..errors import CommandError, NotFoundError
 from ..item import Item
 from ..message import MSG_WEATHER
@@ -25,31 +25,29 @@ states are
 
 class Climate:
     @classmethod
-    def get_weather_description(cls, weather_id):
-        return WEATHER_TEXT.get(weather_id, ""),
+    def weather_description(cls, weather_id):
+        return WEATHER_TEXT.get(weather_id, "")
 
     @classmethod
     def get_weather_id(cls, weather_id):
         return weather_id
 
     @classmethod
-    def show_weather_start(cls, weather_id):
-        yield WEATHER_START.get(cls.get_weather_id(weather_id))
+    def weather_start(cls, weather_id):
+        return WEATHER_START.get(cls.get_weather_id(weather_id))
 
     @classmethod
-    def show_weather(cls, weather_id):
-        yield from cls.get_weather_description(cls.get_weather_id(weather_id))
+    def weather(cls, weather_id):
+        return cls.weather_description(cls.get_weather_id(weather_id))
 
 
 class ClimateWarm(Climate):
     @classmethod
-    def get_weather_description(cls, weather_id):
+    def weather_description(cls, weather_id):
         if weather_id == WEATHER_RAIN:
-            return (
-                "It is raining, a gentle mist of rain, which sticks to everything around\n",
-                "you making it glisten and shine. High in the skies above you is a rainbow\n",
-            )
-        return super().get_weather_description(weather_id),
+            return "It is raining, a gentle mist of rain, which sticks to everything around\n" \
+                   "you making it glisten and shine. High in the skies above you is a rainbow\n"
+        return super().weather_description(weather_id)
 
     @classmethod
     def get_weather_id(cls, weather_id):
@@ -66,28 +64,23 @@ class ClimateCold(Climate):
 
 class Indoors(Climate):
     @classmethod
-    def show_weather_start(cls, weather_id):
+    def weather_start(cls, weather_id):
         return None
 
     @classmethod
-    def show_weather(cls, weather_id):
+    def weather(cls, weather_id):
         return None
 
 
-class Weather:
-    __weather = None
-
-    @property
-    def weather(self):
-        if self.__weather is None:
-            self.__weather = Item(0)
-        return self.__weather
+class Weather(Item):
+    def __init__(self):
+        super().__init__(0)
 
     def send_weather(self, user, new_weather):
-        if self.weather.state == new_weather:
+        if self.state == new_weather:
             return
 
-        self.weather.state = new_weather
+        self.state = new_weather
         user.send_message(user, MSG_WEATHER, None, new_weather)
 
     def autochange(self, user):
@@ -104,10 +97,10 @@ class Weather:
         if not user.location.outdoors():
             return
 
-        yield from user.location.climate.show_weather_start(weather_id)
+        yield user.location.climate.weather_start(weather_id)
 
 
-class __Weather(Action):
+class __WeatherAction(Action):
     weather_id = None
     wizard_only = "What ?\n"
 
@@ -116,23 +109,23 @@ class __Weather(Action):
         user.location.weather.send_weather(user, cls.weather_id)
 
 
-class Sun(__Weather):
+class Sun(__WeatherAction):
     weather_id = WEATHER_SUN
 
 
-class Rain(__Weather):
+class Rain(__WeatherAction):
     weather_id = WEATHER_RAIN
 
 
-class Storm(__Weather):
+class Storm(__WeatherAction):
     weather_id = WEATHER_STORM
 
 
-class Snow(__Weather):
+class Snow(__WeatherAction):
     weather_id = WEATHER_SNOW
 
 
-class Blizzard(__Weather):
+class Blizzard(__WeatherAction):
     weather_id = WEATHER_BLIZZARD
 
 

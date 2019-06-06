@@ -22,7 +22,7 @@ Sectors 1-n  in pairs ie [128 words]
 0 = Text
 - 1 = general request
 """
-from ..action import Special
+from gamelib.temp_mud.actions.action import Special
 from ..message import MSG_WIZARD, MSG_GLOBAL
 from ..player import Player
 from ..syslog import syslog
