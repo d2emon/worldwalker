@@ -61,6 +61,13 @@ class User:
         self.__ades = 0
         self.zapped = False
 
+        self.__last_interrupt = 0
+
+        self.__invisibility_counter = 0
+        self.__drunk_counter = 0
+        self.__to_calibrate = False
+
+        # Unknown
         self.__message_id = None
         self.__name = name
 
@@ -133,13 +140,93 @@ class User:
         yield from self.get_messages()
 
         self.update()
-        eorte()
-        rdes = 0
-        tdes = 0
-        vdes = 0
+        self.after_messages()
+        self.rdes = 0
+        self.tdes = 0
+        self.vdes = 0
         if reset_after_read:
             self.__message_id = None
 
+    # Parse
+    def after_messages(self):
+        ctm = time()
+        if ctm - self.__last_interrupt > 2:
+            self.interrupt = True
+        if self.interrupt:
+            self.__last_interrupt = ctm
+        """
+        ctm = time()
+        if ctm - cls.__last_io_interrupt > 2:
+            Extras.interrupt = True
+        if Extras.interrupt:
+            cls.__last_io_interrupt = ctm
+        """
+
+        if self.__invisibility_counter:
+            self.__invisibility_counter -= 1
+        if self.__invisibility_counter == 1:
+            self.player.visible = 0
+
+        if self.__to_calibrate:
+            calibme()
+            self.__to_calibrate = False
+        """
+        """
+
+        if self.tdes:
+            dosumm(self.ades)
+        """
+        if cls.__tdes:
+            cls.__dosumm(cls.__ades)
+        """
+
+        if self.Blood.in_fight:
+            enemy = Player(self.Blood.fighting)
+            if enemy.location != self.__location_id:
+                self.Blood.stop_fight()
+            if not enemy.exists:
+                self.Blood.stop_fight()
+            if self.Blood.in_fight and self.interrupt:
+                self.Blood.in_fight = 0
+                hitplayer(enemy, self.wpnheld)
+        """
+        if Blood.in_fight:
+            fight_with = Player(Blood.fighting)
+            if fight_with.location != user.location_id:
+                Blood.fighting = -1
+                Blood.in_fight = 0
+            if not fight_with.exists:
+                Blood.fighting = -1
+                Blood.in_fight = 0
+            if Blood.in_fight and Extras.interrupt:
+                Blood.in_fight = 0
+                hitplayer(fight_with, Extras.wpnheld)
+        """
+
+        if Item(18).iswornby(self.__player_id) or randperc() < 10:
+            self.NewUaf.strength += 1
+            if self.in_setup:
+                calibme()
+        """
+        if Item(18).is_worn_by(user.player) or randperc() < 10:
+            NewUaf.my_str += 1
+            if Extras.i_setup:
+                cls.calibme()
+        """
+
+        forchk()
+        """
+        DISEASES.force.check()
+        """
+
+        if self.__drunk_counter > 0:
+            self.__drunk_counter -= 1
+            if not self.Disease.dumb:
+                gamecom("hiccup")
+
+        self.interrupt = False
+
+    # Unknown
     def reset_location_id(self, is_random=False):
         if is_random:
             self.__location_id = -5 if randperc() > 50 else -183
@@ -401,6 +488,7 @@ class User:
         self.go_to_channel(self.__location_id)
 
     # Receive
+    # Parse
     def process_message(self, message):
         is_me = message.is_my(self.name.lower())
         name1 = message.user_to

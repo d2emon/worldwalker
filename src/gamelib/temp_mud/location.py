@@ -66,6 +66,15 @@ class Location:
             self.__zone = Zone.find(self.location_id)
         return self.__zone
 
+    # Parse
+    @property
+    def __filename(self):
+        return "{}{}".format(ROOMS, -self.location_id)
+
+    def load(self, mode):
+        return fopen(self.__filename, mode)
+
+    # Unknown
     def load_exits(self, file):
         self.exits = [file.scanf() for _ in range(6)]
 
@@ -77,4 +86,4 @@ class Location:
         yield result + "\n"
 
     def show_weather(self, weather_id):
-        yield from self.climate.show_weather(weather_id)
+        yield from self.climate.weather(weather_id)

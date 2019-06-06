@@ -110,60 +110,7 @@ class Parse:
     __exittxt = []
     __exitnum = []
 
-    __me_ivct = 0
-    __last_io_interrupt = 0
-
-    __me_drunk = 0
-
-    me_cal = 0
-
     __br_mode = False
-
-    @classmethod
-    def __chkverb(cls, word):
-        return cls.chklist(word, COMMANDS)
-
-    @classmethod
-    def eorte(cls):
-        ctm = time()
-        if ctm - cls.__last_io_interrupt > 2:
-            Extras.interrupt = True
-        if Extras.interrupt:
-            cls.__last_io_interrupt = ctm
-        if cls.__me_ivct:
-            cls.__me_ivct -= 1
-        if cls.__me_ivct == 1:
-            user.player.visible = 0
-        if cls.me_cal:
-            cls.me_cal = False
-            cls.calibme()
-        if cls.__tdes:
-            cls.__dosumm(cls.__ades)
-        if Blood.in_fight:
-            fight_with = Player(Blood.fighting)
-            if fight_with.location != user.location_id:
-                Blood.fighting = -1
-                Blood.in_fight = 0
-            if not fight_with.exists:
-                Blood.fighting = -1
-                Blood.in_fight = 0
-            if Blood.in_fight and Extras.interrupt:
-                Blood.in_fight = 0
-                hitplayer(fight_with, Extras.wpnheld)
-        if Item(18).is_worn_by(user.player) or randperc() < 10:
-            NewUaf.my_str += 1
-            if Extras.i_setup:
-                cls.calibme()
-        DISEASES.force.check()
-        if cls.__me_drunk > 0:
-            cls.__me_drunk -= 1
-            if not DISEASES.dumb.active:
-                cls.gamecom("hiccup")
-        Extras.interrupt = False
-
-    @classmethod
-    def openroom(cls, room_id, mode):
-        return fopen(Extras.ROOMS + (-room_id), mode)
 
     @classmethod
     def calibme(cls):
@@ -548,81 +495,6 @@ class Pronouns(Action):
 
 
 """
-long me_ivct=0;
-long last_io_interrupt=0;
-
-eorte()
-{
-    extern long mynum,me_ivct;
-    extern long me_drunk;
-    extern long ail_dumb;
-    extern long curch,tdes,rdes,vdes,ades;
-    extern long me_cal;
-    extern long wpnheld;
-    extern long my_str;
-    extern long i_setup;
-    extern long interrupt;
-    extern long fighting,in_fight;
-    long ctm;
-    time(&ctm);
-    if(ctm-last_io_interrupt>2) interrupt=1;
-    if(interrupt) last_io_interrupt=ctm;
-    if(me_ivct) me_ivct--;
-    if(me_ivct==1) Player(mynum).visible = 0
-    if(me_cal)
-       {
-       me_cal=0;
-       calibme();
-       }
-    if(tdes) dosumm(ades);
-    if(in_fight)
-    {
-       if(Player(fighting).location!=curch)
-          {
-          fighting= -1;
-          in_fight=0;
-          }
-       if(not Player(fighting).exists)
-          {
-          fighting= -1;
-          in_fight=0;
-          }
-       if(in_fight)
-          {
-          if(interrupt)
-             {
-             in_fight=0;
-             hitplayer(fighting,wpnheld);
-             }
-          }
-       }
-    if((iswornby(18,mynum))||(randperc()<10))
-       {
-       my_str++;
-       if(i_setup) calibme();
-       }
-    forchk();
-    if(me_drunk>0)
-       {
-       me_drunk--;
-       if(!ail_dumb) gamecom("hiccup");
-       }
-       interrupt=0;
-    }
- 
-long me_drunk=0;
- 
-FILE *openroom(n,mod)
-    {
-    long  blob[64];
-    FILE *x;
-    sprintf(blob,"%s%d",ROOMS,-n);
-    x=fopen(blob,mod);
-    return(x);
-    }
-    
-long me_cal=0;
-
  rescom()
     {
     extern long my_lev;
