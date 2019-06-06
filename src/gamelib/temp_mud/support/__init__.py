@@ -82,22 +82,3 @@ class Item:
     @classmethod
     def fobna(cls, name):
         raise NotImplementedError()
-
-
-class Door(Item):
-    @property
-    def other_id(self):
-        return self.item_id ^ 1  # other door side
-
-    @property
-    def other(self):
-        return Item(self.other_id)
-
-    def go_through(self):
-        if self.state == 0:
-            return self.other.loc
-
-        if self.name != "door" or is_dark() or not self.longt(self.state):
-            raise CommandError("You can't go that way\n")  # Invis doors
-        else:
-            raise CommandError("The door is not open\n")

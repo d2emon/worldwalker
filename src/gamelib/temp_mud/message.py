@@ -1,18 +1,32 @@
-from .errors import ServiceError,LooseError
+from .errors import ServiceError, LooseError
 from .player import Player
 from .world import World
 
 
 MAX_MESSAGES = 199
 
-MSG_BROADCAST = -1
-MSG_GLOBAL = -10000
-MSG_WEATHER = -10030
-MSG_WIZARD = -10113
-MSG_FLEE = - 20000
-
 
 class Message:
+    BROADCAST = -1
+    STOP_SNOOP = -400
+    START_SNOOP = -401
+    CHANGE_STATS = -599
+    TOO_EVIL = -666
+    MSG_750 = -750
+    VISIBLE = -9900
+    GLOBAL = -10000
+    MSG_10001 = -10001
+    MSG_10002 = -10002
+    MSG_10003 = -10003
+    MSG_10004 = -10004
+    MSG_10010 = -10010
+    MSG_10011 = -10011
+    MSG_10020 = -10020
+    MSG_10021 = -10021
+    WEATHER = -10030
+    WIZARD = -10113
+    FLEE = - 20000
+
     def __init__(self, user_to, user_from, code, channel_id, message):
         self.message_id = None
         self.channel_id = channel_id
@@ -63,13 +77,22 @@ class Message:
             yield player
             player.timeout_death()
 
+    def is_my(self, name):
+        name = name.lower()
+        user_to = self.user_to.lower()
+        if user_to == name:
+            return True
+        if user_to[:4] == "the " and user_to[4:] == name:
+            return True
+        return False
+
 
 class Broadcast(Message):
     def __init__(self, message):
         super().__init__(
             None,
             None,
-            MSG_BROADCAST,
+            self.BROADCAST,
             None,
             message,
         )
@@ -80,7 +103,7 @@ class Silly(Message):
         super().__init__(
             user,
             user,
-            MSG_GLOBAL,
+            self.GLOBAL,
             user.location.location_id,
             message.format(user),
         )

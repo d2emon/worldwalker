@@ -1,3 +1,4 @@
+from .errors import CommandError
 from .player import Player
 from .world import World
 
@@ -126,3 +127,25 @@ class Item:
 
     def test_mask(self, mask):
         return all(self.test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
+
+
+class Door(Item):
+    def __init__(self, door_id):
+        super().__init__(door_id - 1000)
+
+    @property
+    def other_id(self):
+        return self.item_id ^ 1  # other door side
+
+    @property
+    def other(self):
+        return Item(self.other_id)
+
+    @property
+    def invisible(self):
+        return self.name != "door" or not self.description
+
+    def go_through(self):
+        if self.state == 0:
+            return self.other.location
+        return 0

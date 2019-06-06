@@ -29,12 +29,14 @@ from ..syslog import syslog
 from ..world import World
 
 
-def split(block, luser):
+def split(block, name):
+    name = name.lower()
     name1, name2 = block[2].split(".")
+    is_me = name1.lower() == name
     if name1[:4].lower() == "the ":
-        if name1[4:].lower() == luser.lower():
-            return True, name1, name2, block[64]
-    return name1.lower() == luser.lower(), name1, name2, block[64]
+        if name1[4:].lower() == name:
+            is_me = True
+    return is_me, name1, name2, block[64]
 
 
 def userwrap(user):
