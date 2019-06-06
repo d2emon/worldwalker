@@ -228,6 +228,7 @@ class User:
         yield "\n"
         on_look()
 
+    # Support
     def is_available(self, item):
         if self.is_here(item):
             return True
@@ -238,6 +239,7 @@ class User:
         items = (item for item in items if item.is_carried_by(self.__player_id) or item.is_here(self.__player_id))
         return any(item for item in items if item.test_mask(mask))
 
+    # Unknown
     # Messages
     def send_message(self, to_user, code, channel_id, message):
         Message(to_user, self, code, channel_id, message).send(self)

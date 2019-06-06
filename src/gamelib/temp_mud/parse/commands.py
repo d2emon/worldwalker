@@ -7,7 +7,8 @@ from ..new1.messages import MSG_GLOBAL, MSG_WIZARD, MSG_SHOUT
 from ..newuaf import NewUaf
 from ..objsys import ObjSys, iscarrby, dumpitems, dumpstuff
 from ..opensys import openworld, closeworld
-from ..support import Item, Door, Player, syslog
+from ..support import Item, Door, Player
+from ..syslog import syslog
 from ..tk import Tk, trapch, broad
 from .messages import Message
 

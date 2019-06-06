@@ -25,7 +25,7 @@ Sectors 1-n  in pairs ie [128 words]
 from ..action import Special
 from ..message import MSG_WIZARD, MSG_GLOBAL
 from ..player import Player
-from ..support import syslog
+from ..syslog import syslog
 from ..world import World
 
 

@@ -6,7 +6,7 @@ from ..objsys import dumpitems
 from ..opensys import closeworld, openworld
 from ..parse import Parse
 from ..parse.messages import Message
-from ..support import syslog
+from ..syslog import syslog
 from ..tk import Tk, loseme
 from .disease import DISEASES
 

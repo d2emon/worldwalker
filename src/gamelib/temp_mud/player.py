@@ -2,6 +2,14 @@ from .world import World
 
 
 class Player:
+    FLAG_SEX = 0
+    # May not be exorcised
+    FLAG_CAN_CHANGE_FLAGS = 2
+    # 3 May use rmedit
+    # 4 May use debugmode
+    # 5 May use patch
+    # 6 May be snooped upon
+
     SEX_MALE = 0
     SEX_FEMALE = 1
 
@@ -19,6 +27,7 @@ class Player:
     def __data(self):
         return World.ublock[self.player_id]
 
+    # Support
     @property
     def name(self):
         return self.__data[0]
@@ -34,10 +43,6 @@ class Player:
     @location.setter
     def location(self, value):
         self.__data[4] = value
-
-    @property
-    def channel(self):
-        return self.location
 
     @property
     def position(self):
@@ -64,20 +69,20 @@ class Player:
         self.__data[8] = value
 
     @property
-    def sex_all(self):
+    def flags(self):
         return self.__data[9]
 
-    @sex_all.setter
-    def sex_all(self, value):
+    @flags.setter
+    def flags(self, value):
         self.__data[9] = value
 
     @property
     def sex(self):
-        return self.sex_all[0]
+        return self.__data[9][self.FLAG_SEX]
 
     @sex.setter
     def sex(self, value):
-        self.sex_all[0] = value
+        self.__data[9][self.FLAG_SEX] = value
 
     @property
     def level(self):
@@ -103,6 +108,7 @@ class Player:
     def helping(self, value):
         self.__data[13] = value
 
+    # Unknown
     @property
     def exists(self):
         return not self.name
@@ -119,10 +125,16 @@ class Player:
     def is_mobile(self):
         return self.player_id >= 16
 
+    # Support
     @property
     def helper(self):
-        return next((player for player in self.players() if player.is_helping(self)), None)
+        return next(self.helpers, None)
 
+    @property
+    def helpers(self):
+        return (player for player in self.players() if player.__is_helping(self))
+
+    # Unknown
     @classmethod
     def fpbn(cls, player_name, not_found_error=None):
         raise NotImplementedError()
@@ -145,18 +157,21 @@ class Player:
         self.level = level
         self.visible = visible
         self.weapon = None
-        self.sex_all = sex
+        self.flags = sex
         self.helping = None
 
     def remove(self):
         self.name = ""
 
-    def is_helping(self, player):
+    # Support
+    def __is_helping(self, player):
         return self.location == player.location and self.helping == player.player_id
 
+    # Unknown
     def is_timed_out(self, current_position):
-        return self.is_alive and self.position != 2 and self.position < current_position / 2
+        return not self.is_dead and self.position != 2 and self.position < current_position / 2
 
+    # Support
     def set_flag(self, flag_id):
         """
         Pflags
@@ -172,19 +187,23 @@ class Player:
         :param flag_id:
         :return:
         """
-        self.sex_all[flag_id] = True
+        self.__data[9][flag_id] = True
 
     def clear_flag(self, flag_id):
-        self.sex_all[flag_id] = False
+        self.__data[9][flag_id] = False
 
     def test_flag(self, flag_id):
-        if flag_id == 2 and self.name == "Debugger":
+        if flag_id == self.FLAG_CAN_CHANGE_FLAGS and self.name == "Debugger":
             return True
-        return self.sex_all[flag_id]
+        return self.flags[flag_id]
 
+    # Unknown
     def timeout_death(self):
-        dumpstuff(self, self.location)
+        self.dumpstuff(self.location)
         self.remove()
+
+    def dumpstuff(self, location):
+        raise NotImplementedError()
 
     @classmethod
     def get_timed_out(cls, timeout):

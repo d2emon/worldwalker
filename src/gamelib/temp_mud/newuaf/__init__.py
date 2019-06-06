@@ -197,7 +197,7 @@ saveme()
 	strcpy(x.p_name,globme);
 	x.p_strength=my_str;
 	x.p_level=my_lev;
-	x.p_sex=Player(mynum).sex_all
+	x.p_sex=Player(mynum).flags
 	x.p_score=my_sco;
 	if(zapped) return;
 	bprintf("\nSaving %s\n",globme);

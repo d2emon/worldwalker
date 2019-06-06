@@ -37,6 +37,7 @@ class Item:
     def __data(self):
         return World.objinfo[self.item_id]
 
+    # Support
     @property
     def name(self):
         return self.__object.name
@@ -77,6 +78,11 @@ class Item:
     def is_destroyed(self):
         return self.test_bit(0)
 
+    # Unknown
+    @property
+    def state(self):
+        raise NotImplementedError()
+
     @property
     def is_light(self):
         if self.item_id == 32:
@@ -95,6 +101,7 @@ class Item:
     def fobna(cls, item_name):
         raise NotImplementedError()
 
+    # Support
     def create(self):
         self.clear_bit(0)
 

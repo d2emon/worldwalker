@@ -101,13 +101,3 @@ class Door(Item):
             raise CommandError("You can't go that way\n")  # Invis doors
         else:
             raise CommandError("The door is not open\n")
-
-
-def syslog(user, message):
-    try:
-        x = openlock(LOG_FILE, "a")
-        fprintf(x, "{}:  {}\n".format(time(), message))
-        fclose(x)
-    except FileNotFoundError:
-        user.loose()
-        raise CrapupError("Log fault : Access Failure")

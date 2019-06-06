@@ -12,7 +12,8 @@ from ..new1.utils import get_item
 from ..newuaf import NewUaf
 from ..objsys import ObjSys, dumpitems
 from ..opensys import closeworld, openworld
-from ..support import Item, Player, syslog, iscarrby
+from ..support import Item, Player, iscarrby
+from ..syslog import syslog
 from ..tk import trapch, loseme
 from .commands import COMMANDS
 from .messages import Message
