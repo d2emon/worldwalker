@@ -1,6 +1,6 @@
 from .action import ActionList
-from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Reset, Lightning, Eat, Play, Grope, \
-    Credits, Brief, MapWorld, Flee, DebugMode
+from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Reset, Lightning, Eat, Play, Shout, \
+    Say, Tell, Grope, Credits, Brief, MapWorld, Flee, DebugMode
 from .weather import Storm, Rain, Sun, Snow, Blizzard, Laugh, Cry, Burp, Fart, Hiccup, Grin, Smile, Wink, Snigger, \
     Pose, SetValue, Pray, Groan, Moan, Yawn, Purr, Sulk, SetPFlags, Emote
 from .zones import Exits, Loc
@@ -28,9 +28,9 @@ class VerbsList(ActionList):
             Lightning,
             Eat,
             Play,
-            # 18
-            # 19
-            # 20
+            Shout,
+            Say,
+            Tell,
 
             # 21
             # 22

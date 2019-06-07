@@ -70,15 +70,9 @@ case 14:
 case 15:
 case 16:
 case 17:
-       case 18:
-          shoutcom();
-          break;
-       case 19:
-          saycom();
-          break;
-       case 20:
-          tellcom();
-          break;
+case 18:
+case 19:
+case 20:
 
 case 21:
           saveme();

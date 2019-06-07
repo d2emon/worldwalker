@@ -141,6 +141,52 @@ class Play(Action):
         return parser.user.play(item)
 
 
+class Shout(Action):
+    # 18
+    commands = "shout",
+
+    @classmethod
+    def validate(cls, command, parser):
+        if parser.user.disease.dumb:
+            raise CommandError()
+        return True
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.shout(parser.full())
+
+
+class Say(Action):
+    # 19
+    commands = "say",
+
+    @classmethod
+    def validate(cls, command, parser):
+        if parser.user.disease.dumb:
+            raise CommandError()
+        return True
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.say(parser.full())
+
+
+class Tell(Action):
+    # 20
+    commands = "tell",
+
+    @classmethod
+    def validate(cls, command, parser):
+        if parser.user.disease.dumb:
+            raise CommandError()
+        return True
+
+    @classmethod
+    def action(cls, command, parser):
+        player = Player.fpbn(parser.require_next("Tell who ?\n"))
+        return parser.user.tell(player, parser.full())
+
+
 class Grope(Action):
     # 139
     commands = "grope",

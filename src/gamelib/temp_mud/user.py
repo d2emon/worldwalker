@@ -582,6 +582,28 @@ class User:
         if not self.is_available(item):
             raise CommandError("That isn't here\n")
 
+    def shout(self, text):
+        self.send_message(
+            self,
+            -10104 if self.is_wizard else -10002,
+            self.__location_id,
+            text,
+        )
+        yield "Ok!"
+
+    def say(self, text):
+        self.send_message(
+            self,
+            -10003,
+            self.__location_id,
+            text,
+        )
+        yield "You say '{}'\n".format(text)
+
+    def tell(self, player, text):
+        if player is None:
+            raise CommandError("No one with that name is playing\n")
+        self.send_message(player, -10004, self.__location_id, text)
 
     # Receive
     # Parse

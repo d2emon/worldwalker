@@ -3,10 +3,6 @@ globme holds global me data
 """
 from ..errors import CommandError, CrapupError
 
-from ..blood import Blood
-from ..bprintf import bprintf
-from ..magic import randperc
-from ..new1.disease import DISEASES
 from ..new1.messages import MSG_WIZARD, MSG_GLOBAL
 from ..new1.utils import get_item
 from ..newuaf import NewUaf
@@ -425,53 +421,6 @@ class Pronouns(Action):
 
 
 """
- shoutcom()
-    {
-    extern long curch,my_lev;
-    extern char globme[];
-    auto char blob[200];
-    if(chkdumb()) return;
-    getreinput(blob);
-    if(my_lev>9)
-       user.send_message(Message(globme,globme,-10104,curch,blob);
-    else
-       user.send_message(Message(globme,globme,-10002,curch,blob);
-    bprintf("Ok\n");
-    }
- 
- saycom()
-    {
-    extern long curch;
-    extern char globme[];
-    auto char blob[200];
-    if(chkdumb()) return;
-    getreinput(blob);
-    user.send_message(Message(globme,globme,-10003,curch,blob);
-    bprintf("You say '%s'\n",blob);
-    }
-
- tellcom()
-    {
-    extern long curch;
-    extern char wordbuf[],globme[];
-    char blob[200];
-    long  a,b;
-    if(chkdumb()) return;
-    if(brkword()== -1)
-       {
-       bprintf("Tell who ?\n");
-       return;
-       }
-    b=fpbn(wordbuf);
-    if(b== -1)
-       {
-       bprintf("No one with that name is playing\n");
-       return;
-       }
-    getreinput(blob);
-    user.send_message(Message(Player(b).name,globme,-10004,curch,blob);
-    }
- 
  scorecom()
     {
     extern long my_str,my_lev,my_sco;
