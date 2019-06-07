@@ -285,8 +285,6 @@ case 131:
           starecom();
           break;
        case 136:
-          exits();
-          break;
        case 137:
           crashcom();
           break;
@@ -345,8 +343,6 @@ case 151:
           squeezecom();
           break;
        case 153:
-          loccom();
-          break;
        case 155:
           usercom();
           break;

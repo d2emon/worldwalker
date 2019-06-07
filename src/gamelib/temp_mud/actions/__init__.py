@@ -1,6 +1,7 @@
 from .action import ActionList
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Groan, Credits, Brief, MapWorld, \
     Flee, DebugMode
+from .zones import Exits, Loc
 
 
 # Parse
@@ -106,7 +107,7 @@ class VerbsList(ActionList):
             # 133
             # 134
             # 135
-            # 136
+            Exits,
             # 137
             # 138
             # 139
@@ -125,7 +126,7 @@ class VerbsList(ActionList):
 
             # 151
             # 152
-            # 153
+            Loc,
             # 154
             # 155
             # 156

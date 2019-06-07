@@ -61,6 +61,10 @@ class Location:
             return False
 
     @property
+    def visible_exits(self):
+        return [e for e in self.exits if e < 0]
+
+    @property
     def zone(self):
         if self.__zone is None:
             self.__zone = Zone.find(self.location_id)
