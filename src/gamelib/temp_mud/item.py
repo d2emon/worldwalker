@@ -89,6 +89,10 @@ class Item:
         raise NotImplementedError()
 
     @property
+    def is_edible(self):
+        return self.test_bit(6)
+
+    @property
     def is_light(self):
         if self.item_id == 32:
             return True

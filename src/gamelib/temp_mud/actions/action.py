@@ -68,9 +68,7 @@ case 11:
           break;
 case 14:
 case 15:
-       case 16:
-          eatcom();
-          break;
+case 16:
        case 17:
           playcom();
           break;
@@ -350,8 +348,8 @@ case 171:
        case 112:
           wherecom();
           break;
-       case 173:
-       case 174:
+case 173:
+case 174:
        case 175:
           bugcom();
           break;
@@ -367,8 +365,7 @@ case 171:
        case 179:
           edit_world();
           break;
-       case 180:
-          break;
+case 180:
 
 case 181:
        case 182:

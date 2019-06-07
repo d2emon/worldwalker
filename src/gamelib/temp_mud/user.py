@@ -26,6 +26,33 @@ class User:
         sex = 0
         strength = 0
 
+        # Parse
+        @classmethod
+        def level_of(cls, score):
+            score = score / 2  # Scaling factor
+            if cls.level > 10:
+                return cls.level
+            elif score < 500:
+                return 1
+            elif score < 1000:
+                return 2
+            elif score < 3000:
+                return 3
+            elif score < 6000:
+                return 4
+            elif score < 10000:
+                return 5
+            elif score < 20000:
+                return 6
+            elif score < 32000:
+                return 7
+            elif score < 44000:
+                return 8
+            elif score < 70000:
+                return 9
+            else:
+                return 10
+
     class Blood:
         fighting = None
         in_fight = 0
@@ -141,7 +168,7 @@ class User:
         yield from self.get_messages()
 
         self.update()
-        self.after_messages()
+        yield from self.after_messages()
         self.rdes = 0
         self.tdes = 0
         self.vdes = 0
@@ -169,10 +196,8 @@ class User:
             self.player.visible = 0
 
         if self.__to_calibrate:
-            calibme()
+            yield from self.calibrate()
             self.__to_calibrate = False
-        """
-        """
 
         if self.tdes:
             dosumm(self.ades)
@@ -207,13 +232,7 @@ class User:
         if Item(18).iswornby(self.__player_id) or randperc() < 10:
             self.NewUaf.strength += 1
             if self.in_setup:
-                calibme()
-        """
-        if Item(18).is_worn_by(user.player) or randperc() < 10:
-            NewUaf.my_str += 1
-            if Extras.i_setup:
-                cls.calibme()
-        """
+                yield from self.calibrate()
 
         forchk()
         """
@@ -349,6 +368,38 @@ class User:
         items = (item for item in items if item.is_carried_by(self.__player_id) or item.is_here(self.__player_id))
         return any(item for item in items if item.test_mask(mask))
 
+    # Parse
+    def calibrate(self):
+        """
+        Routine to correct me in user file
+
+        :return:
+        """
+        if not self.in_setup:
+            return
+
+        level = self.NewUaf.level_of(self.NewUaf.score)
+        if level != self.NewUaf.level:
+            self.NewUaf.level = level
+            yield "You are now {} ".format(self.name)
+            syslog("{} to level {}".format(self.name, level))
+            disle3(level, self.NewUaf.sex)
+            self.send_message(
+                self,
+                Message.WIZARD,
+                self.player.location,
+                "\001p{}\001 is now level {}\n".format(self.name, self.NewUaf.level),
+            )
+            if level == 10:
+                yield "\001f{}\001".format(GWIZ)
+
+        self.NewUaf.strength = min(self.NewUaf.strength, 30 + 10 * self.NewUaf.level)
+
+        self.player.level = self.NewUaf.level
+        self.player.strength = self.NewUaf.strength
+        self.player.sex = self.NewUaf.sex
+        self.player.weapon = self.__wpnheld
+
     # Unknown
     # Messages
     def send_message(self, to_user, code, channel_id, message):
@@ -427,7 +478,7 @@ class User:
         )
 
         self.NewUaf.score -= self.NewUaf.score / 33  # loose 3%
-        self.calibme()
+        yield from self.calibrate()
         self.Blood.in_fight = None
         self.on_flee_event()
 
@@ -498,6 +549,32 @@ class User:
             # DIE
         self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
 
+    def eat(self, item):
+        if item is None:
+            raise CommandError("There isn't one of those here\n")
+        elif item.item_id == 11:
+            yield "You feel funny, and then pass out\n"
+            yield "You wake up elsewhere....\n"
+            self.teleport(-1076)
+        elif item.item_id == 75:
+            yield "very refreshing\n"
+        elif item.item_id == 175:
+            if self.NewUaf.level < 3:
+                self.NewUaf.score += 40
+                yield "You feel a wave of energy sweeping through you.\n"
+            else:
+                yield "Faintly magical by the taste.\n"
+                if self.NewUaf.strength < 40:
+                    self.NewUaf.strength += 2
+            yield from self.calibrate()
+        else:
+            if item.is_edible:
+                item.destroy()
+                yield "Ok....\n"
+                self.NewUaf.strength += 12
+                yield from self.calibrate()
+            else:
+                yield "Thats sure not the latest in health food....\n"
 
     # Receive
     # Parse
@@ -531,7 +608,7 @@ class User:
             if not is_me:
                 return
             self.NewUaf.level, self.NewUaf.score, self.NewUaf.strength = message.message
-            self.calibme()
+            yield from self.calibrate()
         elif message.code == Message.TOO_EVIL:
             yield "Something Very Evil Has Just Happened...\n"
             raise LooseError("Bye Bye Cruel World....")

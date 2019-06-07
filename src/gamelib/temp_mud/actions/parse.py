@@ -1,4 +1,5 @@
 from ..errors import CommandError, CrapupError
+from ..item import Item
 from ..player import Player
 from ..world import World
 from .action import Action, ActionList
@@ -11,7 +12,7 @@ class Direction(Action):
     def action(cls, command, parser):
         if cls.direction_id is None:
             raise CommandError("Thats not a valid direction\n")
-        parser.user.go_in_direction(cls.direction_id)
+        return parser.user.go_in_direction(cls.direction_id)
 
 
 class ExitsList(ActionList):
@@ -98,7 +99,7 @@ class Reset(Action):
     @classmethod
     def action(cls, command, parser):
         parser.user.broadcast("Reset in progress....\nReset Completed....\n")
-        World.reset()
+        return World.reset()
 
 
 class Lightning(Action):
@@ -109,7 +110,26 @@ class Lightning(Action):
     @classmethod
     def action(cls, command, parser):
         victim = Player.fpbn(parser.require_next("But who do you wish to blast into pieces....\n"))
-        parser.user.lightning(victim)
+        return parser.user.lightning(victim)
+
+
+class Eat(Action):
+    # 16
+    commands = "eat", "drink",
+    wizard_only = "Your spell fails.....\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        item_name = parser.require_next("What\n")
+
+        if parser.user.location_id == -609 and item_name == "water":
+            item_name = "spring"
+
+        if item_name == "from":
+            item_name = next(parser)
+
+        item = Item.fobna(item_name)
+        return parser.user.eat(item)
 
 
 class Grope(Action):
@@ -161,7 +181,7 @@ class Flee(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.flee()
+        yield from parser.user.flee()
         return Go.execute(command, parser)
 
 
