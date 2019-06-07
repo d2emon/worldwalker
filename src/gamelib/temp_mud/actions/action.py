@@ -136,55 +136,23 @@ case 31:
           break;
 
 case 50:
-          laughcom();
-          break;
 
 case 51:
-          crycom();
-          break;
-       case 52:
-          burpcom();
-          break;
-       case 53:
-          fartcom();
-          break;
-       case 54:
-          hiccupcom();
-          break;
-       case 55:
-          grincom();
-          break;
-       case 56:
-          smilecom();
-          break;
-       case 57:
-          winkcom();
-          break;
-       case 58:
-          sniggercom();
-          break;
-       case 59:
-          posecom();
-          break;
-       case 60:
-          setcom();
-          break;
+case 52:
+case 53:
+case 54:
+case 55:
+case 56:
+case 57:
+case 58:
+case 59:
+case 60:
 
 case 61:
-          praycom();
-          break;
-       case 62:
-          stormcom();
-          break;
-       case 63:
-          raincom();
-          break;
-       case 64:
-          suncom();
-          break;
-       case 65:
-          snowcom();
-          break;
+case 62:
+case 63:
+case 64:
+case 65:
        case 66:
           goloccom();
           break;
@@ -202,9 +170,7 @@ case 101:
        case 103:
           wavecom();
           break;
-       case 104:
-          blizzardcom();
-          break;
+case 104:
        case 105:
           opencom();
           break;
@@ -297,17 +263,11 @@ case 131:
           break;
 
 case 141:
-          groancom();
-          break;
-       case 142:
-          moancom();
-          break;
+case 142:
        case 143:
           dircom();
           break;
-       case 144:
-          yawncom();
-          break;
+case 144:
        case 145:
           wizlist();
           break;
@@ -374,21 +334,16 @@ case 161:
        case 164:
           rawcom();
           break;
-       case 165:
-          purrcom();
-          break;
+case 165:
        case 166:
           cuddlecom();
           break;
-       case 167:
-          sulkcom();
-          break;
+case 167:
        case 168:
           rollcom();
           break;
-       case 169:
-       case 170:
-          break;
+case 169:
+case 170:
 
 case 171:
           debugcom();
@@ -420,8 +375,6 @@ case 171:
           break;
 
 case 181:
-          setpflags();
-          break;
        case 182:
           frobnicate();
           break;
@@ -437,9 +390,7 @@ case 181:
        case 186:
           setmoutcom();
           break;
-       case 187:
-          emotecom();
-          break;
+case 187:
        case 188:
           digcom();
           break;

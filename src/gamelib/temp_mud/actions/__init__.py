@@ -1,6 +1,8 @@
 from .action import ActionList
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Groan, Credits, Brief, MapWorld, \
     Flee, DebugMode
+from .weather import Storm, Rain, Sun, Snow, Blizzard, Laugh, Cry, Burp, Fart, Hiccup, Grin, Smile, Wink, Snigger, \
+    Pose, SetValue, Pray, Groan, Moan, Yawn, Purr, Sulk, SetPFlags, Emote
 from .zones import Exits, Loc
 
 
@@ -47,32 +49,36 @@ class VerbsList(ActionList):
             # 34
             # 35
 
-            # 50
+            # ? 36-49
 
-            # 51
-            # 52
-            # 53
-            # 54
-            # 55
-            # 56
-            # 57
-            # 58
-            # 59
-            # 60
+            Laugh,
 
-            # 161
-            # 162
-            # 163
-            # 164
-            # 165
-            # 166
+            Cry,
+            Burp,
+            Fart,
+            Hiccup,
+            Grin,
+            Smile,
+            Wink,
+            Snigger,
+            Pose,
+            SetValue,
+
+            Pray,
+            Storm,
+            Rain,
+            Sun,
+            Snow,
+            # 66
+
+            # ? 67-99
 
             # 100
 
             # 101
             # 102
             # 103
-            # 104
+            Blizzard,
             # 105
             # 106
             # 107
@@ -111,12 +117,12 @@ class VerbsList(ActionList):
             # 137
             # 138
             # 139
-            # 130
+            # 140
 
-            # 141
-            # 142
+            Groan,
+            Moan,
             # 143
-            # 144
+            Yawn,
             # 145
             # 146
             # 147
@@ -139,9 +145,9 @@ class VerbsList(ActionList):
             # 162
             # 163
             # 164
-            # 165
+            Purr,
             # 166
-            # 167
+            Sulk,
             # 168
             Credits,
             Brief,
@@ -156,4 +162,14 @@ class VerbsList(ActionList):
             # 178
             # 179
             DebugMode,
+
+            SetPFlags,
+            # 182
+            # 183
+            # 184
+            # 185
+            # 186
+            Emote,
+            # 188
+            # 189
         )
