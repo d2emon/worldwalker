@@ -116,7 +116,6 @@ class Lightning(Action):
 class Eat(Action):
     # 16
     commands = "eat", "drink",
-    wizard_only = "Your spell fails.....\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -130,6 +129,16 @@ class Eat(Action):
 
         item = Item.fobna(item_name)
         return parser.user.eat(item)
+
+
+class Play(Action):
+    # 17
+    commands = "play",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = Item.fobna(parser.require_next("Play what ?\n"))
+        return parser.user.play(item)
 
 
 class Grope(Action):

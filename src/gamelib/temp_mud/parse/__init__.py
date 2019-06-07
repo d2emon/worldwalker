@@ -113,16 +113,6 @@ class Parse:
     __br_mode = False
 
     @classmethod
-    def getreinput(cls):
-        text = ""
-        while cls.__strbuf[cls.__stp] == ' ':
-            cls.__stp += 1
-        while cls.__stp < len(cls.__strbuf):
-            text += cls.__strbuf[cls.__stp]
-            cls.__stp += 1
-        return text
-
-    @classmethod
     def dogive(cls, item, player):
         if NewUaf.my_lev < 10 and player.location != user.location_id:
             raise CommandError("They are not here\n")
@@ -435,39 +425,6 @@ class Pronouns(Action):
 
 
 """
- playcom()
-    {
-    extern char wordbuf[];
-    extern long curch;
-    extern long mynum;
-    long  a,b;
-    if(brkword()== -1)
-       {
-       bprintf("Play what ?\n");
-       return;
-       }
-    a=fobna(wordbuf);
-    if(a== -1)
-       {
-       bprintf("That isn't here\n");
-       return;
-       }
-    if(!user.is_available(a))
-       {
-       bprintf("That isn't here\n");
-       return;
-       }
-    }
-
- getreinput(blob)
-    {
-    extern long stp;
-    extern char strbuf[];
-    strcpy(blob,"");
-    while(strbuf[stp]==' ') stp++;
-    while(strbuf[stp]) addchar(blob,strbuf[stp++]);
-    }
-
  shoutcom()
     {
     extern long curch,my_lev;

@@ -576,6 +576,13 @@ class User:
             else:
                 yield "Thats sure not the latest in health food....\n"
 
+    def play(self, item):
+        if item is None:
+            raise CommandError("That isn't here\n")
+        if not self.is_available(item):
+            raise CommandError("That isn't here\n")
+
+
     # Receive
     # Parse
     def process_message(self, message):

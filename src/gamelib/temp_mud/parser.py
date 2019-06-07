@@ -196,6 +196,11 @@ class Parser:
             raise CommandError(message)
         return word
 
+    def full(self):
+        text = self.string_buffer[self.__position:].trim()
+        self.__position = len(self.string_buffer)
+        return text
+
     def __gamecom(self, user, action):
         action = Action.prepare(self, action)
         if not action:

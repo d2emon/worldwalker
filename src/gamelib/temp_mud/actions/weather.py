@@ -331,4 +331,4 @@ class Emote(Silly):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.silly("\001P{user.name}\001 " + parser.getreinput() + "\n")
+        parser.user.silly("\001P{user.name}\001 " + parser.full() + "\n")
