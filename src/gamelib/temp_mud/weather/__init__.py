@@ -1,13 +1,9 @@
 """
 The next part of the universe...
 """
-from gamelib.temp_mud.actions.action import Action
-from ..errors import CommandError, NotFoundError
 from ..item import Item
-from ..message import MSG_WEATHER
-from ..player import Player
-from ..weather_data import WEATHER_SUN, WEATHER_RAIN, WEATHER_STORM, WEATHER_SNOW, WEATHER_BLIZZARD, WEATHER_START, \
-    WEATHER_TEXT
+from ..message import Message
+from ..weather_data import WEATHER_RAIN, WEATHER_START, WEATHER_TEXT
 
 """
 Weather Routines
@@ -81,7 +77,7 @@ class Weather(Item):
             return
 
         self.state = new_weather
-        user.send_message(user, MSG_WEATHER, None, new_weather)
+        user.send_message(user, Message.WEATHER, None, new_weather)
 
     def autochange(self, user):
         chance = randperc()

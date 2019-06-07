@@ -22,11 +22,8 @@ Sectors 1-n  in pairs ie [128 words]
 0 = Text
 - 1 = general request
 """
-from gamelib.temp_mud.actions.action import Special
-from ..message import MSG_WIZARD, MSG_GLOBAL
 from ..player import Player
 from ..syslog import syslog
-from ..world import World
 
 
 def split(block, name):
@@ -44,34 +41,3 @@ def userwrap(user):
         return
     user.loose()
     syslog(user, "System Wrapup exorcised {}".format(user.name))
-
-
-class StartGame(Special):
-    @classmethod
-    def action(cls, parser, user):
-        parser.mode = parser.MODE_GAME
-
-        user.reset_location_id()
-        user.initme()
-
-        World.load()
-        visible = 0 if not user.is_god else 10000
-        user.player.start(user.NewUaf.strength, user.NewUaf.level, visible, user.NewUaf.sex)
-
-        user.send_message(
-            user,
-            MSG_WIZARD,
-            user.location_id,
-            "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=user),
-        )
-
-        yield from parser.read_messages()
-        user.reset_location_id(True)
-        user.go_to_channel(user.location_id)
-
-        user.send_message(
-            user,
-            MSG_GLOBAL,
-            user.location_id,
-            "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=user),
-        )
