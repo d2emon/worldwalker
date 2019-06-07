@@ -495,62 +495,6 @@ class Pronouns(Action):
 
 
 """
- rescom()
-    {
-    extern long my_lev;
-    extern long objinfo[],numobs;
-    FILE *b;
-    char dabk[32];
-    long i;
-    FILE *a;
-    if(my_lev<10)
-       {
-       bprintf("What ?\n");
-       return;
-       }
-    Broadcast("Reset in progress....\nReset Completed....\n").send(user);
-    b=openlock(RESET_DATA,"r");
-    sec_read(b,objinfo,0,4*numobs);
-    fcloselock(b);
-    time(&i);
-    a=fopen(RESET_T,"w");
-    fprintf(a,"Last Reset At %s\n",ctime(&i));
-    fclose(a);
-    a=fopen(RESET_N,"w");
-    fprintf(a,"%ld\n",i);
-    fclose(a);
-    resetplayers();
-    }
- 
- lightning()
-    {
-    extern long my_lev;
-    long  vic;
-    extern char wordbuf[];
-    extern char globme[];
-    extern long curch;
-    if(my_lev<10)
-       {
-       bprintf("Your spell fails.....\n");
-       return;
-       }
-    if(brkword()== -1)
-       {
-       bprintf("But who do you wish to blast into pieces....\n");
-       return;
-       }
-    vic=fpbn(wordbuf);
-    if(vic== -1)
-       {
-       bprintf("There is no one on with that name\n");
-       return;
-       }
-    user.send_message(Message(Player(vic).name,globme,-10001,Player(vic).location,"");
-    syslog("%s zapped %s",globme,Player(vic).name);
-    if(vic>15)woundmn(vic,10000); /* DIE */
-    Broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001").send(user);
-    }
-
  eatcom()
     {
     long b;

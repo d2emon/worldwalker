@@ -1,4 +1,6 @@
 from ..errors import CommandError, CrapupError
+from ..player import Player
+from ..world import World
 from .action import Action, ActionList
 
 
@@ -87,9 +89,32 @@ class QuitWorld(Action):
         raise CrapupError("Goodbye")
 
 
-class Groan(Action):
+class Reset(Action):
+    # 14
+    full_match = True
+    commands = "reset",
+    wizard_only = "What ?\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.broadcast("Reset in progress....\nReset Completed....\n")
+        World.reset()
+
+
+class Lightning(Action):
+    # 15
+    commands = "zap",
+    wizard_only = "Your spell fails.....\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        victim = Player.fpbn(parser.require_next("But who do you wish to blast into pieces....\n"))
+        parser.user.lightning(victim)
+
+
+class Grope(Action):
     # 139
-    commands = "groan",
+    commands = "grope",
 
     @classmethod
     def validate(cls, command, parser):

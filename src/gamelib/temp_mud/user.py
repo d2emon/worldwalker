@@ -3,6 +3,7 @@ from .item import Item, Door
 from .location import Location
 from .message import Broadcast, Message, Silly
 from .player import Player
+from .syslog import syslog
 from .world import World
 
 
@@ -486,6 +487,17 @@ class User:
             ),
         )
         self.go_to_channel(self.__location_id)
+
+    def lightning(self, victim):
+        if victim is None:
+            raise CommandError("There is no one on with that name\n")
+        self.send_message(victim.name, -10001, victim.location, "")
+        syslog("{} zapped {}".format(self.name, victim.name))
+        if victim.is_mobile:
+            woundmn(victim, 10000)
+            # DIE
+        self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
+
 
     # Receive
     # Parse

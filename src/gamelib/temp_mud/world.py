@@ -1,4 +1,7 @@
 class World:
+    __reset_objects = []
+    __reset_time = None
+
     objects = []
     objinfo = []
     item_ids = len(objects)
@@ -50,3 +53,15 @@ class World:
             cls.__messages[i] = cls.__messages[100 + i]
         cls.first_message += 100
         return cls.first_message
+
+    @classmethod
+    def reset_time(cls):
+        return "Last Reset At {}\n".format(cls.__reset_time)
+
+    @classmethod
+    def reset(cls):
+        cls.objects = cls.__reset_objects
+        cls.__reset_time = time()
+
+        resetplayers()
+

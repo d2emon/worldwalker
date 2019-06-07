@@ -66,12 +66,8 @@ case 11:
        case 13:
           whocom();
           break;
-       case 14:
-          rescom();
-          break;
-       case 15:
-          lightning();
-          break;
+case 14:
+case 15:
        case 16:
           eatcom();
           break;
@@ -408,7 +404,7 @@ class BaseAction:
         0: 3,
         1: 2,
     }
-    full_match = False  # self.value == "reset"
+    full_match = False
     commands = "",
 
     @classmethod
