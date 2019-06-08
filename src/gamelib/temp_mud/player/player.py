@@ -1,23 +1,18 @@
-from .world import World
+from ..world import World
+from .base_player import BasePlayer
 
 
-class Player:
-    FLAG_SEX = 0
+class Player(BasePlayer):
+    __FLAG_SEX = 0
     # May not be exorcised
-    FLAG_CAN_CHANGE_FLAGS = 2
+    __FLAG_CAN_CHANGE_FLAGS = 2
     # 3 May use rmedit
     # 4 May use debugmode
     # 5 May use patch
     # 6 May be snooped upon
 
-    SEX_MALE = 0
-    SEX_FEMALE = 1
-
     def __init__(self, player_id):
         self.player_id = player_id
-
-    def __str__(self):
-        return self.name
 
     @classmethod
     def players(cls):
@@ -37,11 +32,11 @@ class Player:
         self.__data[0] = value
 
     @property
-    def location(self):
+    def location_id(self):
         return self.__data[4]
 
-    @location.setter
-    def location(self, value):
+    @location_id.setter
+    def location_id(self, value):
         self.__data[4] = value
 
     @property
@@ -78,11 +73,14 @@ class Player:
 
     @property
     def sex(self):
-        return self.__data[9][self.FLAG_SEX]
+        return self.__test_flag(self.__FLAG_SEX)
 
     @sex.setter
     def sex(self, value):
-        self.__data[9][self.FLAG_SEX] = value
+        if value:
+            self.__set_flag(self.__FLAG_SEX)
+        else:
+            self.__clear_flag(self.__FLAG_SEX)
 
     @property
     def level(self):
@@ -110,18 +108,6 @@ class Player:
 
     # Unknown
     @property
-    def exists(self):
-        return not self.name
-
-    @property
-    def is_dead(self):
-        return self.strength < 0
-
-    @property
-    def is_faded(self):
-        return self.position < 0
-
-    @property
     def is_mobile(self):
         return self.player_id >= 16
 
@@ -132,19 +118,16 @@ class Player:
 
     @property
     def helpers(self):
-        return (player for player in self.players() if player.__is_helping(self))
+        return (player for player in self.players() if player.is_helping(self))
 
     # Unknown
     @classmethod
     def fpbn(cls, player_name, not_found_error=None):
         raise NotImplementedError()
 
-    def die(self):
-        self.strength = -1
-
     def put_on(self, name, location, position):
         self.name = name
-        self.location = location
+        self.location_id = location
         self.position = position
         self.level = 1
         self.visible = 0
@@ -160,51 +143,31 @@ class Player:
         self.flags = sex
         self.helping = None
 
-    def remove(self):
-        self.name = ""
-
     # Support
-    def __is_helping(self, player):
-        return self.location == player.location and self.helping == player.player_id
-
-    # Unknown
-    def is_timed_out(self, current_position):
-        return not self.is_dead and self.position != 2 and self.position < current_position / 2
-
-    # Support
-    def set_flag(self, flag_id):
-        """
-        Pflags
-
-        0 sex
-        1 May not be exorcised ok
-        2 May change pflags ok
-        3 May use rmedit ok
-        4 May use debugmode ok
-        5 May use patch
-        6 May be snooped upon
-
-        :param flag_id:
-        :return:
-        """
+    # Flags
+    # 0 sex
+    # 1 May not be exorcised ok
+    # 2 May change pflags ok
+    # 3 May use rmedit ok
+    # 4 May use debugmode ok
+    # 5 May use patch
+    # 6 May be snooped upon
+    def __set_flag(self, flag_id):
         self.__data[9][flag_id] = True
 
-    def clear_flag(self, flag_id):
+    def __clear_flag(self, flag_id):
         self.__data[9][flag_id] = False
 
-    def test_flag(self, flag_id):
+    def __test_flag(self, flag_id):
         if flag_id == self.FLAG_CAN_CHANGE_FLAGS and self.name == "Debugger":
             return True
         return self.flags[flag_id]
 
     # Unknown
-    def timeout_death(self):
-        self.dumpstuff(self.location)
-        self.remove()
+    @classmethod
+    def get_timed_out(cls, timeout):
+        return (player for player in cls.players()[:16] if player.is_timed_out(timeout))
 
     def dumpstuff(self, location):
         raise NotImplementedError()
 
-    @classmethod
-    def get_timed_out(cls, timeout):
-        return (player for player in cls.players()[:16] if player.is_timed_out(timeout))

@@ -1,3 +1,18 @@
+"""
+Data format for mud packets
+
+Sector 0
+[64 words]
+0   Current first message pointer
+1   Control Word
+Sectors 1-n  in pairs ie [128 words]
+
+[channel][controlword][text data]
+
+[controlword]
+0 = Text
+-1 = general request
+"""
 from .errors import ServiceError, LooseError
 from .player import Player
 from .world import World
@@ -43,10 +58,12 @@ class Message:
         self.message_id = World.add_message(self)
         return self.message_id
 
+    # Tk
     @classmethod
     def messages(cls, first=None, last=None):
         return World.get_messages(first, last)
 
+    # Unknown
     def serialize(self):
         return [
             self.channel_id,
@@ -55,6 +72,7 @@ class Message:
             self.message,
         ]
 
+    # Tk
     def send(self, user):
         try:
             World.load()
@@ -65,6 +83,7 @@ class Message:
         except ServiceError:
             raise LooseError("\nAberMUD: FILE_ACCESS : Access failed\n")
 
+    # Unknown
     @classmethod
     def cleanup(cls, user):
         for player in cls.__revise(World.clear_old_messages()):

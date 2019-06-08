@@ -96,7 +96,7 @@ class User:
         self.__to_calibrate = False
 
         # Unknown
-        self.__message_id = None
+        self.reset_position()
         self.__name = name
 
     @property
@@ -127,7 +127,7 @@ class User:
         for item in (item for item in Item.items() if item.is_light):
             if is_here(item):
                 return False
-            if item.owner is not None and item.owner.location == self.__location_id:
+            if item.owner is not None and item.owner.location == self.location_id:
                 return False
         return True
 
@@ -154,18 +154,19 @@ class User:
     def enemy(self):
         return Player(self.Blood.fighting)
 
+    # Tk
     def check_fight(self):
         if self.Blood.fighting is not None:
             if not self.enemy.exists:
                 self.Blood.stop_fight()
-            if self.enemy.location != self.__location_id:
+            if self.enemy.location != self.location_id:
                 self.Blood.stop_fight()
 
         if self.Blood.in_fight:
             self.Blood.in_fight -= 1
 
     def read_messages(self, reset_after_read=False):
-        yield from self.get_messages()
+        yield from self.__get_messages()
 
         self.update()
         yield from self.after_messages()
@@ -173,7 +174,7 @@ class User:
         self.tdes = 0
         self.vdes = 0
         if reset_after_read:
-            self.__message_id = None
+            self.reset_position()
 
     # Parse
     def after_messages(self):
@@ -208,7 +209,7 @@ class User:
 
         if self.Blood.in_fight:
             enemy = Player(self.Blood.fighting)
-            if enemy.location != self.__location_id:
+            if enemy.location != self.location_id:
                 self.Blood.stop_fight()
             if not enemy.exists:
                 self.Blood.stop_fight()
@@ -231,8 +232,7 @@ class User:
 
         if Item(18).iswornby(self.__player_id) or randperc() < 10:
             self.NewUaf.strength += 1
-            if self.in_setup:
-                yield from self.calibrate()
+            yield from self.calibrate()
 
         forchk()
         """
@@ -249,12 +249,12 @@ class User:
     # Unknown
     def reset_location_id(self, is_random=False):
         if is_random:
-            self.__location_id = -5 if randperc() > 50 else -183
+            self.location_id = -5 if randperc() > 50 else -183
         else:
-            self.__location_id = -5
+            self.location_id = -5
 
     def reset_message_id(self):
-        self.__message_id = None
+        self.position = None
         self.__put_on()
 
     def go_to_channel(self, channel_id):
@@ -298,12 +298,12 @@ class User:
         chksnp()
 
     def update(self):
-        if abs(self.__message_id - self.__updated) < 10:
+        if abs(self.position - self.__updated) < 10:
             return
 
         World.load()
-        self.player.position = self.__message_id
-        self.__updated = self.__message_id
+        self.player.position = self.position
+        self.__updated = self.position
 
     def look_in(self, location):
         World.save()
@@ -352,7 +352,7 @@ class User:
         World.load()
         if not self.__ail_blind:
             lisobs()
-            if self.mode == 1:
+            if parser.mode == parser.MODE_GAME:
                 lispeople()
         yield "\n"
         on_look()
@@ -408,14 +408,16 @@ class User:
     def broadcast(self, message):
         self.rd_qd = True
         Broadcast(message).send(self)
+        # block[2:] = bk2[:126]
 
     def silly(self, message):
         Silly(self, message).send(self)
 
-    def get_messages(self):
+    # Tk
+    def __get_messages(self):
         try:
             World.load()
-            return Message.messages(self.__message_id)
+            return Message.messages(self.position)
         except ServiceError:
             raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
 
@@ -427,6 +429,7 @@ class User:
             else:
                 yield message.text
 
+    # Unknown
     # For actions
     def quit_game(self):
         if self.Disease.is_force:
@@ -442,7 +445,7 @@ class User:
         self.send_message(
             self,
             Message.GLOBAL,
-            self.__location_id,
+            self.location_id,
             "{} has left the game\n".format(self.name)
         )
         self.send_message(
@@ -455,7 +458,7 @@ class User:
         self.player.die()
         self.player.remove()
         World.save()
-        self.__location_id = 0
+        self.location_id = 0
 
     def flee(self):
         if not self.Blood.in_fight:
@@ -467,13 +470,13 @@ class User:
         self.send_message(
             self,
             Message.GLOBAL,
-            self.__location_id,
+            self.location_id,
             "\001c{}\001 drops everything in a frantic attempt to escape\n".format(self.name),
         )
         self.send_message(
             self,
             Message.FLEE,
-            self.__location_id,
+            self.location_id,
             "",
         )
 
@@ -488,7 +491,7 @@ class User:
                                "If you wish to leave a fight, you must FLEE in a direction\n")
 
         golem = Player(25)
-        if Item(32).iscarrby(self.player) and golem.exists and golem.location == self.__location_id:
+        if Item(32).iscarrby(self.player) and golem.exists and golem.location == self.location_id:
             raise CommandError("\001cThe Golem\001 bars the doorway!\n")
 
         self.Disease.crippled.check()
@@ -511,7 +514,7 @@ class User:
         if direction_id == 2:
             sorcerors = Item(101), Item(102), Item(103)
             figure = Player.fpbns("figure")
-            if figure is not None and figure.player_id != self.__player_id and figure.location == self.__location_id:
+            if figure is not None and figure.player_id != self.__player_id and figure.location == self.location_id:
                 if any(item.iswornby(self.player) for item in sorcerors):
                     raise CommandError("\001pThe Figure\001 holds you back\n"
                                        "\001pThe Figure\001 says 'Only true sorcerors may pass'\n")
@@ -521,17 +524,17 @@ class User:
         self.send_message(
             self,
             Message.GLOBAL,
-            self.__location_id,
+            self.location_id,
             "\001s{user.player.name}\001{user.name} has gone {direction} {user.out_ms}.\n\001".format(
                 user=self,
                 direction=DIRECTIONS[direction_id],
             ),
         )
-        self.__location_id = new_location
+        self.location_id = new_location
         self.send_message(
             self,
             Message.GLOBAL,
-            self.__location_id,
+            self.location_id,
             "\001s{user.name}\001{user.name}{user.in_ms}.\n\001".format(
                 user=self,
                 direction=DIRECTIONS[direction_id],
@@ -586,7 +589,7 @@ class User:
         self.send_message(
             self,
             -10104 if self.is_wizard else -10002,
-            self.__location_id,
+            self.location_id,
             text,
         )
         yield "Ok!"
@@ -595,7 +598,7 @@ class User:
         self.send_message(
             self,
             -10003,
-            self.__location_id,
+            self.location_id,
             text,
         )
         yield "You say '{}'\n".format(text)
@@ -603,7 +606,7 @@ class User:
     def tell(self, player, text):
         if player is None:
             raise CommandError("No one with that name is playing\n")
-        self.send_message(player, -10004, self.__location_id, text)
+        self.send_message(player, -10004, self.location_id, text)
 
     # Receive
     # Parse
@@ -654,12 +657,12 @@ class User:
         elif message.code == Message.GLOBAL:
             if is_me:
                 return
-            if message.channel_id != self.__location_id:
+            if message.channel_id != self.location_id:
                 return
             yield message.message
         elif message.code == -10001:
             if not is_me:
-                if message.channel_id == self.__location_id:
+                if message.channel_id == self.location_id:
                     yield "\001cA massive lightning bolt strikes \001\001D{}\001\001c\n\001".format(message.user_to)
                 return
             if self.is_wizard:
@@ -670,7 +673,7 @@ class User:
             self.send_message(
                 self,
                 Message.WIZARD,
-                self.__location_id,
+                self.location_id,
                 "[ \001p{}\001 has just been zapped by \001p{}\001 and terminated ]\n".format(
                     self.name,
                     message.user_from,
@@ -682,7 +685,7 @@ class User:
             self.send_message(
                 self,
                 Message.GLOBAL,
-                self.__location_id,
+                self.location_id,
                 "\001s{user}\001{user} has just died.\n\001".format(user=self.name),
             )
             yield "You have been utterly destroyed by {}\n".format(message.user_from)
@@ -697,7 +700,7 @@ class User:
         elif message.code == -10003:
             if is_me:
                 return
-            if message.channel_id != self.__location_id:
+            if message.channel_id != self.location_id:
                 return
             yield "\001P{}\001\001d says '{}'\n\001".format(message.user_from, message.message)
         elif message.code == -10004:

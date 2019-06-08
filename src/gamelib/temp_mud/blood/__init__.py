@@ -118,7 +118,7 @@ void hitplayer(victim,wpn)
 			in_fight=0;
 			fighting= -1;
 		}
-       if(victim<16) user.send_message(Player(victim).name,globme,-10021,curch,(char *)x);
+       if(victim<16) user.send_message(Player(victim).name,globme,-10021,user.location_id,(char *)x);
        else
           	{
           	woundmn(victim,ddn);
@@ -133,7 +133,7 @@ void hitplayer(victim,wpn)
 	       x[0]=mynum;
 	       x[1]= -1;
 	       x[2]=wpn;
-	       if(victim<16) user.send_message(Player(victim).name,globme,-10021,curch,(char *)x);
+	       if(victim<16) user.send_message(Player(victim).name,globme,-10021,user.location_id,(char *)x);
      		else
 		woundmn(victim,0);
        }
@@ -168,7 +168,7 @@ void hitplayer(victim,wpn)
 	       bprintf("Come on, it will look better tomorrow...\n");
 	       return;
        }
-    if(Player(a).location!=curch)
+    if(Player(a).location!=user.location_id)
        {
 	       bprintf("They aren't here\n");
 	       return;
@@ -235,9 +235,9 @@ void  bloodrcv(array,isme)
           delpers(globme);
           openworld();
           sprintf(ms,"\001p%s\001 has just died.\n",globme);
-          user.send_message(globme,globme,-10000,curch,ms);
+          user.send_message(globme,globme,-10000,user.location_id,ms);
           sprintf(ms,"[ \001p%s\001 has been slain by \001p%s\001 ]\n",globme,Player(array[0]).name);
-          user.send_message(globme,globme,-10113,curch,ms);
+          user.send_message(globme,globme,-10113,user.location_id,ms);
           crapup("Oh dear... you seem to be slightly dead\n");
           }
        me_cal=1; /* Queue an update when ready */

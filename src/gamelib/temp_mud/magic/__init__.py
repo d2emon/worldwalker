@@ -6,7 +6,6 @@ def randperc(*args):
 #include <stdio.h>
 #include "files.h"
 
-extern long curch;
 extern long mynum;
 extern long my_lev;
 extern char globme[];
@@ -28,7 +27,7 @@ sumcom()
     {
     long a,b;
     extern char wordbuf[];
-    extern long curch,mynum;
+    extern long mynum;
     extern long my_lev;
     extern long my_str;
     extern char globme[];
@@ -77,7 +76,7 @@ if(iscarrby(163,mynum)) c+=my_lev;
        bprintf("Seems a waste of effort to me....\n");
        return;
        }
-    if((curch>=-1082)&&(curch<=-1076))
+    if((user.location_id>=-1082)&&(user.location_id<=-1076))
        {
        bprintf("Something about this place makes you fumble the magic\n");
        return;
@@ -85,14 +84,14 @@ if(iscarrby(163,mynum)) c+=my_lev;
 willwork:bprintf("You cast the summoning......\n");
     if(a<16)
        {
-       user.send_message(Player(a).name,globme,-10020,curch,"");
+       user.send_message(Player(a).name,globme,-10020,user.location_id,"");
        return;
        }
     if((a==17)||(a==23)) return;
     dumpstuff(a,Player(a).location);
     sprintf(seg,"\001s%s\001%s has arrived\n\001",Player(a).name,Player(a).name);
-    user.send_message("","",-10000,curch,seg);
-    Player(a).location = curch;
+    user.send_message("","",-10000,user.location_id,seg);
+    Player(a).location = user.location_id;
     return;
     sumob:;
     if(my_lev<10)
@@ -134,7 +133,7 @@ willwork:bprintf("You cast the summoning......\n");
 
  goloccom()
     {
-    extern long curch,my_lev;
+    extern long my_lev;
     extern char globme[];
     char n1[128];
     char bf[128];
@@ -163,8 +162,8 @@ willwork:bprintf("You cast the summoning......\n");
     fclose(b);
     sprintf(bf,"\001s%%s\001%%s %s\n\001",mout_ms);
     sillycom(bf);
-    curch=a;
-    trapch(curch);
+    user.location_id=a;
+    trapch(user.location_id);
     sprintf(bf,"\001s%%s\001%%s %s\n\001",min_ms);    
     sillycom(bf);
     }
@@ -176,7 +175,6 @@ willwork:bprintf("You cast the summoning......\n");
     {
     extern long my_lev;
     extern char globme[],wordbuf[];
-    extern long curch;
     extern long rd_qd;
     char bf[128];
     if(my_lev<10)
@@ -186,7 +184,7 @@ willwork:bprintf("You cast the summoning......\n");
        }
     getreinput(wordbuf);
     sprintf(bf,"\001p%s\001 : %s\n",globme,wordbuf);
-    user.send_message(globme,globme,-10113,curch,bf);
+    user.send_message(globme,globme,-10113,user.location_id,bf);
     rd_qd=1;
     }
 
@@ -247,7 +245,6 @@ willwork:bprintf("You cast the summoning......\n");
     {
     extern long my_lev;
     long bf[32];
-    extern long curch;
     long a,b;
     extern char wordbuf[];
     if(my_lev<10)
@@ -272,8 +269,8 @@ willwork:bprintf("You cast the summoning......\n");
        return;
        }
     Item(a).create();
-    Item(a).set_location(curch,0);
+    Item(a).set_location(user.location_id,0);
     sprintf(bf,"The %s suddenly appears\n",Item(a).name);
-    user.send_message("","",-10000,curch,bf);
+    user.send_message("","",-10000,user.location_id,bf);
     }
 """

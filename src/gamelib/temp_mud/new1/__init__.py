@@ -97,7 +97,7 @@ def woundmn(enemy, damage):
 
 
 def mhitplayer(enemy):
-    if enemy.location != Tk.curch:
+    if enemy.location != user.location_id:
         return
     if enemy.player_id < 0 or enemy.player_id > 47:
         return
@@ -145,18 +145,18 @@ def teletrap(new_channel):
         Tk,
         Tk,
         MSG_GLOBAL,
-        Tk.curch,
+        user.location_id,
         "\001s{name}\001{name} has left.\n\001".format(name=Tk.globme),
     ).send()
-    Tk.curch = new_channel
+    user.location_id = new_channel
     Message(
         Tk,
         Tk,
         MSG_GLOBAL,
-        Tk.curch,
+        user.location_id,
         "\001s{name}\001{name} has arrived.\n\001".format(name=Tk.globme),
     ).send()
-    trapch(Tk.curch)
+    trapch(user.location_id)
 
 
 def on_flee_event():
@@ -242,7 +242,7 @@ extern char wordbuf[];
  
  opencom()
     {
-    extern long mynum,curch;
+    extern long mynum;
     long a,b;
     b=ohereandget(&a);
     if(b==-1) return;
@@ -396,14 +396,13 @@ break;
  
  wavecom()
     {
-    extern long curch;
     long a,b;
     b=ohereandget(&a);
     if(b==-1) return;
     switch(a)
        {
        case 136:
-          if((state(151)==1)&&(Item(151).location==curch))
+          if((state(151)==1)&&(Item(151).location==user.location_id))
              {
              setstate(150,0);
              bprintf("The drawbridge is lowered!\n");
@@ -434,7 +433,6 @@ break ;
     extern long my_sco;
     char ar[128];
     extern char wordbuf[];
-    extern long curch;
     long c;
     b=ohereandget(&a);
     if(b== -1) return;
@@ -556,9 +554,9 @@ break ;
     Item(a).set_location(c,3);
     bprintf("Ok.\n");
     sprintf(ar,"\001D%s\001\001c puts the %s in the %s.\n\001",globme,Item(a).name,Item(c).name);
-    user.send_message(globme,globme,-10000,curch,ar);
+    user.send_message(globme,globme,-10000,user.location_id,ar);
     if(Item(a).test_bit(12)) setstate(a,0);
-    if(curch==-1081) 
+    if(user.location_id==-1081) 
     {
 	setstate(20,1);
 	bprintf("The door clicks shut....\n");
@@ -567,7 +565,7 @@ break ;
  
  lightcom()
     {
-    extern long mynum,curch;
+    extern long mynum;
     long a,b;
     b=ohereandget(&a);
     if(b== -1) return;
@@ -626,7 +624,6 @@ break ;
  
  pushcom()
     {
-    extern long curch;
     extern char wordbuf[];
     extern long mynum;
     long fil;
@@ -651,7 +648,7 @@ break ;
           crapup("             S   P    L      A         T           !");
        case 162:
           bprintf("A trapdoor opens at your feet and you plumment downwards!\n");
-          curch= -140;trapch(curch);
+          user.location_id= -140;trapch(user.location_id);
           return;
        case 130:
           if(state(132)==1)
@@ -753,48 +750,48 @@ break ;
     {
     long a,b;
     extern char globme[];
-    extern long mynum,curch;
+    extern long mynum;
     b=victim(&a);
     if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10101,curch,"");
+    user.send_message(Player(a).name,globme,-10101,user.location_id,"");
     }
  
  curecom()
     {
     long a,b;
     extern char globme[];
-    extern long mynum,curch;
+    extern long mynum;
     b=vichfb(&a);
     if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10100,curch,"");
+    user.send_message(Player(a).name,globme,-10100,user.location_id,"");
     }
  
  dumbcom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[];
     b=victim(&a);
     if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10102,curch,"");
+    user.send_message(Player(a).name,globme,-10102,user.location_id,"");
     }
  
  forcecom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[];
     char z[128];
     b=victim(&a);
     if(b== -1) return;
     getreinput(z);
-    user.send_message(Player(a).name,globme,-10103,curch,z);
+    user.send_message(Player(a).name,globme,-10103,user.location_id,z);
     }
  
  missilecom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[];
     extern long my_lev;
     extern long fighting,in_fight;
@@ -803,7 +800,7 @@ break ;
     b=vichfb(&a);
     if(b== -1) return;
     sprintf(ar,"%d",my_lev*2);
-    user.send_message(Player(a).name,globme,-10106,curch,ar);
+    user.send_message(Player(a).name,globme,-10106,user.location_id,ar);
     if(Player(a).strength - 2*my_lev<0)    
 	{
 	bprintf("Your last spell did the trick\n");
@@ -823,7 +820,7 @@ break ;
  changecom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[];
     extern char wordbuf[];
     if(brkword()== -1)
@@ -838,7 +835,7 @@ break ;
        }
     b=victim(&a);
     if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10107,curch,"");
+    user.send_message(Player(a).name,globme,-10107,user.location_id,"");
     if(a<16) return;
     Player(a).sex = 1 - Player(a).sex
     }
@@ -846,7 +843,7 @@ break ;
  fireballcom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern long fighting,in_fight;    
     extern char globme[];
     extern long my_lev;
@@ -873,7 +870,7 @@ break ;
 	in_fight=0;
 	fighting= -1;
     }    
-    user.send_message(Player(a).name,globme,-10109,curch,ar);
+    user.send_message(Player(a).name,globme,-10109,user.location_id,ar);
     if(a==fpbns("yeti")) {woundmn(a,6*my_lev);return;}
     if(a>15) woundmn(a,2*my_lev);
     }
@@ -881,7 +878,7 @@ break ;
  shockcom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[];
     extern long my_lev;
     extern long fighting,in_fight;    
@@ -908,7 +905,7 @@ break ;
 	fighting= -1;
     }       
     sprintf(ar,"%d",my_lev*2);
-    user.send_message(Player(a).name,globme,-10110,curch,ar);
+    user.send_message(Player(a).name,globme,-10110,user.location_id,ar);
     if(a>15) woundmn(a,2*my_lev);
     }
  
@@ -1060,11 +1057,10 @@ break ;
  vichere(x)
 long *x;
     {
-    extern long curch;
     long a;
     a=vicbase(x);
     if(a== -1) return(a);
-    if(Player(*x).location!=curch)
+    if(Player(*x).location!=user.location_id)
        {
        bprintf("They are not here\n");
        return(-1);
@@ -1079,7 +1075,6 @@ long *x;
     extern long mynum;
     long a;
     extern long my_str,my_lev;
-    extern long curch;
     long b,i;
     a=vicbase(x);
     if(a== -1) return(-1);
@@ -1120,10 +1115,9 @@ if(iscarrby(163,mynum)) i++;
  long *x;
     {
     long a;
-    extern long curch;
     a=vicfb(x);
     if(a== -1) return(-1);
-    if(Player(*x).location!=curch)
+    if(Player(*x).location!=user.location_id)
        {
        bprintf("They are not here\n");
        return(-1);
@@ -1140,14 +1134,13 @@ if(iscarrby(163,mynum)) i++;
  sillytp(per,msg)
  char *msg;
     {
-    extern long curch;
     extern char globme[];
     char bk[256];
     if(strncmp(msg,"star",4)==0) 
       sprintf(bk, "%s%s%s%s%s%s%s","\001s",globme,"\001",globme," ",msg,"\n\001");
     else
        sprintf(bk,"%s%s%s%s%s","\001p",globme,"\001 ",msg,"\n");
-    user.send_message(Player(per).name,globme,-10111,curch,bk);
+    user.send_message(Player(per).name,globme,-10111,user.location_id,bk);
     }
  
 long ail_dumb=0;
@@ -1161,7 +1154,7 @@ long  ail_deaf=0;
     {
     extern long mynum,my_lev,ail_dumb,ail_crip;
     extern long ail_deaf,ail_blind;
-    extern long curch,my_sex;
+    extern long my_sex;
     extern char globme[];
     switch(code)
        {
@@ -1231,7 +1224,7 @@ long  ail_deaf=0;
           break;
        case -10106:
           if(iam(from))break;
-          if(curch==chan)
+          if(user.location_id==chan)
              {
              bprintf("Bolts of fire leap from the fingers of \001p%s\001\n",from);
              if(isme==1)
@@ -1258,7 +1251,7 @@ long  ail_deaf=0;
           break;
        case -10109:
           if(iam(from)) break;
-          if(curch==chan)
+          if(user.location_id==chan)
              {
              bprintf("\001p%s\001 casts a fireball\n",from);
              if(isme==1)
@@ -1369,7 +1362,7 @@ long  ail_deaf=0;
  
  wounded(n)
     {
-    extern long my_str,my_lev,curch;
+    extern long my_str,my_lev;
     extern long me_cal;
     extern long zapped;
     extern char globme[];
@@ -1386,9 +1379,9 @@ long  ail_deaf=0;
     dumpitems();
     loseme();
     sprintf(ms,"%s has just died\n",globme);
-    user.send_message(globme,globme,-10000,curch,ms);
+    user.send_message(globme,globme,-10000,user.location_id,ms);
     sprintf(ms,"[ %s has just died ]\n",globme);
-    user.send_message(globme,globme,-10113,curch,ms);
+    user.send_message(globme,globme,-10113,user.location_id,ms);
     crapup("Oh dear you just died\n");
     }
  
@@ -1418,10 +1411,10 @@ long  ail_deaf=0;
  
  mhitplayer(mon,mn)
     {
-    extern long curch,my_lev,mynum;
+    extern long my_lev,mynum;
     long a,b,x[4];
     extern char globme[];
-    if(Player(mon).location !=curch) return;
+    if(Player(mon).location !=user.location_id) return;
     if((mon<0)||(mon>47)) return;
     a=randperc();
     b=3*(15-my_lev)+20;
@@ -1623,34 +1616,33 @@ case 33:return(10);
  deafcom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[64];
     b=victim(&a);
     if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10120,curch,"");
+    user.send_message(Player(a).name,globme,-10120,user.location_id,"");
     }
  
 blindcom()
     {
     long a,b;
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[64];
     b=victim(&a);
     if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10105,curch,"");
+    user.send_message(Player(a).name,globme,-10105,user.location_id,"");
     }
 
 teletrap(newch)
 long newch;
 {
-       extern long curch;
        char block[200];
        sprintf(block,"%s%s%s%s%s","\001s",globme,"\001",globme," has left.\n\001");
-       user.send_message(globme,globme,-10000,curch,block);
-       curch=newch;
+       user.send_message(globme,globme,-10000,user.location_id,block);
+       user.location_id=newch;
        sprintf(block,"%s%s%s%s%s","\001s",globme,"\001",globme," has arrived.\n\001");
        user.send_message(globme,globme,-10000,newch,block);
-       trapch(curch);
+       trapch(user.location_id);
 }
 
 on_flee_event()

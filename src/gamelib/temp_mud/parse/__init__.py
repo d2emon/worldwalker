@@ -20,7 +20,6 @@ from gamelib.temp_mud.actions.action import Action
 class Extras:
     interrupt = None
     wpnheld = None
-    i_setup = None
     ROOMS = None
     GWIZ = None
     EXE = None
@@ -278,14 +277,14 @@ def systat(parser):
 
 
 def convcom(parser):
-    Extras.convflg = 1
+    parser.converstion_mode = parser.CONVERSATION_SAY
     yield "Type '**' on a line of its own to exit converse mode\n"
 
 
 def shellcom(parser):
     if NewUaf.my_lev < 10000:
         raise CommandError("There is nothing here you can shell\n")
-    Extras.convflg = 2
+    parser.conversation_mode = parser,CONVERSATION_TSS
     yield "Type ** on its own on a new line to exit shell\n"
 
 
@@ -440,7 +439,6 @@ class Pronouns(Action):
  exorcom()
     {
     long  x,a;
-    extern long curch;
     extern long my_lev;
     extern char globme[];
     extern char wordbuf[];
@@ -467,7 +465,7 @@ class Pronouns(Action):
        	}
     syslog("%s exorcised %s",globme,Player(x).name);
     dumpstuff(x,Player(x).location);
-    user.send_message(Message(Player(x).name,globme,-10010,curch,"");
+    user.send_message(Message(Player(x).name,globme,-10010,user.location_id,"");
     Player(x).remove()
     }
  
@@ -536,9 +534,9 @@ class Pronouns(Action):
     long  x;
     auto z[32];
     extern char globme[];
-    extern long my_lev,curch;
+    extern long my_lev;
     extern long mynum;
-    if((my_lev<10)&&(Player(pl).location!=curch))
+    if((my_lev<10)&&(Player(pl).location!=user.location_id))
        {
        bprintf("They are not here\n");
        return;
@@ -559,14 +557,14 @@ class Pronouns(Action):
        }
     Item(ob).location(pl,1);
     sprintf(z,"\001p%s\001 gives you the %s\n",globme,Item(ob).name);
-    user.send_message(Message(Player(pl).name,globme,-10011,curch,z);
+    user.send_message(Message(Player(pl).name,globme,-10011,user.location_id,z);
     return;
     }
 
  stealcom()
     {
     extern long mynum;
-    extern long curch,my_lev;
+    extern long my_lev;
     extern char wordbuf[];
     long  a,b;
     long  c,d;
@@ -605,7 +603,7 @@ class Pronouns(Action):
        bprintf("They are not carrying that\n");
        return;
        }
-    if((my_lev<10)&&(Player(c).location!=curch))
+    if((my_lev<10)&&(Player(c).location!=user.location_id))
        {
        bprintf("But they aren't here\n");
        return;
@@ -634,7 +632,7 @@ class Pronouns(Action):
        {
        sprintf(tb,"\001p%s\001 steals the %s from you !\n",globme,Item(a).name);
        if(f&1){
-       	 user.send_message(Message(Player(c).name,globme,-10011,curch,tb);
+       	 user.send_message(Message(Player(c).name,globme,-10011,user.location_id,tb);
        	 if(c>15) woundmn(c,0);
        	}
        Item(a).location(mynum,1);
@@ -650,15 +648,14 @@ class Pronouns(Action):
  dosumm(loc)
     {
     char ms[128];
-    extern long curch;
     extern char globme[];
     sprintf(ms,"\001s%s\001%s vanishes in a puff of smoke\n\001",globme,globme);
-    user.send_message(Message(globme,globme,-10000,curch,ms);
+    user.send_message(Message(globme,globme,-10000,user.location_id,ms);
     sprintf(ms,"\001s%s\001%s appears in a puff of smoke\n\001",globme,globme);
     dumpitems();
-    curch=loc;
-    user.send_message(Message(globme,globme,-10000,curch,ms);
-    trapch(curch);
+    user.location_id=loc;
+    user.send_message(Message(globme,globme,-10000,user.location_id,ms);
+    trapch(user.location_id);
     }
  
  tsscom()
@@ -681,7 +678,6 @@ class Pronouns(Action):
  rmeditcom()
     {
     extern long my_lev;
-    extern long cms;
     extern long mynum;
     char ms[128];
     extern char globme[];
@@ -693,14 +689,14 @@ class Pronouns(Action):
       
     sprintf(ms,"\001s%s\001%s fades out of reality\n\001",globme,globme);
     user.send_message(Message(globme,globme,-10113,0,ms); /* Info */
-    cms= -2;/* CODE NUMBER */
+    user.fade();/* CODE NUMBER */
     update(globme);
     pbfr();
     closeworld();
     if(chdir(ROOMS)==-1) bprintf("Warning: Can't CHDIR\n");
     sprintf(ms,"/cs_d/aberstudent/yr2/hy8/.sunbin/emacs");
     system(ms);
-    cms= -1;
+    user.reset_position()
     openworld();
     if(fpbns(globme)== -1)
        {
@@ -716,21 +712,20 @@ class Pronouns(Action):
     {
     extern long my_lev;
     extern char globme[];
-    extern long cms;
     char x[128];
     if(my_lev<10)
        {
        bprintf("You'll have to leave the game first!\n");
        return;
        }
-    cms= -2;
+    user.fade()
     update(globme);
     sprintf(x,"%s%s%s%s%s","\001s",globme,"\001",globme," has dropped into BB\n\001");
     user.send_message(Message(globme,globme,-10113,0,x);
     closeworld();
     system("/cs_d/aberstudent/yr2/iy7/bt");
     openworld();
-    cms= -1;
+    user.reset_position()
     if(fpbns(globme)== -1)
        {
        loseme();
@@ -818,20 +813,19 @@ class Pronouns(Action):
  
  convcom()
     {
-    extern long convflg;
-    convflg=1;
+    parser.converstion_mode = parser.CONVERSATION_SAY
     bprintf("Type '**' on a line of its own to exit converse mode\n");
     }
  
  shellcom()
     {
-    extern long convflg,my_lev;
+    extern long my_lev;
     if(my_lev<10000)
        {
        bprintf("There is nothing here you can shell\n");
        return;
        }
-    convflg=2;
+    parser.converstion_mode = parser.CONVERSATION_TSS
     bprintf("Type ** on its own on a new line to exit shell\n");
     }
  
@@ -898,8 +892,7 @@ typocom()
 {
 	char x[120],y[32];
 	extern char globme[];
-	extern long curch;
-	sprintf(y,"%s in %d",globme,curch);
+	sprintf(y,"%s in %d",globme,user.location_id);
 	getreinput(x);
 	syslog("Typo by %s : %s",y,x);
 }
@@ -910,12 +903,11 @@ look_cmd()
 	long brhold;
 	extern long brmode;
 	extern char wordbuf[];
-        extern long curch;
 	if(brkword()==-1)
 	{
           brhold=brmode;
           brmode=0;
-          lookin(curch);
+          lookin(user.location_id);
           brmode=brhold;
           return;
         }
@@ -998,14 +990,13 @@ setherecom()
 
 digcom()
 {
-        extern long curch;
-	if((Item(186).location==curch)&&(Item(186).is_destroyed))
+	if((Item(186).location==user.location_id)&&(Item(186).is_destroyed))
 	{
 		bprintf("You uncover a stone slab!\n");
 		Item(186).create();
 		return;
 	}
-	if((curch!=-172)&&(curch!=-192))
+	if((user.location_id!=-172)&&(user.location_id!=-192))
 	{
 		bprintf("You find nothing.\n");
 		return;

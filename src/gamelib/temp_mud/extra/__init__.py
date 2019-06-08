@@ -7,7 +7,6 @@ extern FILE * openroom();
 extern char globme[];
 extern char wordbuf[];
 extern long mynum;
-extern long curch;
 extern long my_lev;
 long getnarg();
 
@@ -16,7 +15,7 @@ long getnarg();
 helpcom()
     {
 extern char wordbuf[];
-extern long curch,mynum;
+extern long mynum;
 extern char globme[];
 extern long my_lev;
 long a;
@@ -29,7 +28,7 @@ if(brkword()!= -1)
 		bprintf("Help who ?\n");
 		return;
 	}
-	if((Player(a).location!=curch))
+	if((Player(a).location!=user.location_id))
 	{
 		bprintf("They are not here\n");
 		return;
@@ -42,12 +41,12 @@ if(brkword()!= -1)
 	if(Player(mynum).helping is not None)
 	{
 		sprintf(b,"\001c%s\001 has stopped helping you\n",globme);
-		user.send_message(Player(a).name,Player(a).name,-10011,curch,b);
+		user.send_message(Player(a).name,Player(a).name,-10011,user.location_id,b);
 		bprintf("Stopped helping %s\n",Player(Player(mynum).helping).name);
 	}
 	Player(mynum).helping = a
 	sprintf(b,"\001c%s\001 has offered to help you\n",globme);
-	user.send_message(Player(a).name,Player(a).name,-10011,curch,b);
+	user.send_message(Player(a).name,Player(a).name,-10011,user.location_id,b);
 	bprintf("OK...\n");
 	return;
     }
@@ -138,7 +137,7 @@ else
     long a,b;
     FILE *x;
     char r[88];
-    extern long mynum,curch;
+    extern long mynum;
     extern char globme[],wordbuf[];
     if(brkword()== -1)
        {
@@ -165,10 +164,10 @@ else
           break;
        case 145:
           ;
-          curch= -114;
+          user.location_id= -114;
           bprintf("As you read the scroll you are teleported!\n");
           destroy(145);
-          trapch(curch);
+          trapch(user.location_id);
           return;
        case 101:
           if(Item(101).get_byte(0)==0)
@@ -273,7 +272,7 @@ else
 
  incom()
  {
- extern long my_lev,curch;
+ extern long my_levh;
  extern char wordbuf[];
  char st[80],rn[80],rv[80];
  long ex_bk[7];
@@ -308,22 +307,22 @@ else
  return;
  }
  getreinput(st);
- y=curch;
- curch=x;
+ y=user.location_id;
+ user.location_id=x;
  closeworld();
- unit=openroom(curch,"r");
-if(unit==NULL){curch=y;bprintf("No such room\n");return;}
+ unit=openroom(user.location_id,"r");
+if(unit==NULL){user.location_id=y;bprintf("No such room\n");return;}
  lodex(unit);
  fclose(unit);
  openworld();
  gamecom(st);
  openworld();
- if(curch==x)
+ if(user.location_id==x)
  {
  a=0;
  while(a<7) {ex_dat[a]=ex_bk[a];a++;}
  }
- curch=y;
+ user.location_id=y;
  }
  smokecom()
  {
@@ -333,7 +332,7 @@ if(unit==NULL){curch=y;bprintf("No such room\n");return;}
  jumpcom()
  {
  long a,b;
- extern long jumtb[],mynum,curch;
+ extern long jumtb[],mynum;
  extern long my_lev;
  char ms[128];
  extern char globme[];
@@ -341,24 +340,24 @@ if(unit==NULL){curch=y;bprintf("No such room\n");return;}
  b=0;
  while(jumtb[a])
  {
- if(jumtb[a]==curch){b=jumtb[a+1];break;}
+ if(jumtb[a]==user.location_id){b=jumtb[a+1];break;}
  a+=2;
  }
  if(b==0){bprintf("Wheeeeee....\n");
  return;}
  if((my_lev<10)&&((!iscarrby(1,mynum))||(state(1)==0)))
  {
- 	curch=b;
+ 	user.location_id=b;
  bprintf("Wheeeeeeeeeeeeeeeee  <<<<SPLAT>>>>\n");
  bprintf("You seem to be splattered all over the place\n");
  loseme();
  crapup("I suppose you could be scraped up - with a spatula");
  }
  sprintf(ms,"\001s%s\001%s has just left\n\001",globme,globme);
- user.send_message(globme,globme,-10000,curch,ms);
- curch=b;
+ user.send_message(globme,globme,-10000,user.location_id,ms);
+ user.location_id=b;
  sprintf(ms,"\001s%s\001%s has just dropped in\n\001",globme,globme);
- user.send_message(globme,globme,-10000,curch,ms);
+ user.send_message(globme,globme,-10000,user.location_id,ms);
  trapch(b);
  }
 
@@ -366,7 +365,7 @@ long jumtb[]={-643,-633,-1050,-662,-1082,-1053,0,0};
 
 wherecom()
  {
- extern long mynum,curch,my_lev,my_str;
+ extern long mynum,my_lev,my_str;
  extern char wordbuf[];
  extern char globme[];
  long cha,rnd;

@@ -210,7 +210,6 @@ if(x!=-1) return(x);
     {
     extern long mynum;
     extern char globme[];
-    extern long curch;
     extern char wordbuf[];
     long a,b;
     long i;
@@ -273,9 +272,9 @@ if((a==32)&&(state(a)==1)&&(Player(mynum).helper is None))
     Item(a).set_location(mynum,1);
     sprintf(bf,"\001D%s\001\001c takes the %s\n\001",globme,Item(a).name);
    bprintf("Ok...\n");
-    user.send_message(globme,globme,-10000,curch,bf);
+    user.send_message(globme,globme,-10000,user.location_id,bf);
 if(Item(a).test_bit(12)) setstate(a,0);
-if(curch==-1081) 
+if(user.location_id==-1081) 
 {
 	setstate(20,1);
 	bprintf("The door clicks shut....\n");
@@ -284,18 +283,16 @@ if(curch==-1081)
 
  ishere(item)
     {
-    extern long curch;
     long a;
 extern long my_lev;
     if((my_lev<10)&&(Item(item).is_destroyed))return(0);
     if(Item(item).carry_flag==1) return(0);
-    if(Item(item).location!=curch) return(0);
+    if(Item(item).location!=user.location_id) return(0);
     return(1);
     }
 
  iscarrby(item,user)
     {
-    extern long curch;
 extern long my_lev;
     if((my_lev<10)&&(Item(item).is_destroyed))return(0);
     if((Item(item).carry_flag!=1)&&(Item(item).carry_flag!=2)) return(0);
@@ -305,7 +302,7 @@ extern long my_lev;
 
  dropitem()
     {
-    extern long mynum,curch;
+    extern long mynum;
     extern char wordbuf[],globme[];
     extern long my_sco;
     long a,b,bf[32];
@@ -327,14 +324,14 @@ if((my_lev<10)&&(a==32))
 bprintf("You can't let go of it!\n");
 return;
 }
-    Item(a).set_location(curch,0);
+    Item(a).set_location(user.location_id,0);
    bprintf("OK..\n");
     sprintf(bf,"\001D%s\001\001c drops the %s.\n\n\001",globme,wordbuf);
-    user.send_message(globme,globme,-10000,curch,bf);
-    if((curch!=-183)&&(curch!=-5))return;
+    user.send_message(globme,globme,-10000,user.location_id,bf);
+    if((user.location_id!=-183)&&(user.location_id!=-5))return;
    sprintf(bf,"The %s disappears into the bottomless pit.\n",wordbuf);
    bprintf("It disappears down into the bottomless pit.....\n");
-    user.send_message(globme,globme,-10000,curch,bf);
+    user.send_message(globme,globme,-10000,user.location_id,bf);
     my_sco+=(tscale()*Item(a).base_value)/5;
     calibme();
 Item(a).set_location(-6,0);
@@ -370,8 +367,7 @@ Item(a).set_location(-6,0);
  dumpitems()
     {
     extern long mynum;
-    extern long curch;
-    dumpstuff(mynum,curch);
+    dumpstuff(mynum,user.location_id);
     }
 
  dumpstuff(n,loc)
@@ -563,7 +559,6 @@ if((!!strlen(n2))&&(!strcmp(n1,n2))) return(a);
  lispeople()
     {
     extern long debug_mode;
-    extern long curch;
     extern long mynum;
     extern char wd_him[],wd_her[];
     long a,b;
@@ -576,7 +571,7 @@ if((!!strlen(n2))&&(!strcmp(n1,n2))) return(a);
           a++;
           continue;
           }
-       if((Player(a).exists))&&(Player(a).location==curch)&&(seeplayer(a)))
+       if((Player(a).exists))&&(Player(a).location==user.location_id)&&(seeplayer(a)))
           {
           b=1;
          bprintf("%s ",Player(a).name);

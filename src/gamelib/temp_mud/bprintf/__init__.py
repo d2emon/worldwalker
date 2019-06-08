@@ -155,12 +155,11 @@ int seeplayer(x)
     {
     extern long mynum;
     extern long ail_blind;
-    extern long curch;
     if(x==-1) return(1);
     if(mynum==x) {return(1);} /* me */
     if(Player(mynum).level < Player(x).visible) return(0);
     if(ail_blind) return(0); /* Cant see */
-    if((curch==Player(x).location)&&(isdark(curch)))return(0);
+    if((user.location_id==Player(x).location)&&(isdark(user.location_id)))return(0);
     setname(x);
     return(1);
     }

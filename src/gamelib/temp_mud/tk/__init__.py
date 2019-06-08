@@ -29,6 +29,8 @@ from ..syslog import syslog
 def split(block, name):
     name = name.lower()
     name1, name2 = block[2].split(".")
+    # wkblock = block[2:126]
+    # work = block[64:64]
     is_me = name1.lower() == name
     if name1[:4].lower() == "the ":
         if name1[4:].lower() == name:

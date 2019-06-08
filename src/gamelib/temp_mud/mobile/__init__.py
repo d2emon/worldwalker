@@ -37,12 +37,11 @@ if(Player(mynum).helping is not None) helpchkr();
  
  chkfight( x )
     {
-    extern long curch ;
     extern long mynum ;
     if( x<0 ) return ; /* No such being */
     consid_move( x); /* Maybe move it */
     if( not Player( x ).exists ) return ;
-    if( Player( x ).location!=curch ) return ;
+    if( Player( x ).location!=user.location_id ) return ;
     if( Player( mynum ).visible ) return ; /* Im invis */
     if(randperc()>40) return;
 if( ( x==fpbns( "yeti" ) )&&( user.has_any([
@@ -88,7 +87,6 @@ return ;
     char bk[ 128 ] ;
     extern long wordbuf[  ] ;
     extern long mynum ;
-    extern long curch ;
     b=vichere( &a ) ;
     if( b== -1 ) return ;
     if( brkword(  )== -1 )
@@ -181,7 +179,7 @@ errk:t=my_lev ;
     {
     char bf[ 128 ] ;
     long ct ;
-    extern long mynum, my_lev, curch ;
+    extern long mynum, my_lev;
     extern long in_fight;
     if(in_fight) return;
     ct=0 ;
@@ -190,7 +188,7 @@ errk:t=my_lev ;
        if( ct==mynum ){ct++ ;continue ;}
        if( !strlen( Player( ct ).name ) ) {ct++ ;continue ;}
        if( Player( ct ).is_wizard ) {ct++ ;continue ;}
-       if( Player( ct ).location==curch ) goto hitrune ;
+       if( Player( ct ).location==user.location_id ) goto hitrune ;
        ct++ ;
        }
     return ;
@@ -207,9 +205,8 @@ errk:t=my_lev ;
     long a, b ;
     extern char globme[];
     extern long mynum ;
-    extern long curch ;
-    user.send_message( " ", " ", -10000, curch, "You start sneezing ATISCCHHOOOOOO!!!!\n" ) ;
-    if( ( not Player( 32 ).exists )||( Player( 32 ).location!=curch ) )
+    user.send_message( " ", " ", -10000, user.location_id, "You start sneezing ATISCCHHOOOOOO!!!!\n" ) ;
+    if( ( not Player( 32 ).exists )||( Player( 32 ).location!=user.location_id ) )
     return ;
     /* Ok dragon and pepper time */
     if( ( iscarrby( 89, mynum ) )&&( Item( 89 ).carry_flag==2 ) )
@@ -232,25 +229,23 @@ errk:t=my_lev ;
  
  dragget(  )
     {
-    extern long curch, my_lev ;
+    extern long my_lev ;
     long a, b ;
 long l ;
 if( my_lev>9 ) return( 0 ) ;
 l=fpbns( "dragon" ) ;
 if( l== -1 ) return( 0 ) ;
-    if( Player( l ).location!=curch ) return( 0 ) ;
+    if( Player( l ).location!=user.location_id ) return( 0 ) ;
     return( 1 ) ;
     }
 
 helpchkr()
 {
 	extern long mynum;
-	extern long curch;
-	extern long i_setup;
 	long x=Player(mynum).helping
-	if(!i_setup) return;
+	if(!user.in_setup) return;
 	if(not Player(x).exists) goto nhelp;
-	if(Player(x).location!=curch) goto nhelp;
+	if(Player(x).location!=user.location_id) goto nhelp;
 	return;
 	nhelp:bprintf("You can no longer help \001c%s\001\n",Player(x).name);
 	Player(mynum).helping = None

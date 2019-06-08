@@ -49,7 +49,8 @@ class Screen:
             return
         # btmscr()
 
-    def get_input(self):
+    # Tk
+    def __get_input(self):
         # sig_alon()
         # key_input(self.parser.prompt)[:80]
         # sig_aloff()
@@ -58,7 +59,8 @@ class Screen:
     def set_progname(self, *args):
         raise NotImplementedError()
 
-    def send_message(self):
+    # Tk
+    def get_command(self):
         self.bottom()
 
         self.buffer.show()
@@ -68,7 +70,7 @@ class Screen:
         elif self.user.player.visible == 0:
             self.set_progname(0, "   --}----- ABERMUD -----{--     Playing as {}".format(self.user.name))
 
-        work = self.get_input()
+        work = self.__get_input()
 
         self.top()
 
@@ -76,12 +78,13 @@ class Screen:
 
         World.load()
         self.buffer.add(*self.parser.read_messages())
+
         if self.parser.parse(work) is None:
-            return self.send_message()
+            return self.get_command()
 
     def main(self):
         self.buffer.show()
-        self.send_message()
+        self.get_command()
         self.buffer.add(*self.parser.read_messages(True))
         World.save()
         self.buffer.show()
@@ -92,9 +95,11 @@ class Parser:
     CONVERSATION_SAY = 1
     CONVERSATION_TSS = 2
 
+    # Tk
     MODE_SPECIAL = 0
     MODE_GAME = 1
 
+    # Unknown
     __PROMPT = {
         CONVERSATION_NONE: ">",
         CONVERSATION_SAY: "\"",
@@ -109,8 +114,10 @@ class Parser:
     def __init__(self, user):
         self.user = user
 
+        # TK
         self.__conversation_mode = self.CONVERSATION_NONE
         self.mode = self.MODE_SPECIAL
+        # Unknown
         self.__debug_mode = False
 
         self.__special(self.user, ".g")
@@ -130,6 +137,7 @@ class Parser:
 
         self.verbs = VerbsList()
 
+    # Tk
     @property
     def prompt(self):
         prompt = self.__PROMPT.get(self.__conversation_mode, "?")
@@ -239,22 +247,17 @@ class Parser:
         if unique and self.user.rd_qd:
             return
 
-        yield from self.output_messages(*self.user.read_messages())
-
-        if unique:
-            self.user.rd_qd = False
-
-    def output_messages(self, *messages):
-        """
-        Print appropriate stuff from data block
-
-        :return:
-        """
-        for message in messages:
+        # Tk
+        # Print appropriate stuff from data block
+        for message in self.user.read_messages():
             if self.__debug_mode:
                 yield "\n<{}>".format(message.code)
             yield from self.user.process_message(message)
 
+        if unique:
+            self.user.rd_qd = False
+
+    # Unknown
     # For Actions
     def switch_debug(self):
         if not self.user.player.test_flag(4):
