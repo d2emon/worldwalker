@@ -69,6 +69,7 @@ class Message:
         for player in Player.get_timed_out(World.clear_old_messages()):
             user.broadcast("{} has been timed out\n".format(player))
             player.timeout_death()
+        user.location.weather.autochange(user)
 
     def send(self, user):
         try:

@@ -547,4 +547,4 @@ class User(BasePlayer):
             self.__vdes = message.message[0]
             bloodrcv(message.message, is_me)
         elif message.code == Message.WEATHER:
-            wthrrcv(message.channel_id)
+            self.__location.weather.receive(self, message)

@@ -15,7 +15,9 @@ class Location:
     def __init__(self, location_id):
         self.location_id = location_id
         self.exits = [0] * 7
+        # Weather
         self.weather = Weather()
+        # Unknown
         self.__zone = None
 
         self.death_room = False
@@ -52,6 +54,7 @@ class Location:
     def name(self):
         return str(self.zone) + self.in_zone
 
+    # Weather
     @property
     def outdoors(self):
         if self.location_id in [-100, -101, -102]:
@@ -65,6 +68,7 @@ class Location:
         else:
             return False
 
+    # Unknown
     @property
     def visible_exits(self):
         return [e for e in self.exits if e < 0]
@@ -94,8 +98,9 @@ class Location:
             result += "[ {} ]".format(self.location_id)
         return result + "\n"
 
-    def show_weather(self, weather_id):
-        yield from self.climate.weather(weather_id)
+    # Weather
+    def weather_description(self):
+        yield from self.climate.weather(self.weather.state)
 
     # Tk
     def reload(self):

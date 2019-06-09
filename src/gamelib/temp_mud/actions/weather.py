@@ -1,6 +1,7 @@
 from ..errors import CommandError, NotFoundError
 from ..item import Item
 from ..player import Player
+from ..weather import Weather
 from ..weather_data import WEATHER_SUN, WEATHER_RAIN, WEATHER_STORM, WEATHER_SNOW, WEATHER_BLIZZARD
 from .action import Action
 
@@ -11,7 +12,7 @@ class __WeatherAction(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.location.weather.send_weather(parser.user, cls.weather_id)
+        Weather().send_weather(parser.user, cls.weather_id)
 
 
 class Storm(__WeatherAction):

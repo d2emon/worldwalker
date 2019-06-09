@@ -334,7 +334,7 @@ Item(a).set_location(-6,0);
  lisobs()
     {
     lojal2(1);
-    showwthr();
+    yield from user.location.weather_description()
     lojal2(0);
     }
 

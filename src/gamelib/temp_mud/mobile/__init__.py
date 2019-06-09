@@ -69,7 +69,7 @@ return ;
  singcom(  )
     {
     if( chkdumb(  ) ) return ;
-    sillycom( "\001P%s\001\001d sings in Gaelic\n\001" ) ;
+    user.silly( "\001P%s\001\001d sings in Gaelic\n\001" ) ;
     bprintf( "You sing\n" ) ;
     }
  

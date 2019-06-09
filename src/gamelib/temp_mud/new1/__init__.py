@@ -190,21 +190,21 @@ extern char wordbuf[];
  
  bouncecom()
     {
-    sillycom("\001s%s\001%s bounces around\n\001");
+    user.silly("\001s%s\001%s bounces around\n\001");
     bprintf("B O I N G !!!!\n");
     }
  
  sighcom()
     {
     if(chkdumb()) return;
-    sillycom("\001P%s\001\001d sighs loudly\n\001");
+    user.silly("\001P%s\001\001d sighs loudly\n\001");
     bprintf("You sigh\n");
     }
  
  screamcom()
     {
     if(chkdumb()) return;
-    sillycom("\001P%s\001\001d screams loudly\n\001");
+    user.silly("\001P%s\001\001d screams loudly\n\001");
     bprintf("ARRRGGGGHHHHHHHHHHHH!!!!!!\n");
     }
  

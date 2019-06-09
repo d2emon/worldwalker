@@ -72,6 +72,7 @@ class Weather(Item):
     def __init__(self):
         super().__init__(0)
 
+    # Weather
     def send_weather(self, user, new_weather):
         if self.state == new_weather:
             return
@@ -89,8 +90,8 @@ class Weather(Item):
             return self.send_weather(user, 0)
 
     @classmethod
-    def receive(cls, user, weather_id):
+    def receive(cls, user, message):
         if not user.location.outdoors():
             return
 
-        yield user.location.climate.weather_start(weather_id)
+        yield user.location.climate.weather_start(message.message)

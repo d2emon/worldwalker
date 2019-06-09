@@ -158,10 +158,10 @@ willwork:bprintf("You cast the summoning......\n");
        }
     fclose(b);
     sprintf(bf,"\001s%%s\001%%s %s\n\001",mout_ms);
-    sillycom(bf);
+    user.silly(bf);
     user.location_id = a
     sprintf(bf,"\001s%%s\001%%s %s\n\001",min_ms);    
-    sillycom(bf);
+    user.silly(bf);
     }
 
 
@@ -204,7 +204,7 @@ willwork:bprintf("You cast the summoning......\n");
     ar[1]=user.visible
     user.send_message("","",-9900,0,ar);
     bprintf("Ok\n");
-    sillycom("\001s%s\001%s suddenely appears in a puff of smoke\n\001");
+    user.silly("\001s%s\001%s suddenely appears in a puff of smoke\n\001");
     }
 
  inviscom()
@@ -232,7 +232,7 @@ willwork:bprintf("You cast the summoning......\n");
     ar[1]=user.visible
     user.send_message("","",-9900,0,ar);
     bprintf("Ok\n");
-    sillycom("\001c%s vanishes!\n\001");
+    user.silly("\001c%s vanishes!\n\001");
     }
 
  ressurcom()
