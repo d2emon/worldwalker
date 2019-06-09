@@ -6,8 +6,6 @@
      Two Phase Game System
 
 */
-extern FILE *openlock();
-
 char **argv_p;
 
 main(argc,argv)
@@ -55,9 +53,9 @@ char *name;
 {
 FILE *a;
 char b[128];
-a=openlock(name,"r+");
+a=connect(name,"r+");
 while(fgets(b,128,a)) printf("%s\n",b);
-fcloselock(a);
+a.disconnect()
 }
 
 char *getkbd(s,l)   /* Getstr() with length limit and filter ctrl */
@@ -122,7 +120,7 @@ sig_occur()
 	sig_aloff();
 	openworld();
 	interrupt=1;
-	rte(globme);
+	parser.read_messages(*parser.user.read_messages());
 	interrupt=0;
 	on_timing();
 	closeworld();
@@ -146,7 +144,7 @@ sig_init()
 sig_oops()
 {
 	sig_aloff();
-	loseme();
+	user.loose()
 	keysetback();
 	exit(255);
 }
@@ -157,8 +155,7 @@ sig_ctrlc()
 	printf("^C\n");
 	if(in_fight) return;
 	sig_aloff();
-	loseme();
-	crapup("Byeeeeeeeeee  ...........");
+	raise LooseError("Byeeeeeeeeee  ...........");
 }
 
 

@@ -6,13 +6,11 @@ def randperc(*args):
 #include <stdio.h>
 #include "files.h"
 
-extern long mynum;
 extern long my_lev;
 extern char globme[];
 extern char wordbuf[];
 extern FILE *openroom();
 extern FILE *openuaf();
-extern FILE *openlock();
 
 randperc()
 {
@@ -27,7 +25,6 @@ sumcom()
     {
     long a,b;
     extern char wordbuf[];
-    extern long mynum;
     extern long my_lev;
     extern long my_str;
     extern char globme[];
@@ -56,9 +53,9 @@ sumcom()
     if(my_lev<10)my_str-=2;
     c=my_lev*2;
     if(my_lev>9) c=101;
-if(iscarrby(111,mynum)) c+=my_lev;
-if(iscarrby(121,mynum)) c+=my_lev;
-if(iscarrby(163,mynum)) c+=my_lev;
+if(iscarrby(111,user)) c+=my_lev;
+if(iscarrby(121,user)) c+=my_lev;
+if(iscarrby(163,user)) c+=my_lev;
     d=randperc();
     if(my_lev>9) goto willwork;
     if((iswornby(90,a))||(c<d))
@@ -71,7 +68,7 @@ if(iscarrby(163,mynum)) c+=my_lev;
        bprintf("Something stops your summoning from succeeding\n");
        return;
        }
-    if(a==mynum)
+    if(a==user)
        {
        bprintf("Seems a waste of effort to me....\n");
        return;
@@ -105,7 +102,7 @@ willwork:bprintf("You cast the summoning......\n");
     user.send_message(globme,globme,-10000,x,ms);
     bprintf("The %s flies into your hand ,was ",Item(a).name);
     desrm(Item(a).location, Item(a).carry_flag);
-    Item(a).set_location(mynum,1);
+    Item(a).set_location(user,1);
     }
 
  delcom()
@@ -162,8 +159,7 @@ willwork:bprintf("You cast the summoning......\n");
     fclose(b);
     sprintf(bf,"\001s%%s\001%%s %s\n\001",mout_ms);
     sillycom(bf);
-    user.location_id=a;
-    trapch(user.location_id);
+    user.location_id = a
     sprintf(bf,"\001s%%s\001%%s %s\n\001",min_ms);    
     sillycom(bf);
     }
@@ -175,7 +171,6 @@ willwork:bprintf("You cast the summoning......\n");
     {
     extern long my_lev;
     extern char globme[],wordbuf[];
-    extern long rd_qd;
     char bf[128];
     if(my_lev<10)
        {
@@ -185,14 +180,13 @@ willwork:bprintf("You cast the summoning......\n");
     getreinput(wordbuf);
     sprintf(bf,"\001p%s\001 : %s\n",globme,wordbuf);
     user.send_message(globme,globme,-10113,user.location_id,bf);
-    rd_qd=1;
+    user.force_read = True
     }
 
  viscom()
     {
     long f;
     extern long my_lev;
-    extern long mynum;
     extern char globme[];
     long ar[4];
     if(my_lev<10)
@@ -200,14 +194,14 @@ willwork:bprintf("You cast the summoning......\n");
        bprintf("You can't just do that sort of thing at will you know.\n");
        return;
        }
-    if(!Player(mynum).visible)
+    if(!user.visible)
        {
        bprintf("You already are visible\n");
        return;
        }
-    Player(mynum).visible = 0
-    ar[0]=mynum;
-    ar[1]=Player(mynum).visible
+    user.visible = 0
+    ar[0]=user;
+    ar[1]=user.visible
     user.send_message("","",-9900,0,ar);
     bprintf("Ok\n");
     sillycom("\001s%s\001%s suddenely appears in a puff of smoke\n\001");
@@ -215,7 +209,7 @@ willwork:bprintf("You cast the summoning......\n");
 
  inviscom()
     {
-    extern long mynum,my_lev;
+    extern long my_lev;
     extern char globme[];
     extern char wordbuf[];
     long f,x;
@@ -228,14 +222,14 @@ willwork:bprintf("You cast the summoning......\n");
     x=10;
     if(my_lev>9999) x=10000;
     if((my_lev==10033)&&(brkword()!=-1)) x=numarg(wordbuf);
-    if(Player(mynum).visible==x)
+    if(user.visible==x)
        {
        bprintf("You are already invisible\n");
        return;
        }
-    Player(mynum).visible = x
-    ar[0]=mynum;
-    ar[1]=Player(mynum).visible
+    user.visible = x
+    ar[0]=user;
+    ar[1]=user.visible
     user.send_message("","",-9900,0,ar);
     bprintf("Ok\n");
     sillycom("\001c%s vanishes!\n\001");

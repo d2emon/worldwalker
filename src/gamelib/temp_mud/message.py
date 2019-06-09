@@ -63,16 +63,13 @@ class Message:
     def messages(cls, first=None, last=None):
         return World.get_messages(first, last)
 
-    # Unknown
-    def serialize(self):
-        return [
-            self.channel_id,
-            self.code,
-            [self.user_to, self.user_from],
-            self.message,
-        ]
+    @classmethod
+    def cleanup(cls, user):
+        World.load()
+        for player in Player.get_timed_out(World.clear_old_messages()):
+            user.broadcast("{} has been timed out\n".format(player))
+            player.timeout_death()
 
-    # Tk
     def send(self, user):
         try:
             World.load()
@@ -83,18 +80,14 @@ class Message:
         except ServiceError:
             raise LooseError("\nAberMUD: FILE_ACCESS : Access failed\n")
 
-    # Unknown
-    @classmethod
-    def cleanup(cls, user):
-        for player in cls.__revise(World.clear_old_messages()):
-            Broadcast("{} has been timed out\n".format(player)).send(user)
-
-    @classmethod
-    def __revise(cls, timeout):
-        World.load()
-        for player in Player.get_timed_out(timeout):
-            yield player
-            player.timeout_death()
+    # Parser
+    def serialize(self):
+        return [
+            self.channel_id,
+            self.code,
+            [self.user_to, self.user_from],
+            self.message,
+        ]
 
     def is_my(self, name):
         name = name.lower()

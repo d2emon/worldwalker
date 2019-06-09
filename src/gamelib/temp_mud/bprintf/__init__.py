@@ -56,7 +56,7 @@ void dcprnt(str,file)
              ct=pnotkb(str,ct,file);continue;
           default:
              strcpy(str,"");
-             loseme();crapup("Internal $ control sequence error\n");
+             raise LooseError("Internal $ control sequence error\n");
              }
        }
     }
@@ -124,7 +124,7 @@ int pndark(str,ct,file)
     char x[257];
     extern long ail_blind;
     ct=tocontinue(str,ct,x,256);
-    if((!isdark())&&(ail_blind==0))
+    if((!user.in_dark)&&(ail_blind==0))
     fprintf(file,"%s",x);
     return(ct);
     }
@@ -153,13 +153,12 @@ crapup("Buffer OverRun in IO_TOcontinue");
 
 int seeplayer(x)
     {
-    extern long mynum;
     extern long ail_blind;
     if(x==-1) return(1);
-    if(mynum==x) {return(1);} /* me */
-    if(Player(mynum).level < Player(x).visible) return(0);
+    if(user==x) {return(1);} /* me */
+    if(user.data.level < Player(x).visible) return(0);
     if(ail_blind) return(0); /* Cant see */
-    if((user.location_id==Player(x).location)&&(isdark(user.location_id)))return(0);
+    if((user.location_id==Player(x).location)&&user.in_dark)return(0);
     setname(x);
     return(1);
     }
@@ -255,7 +254,7 @@ void pbfr()
           {
 iskb=0;
           dcprnt(sysbuf,fln);
-          fcloselock(fln);
+          fln.disconnect()
           }
        }
     iskb=1;
@@ -273,9 +272,8 @@ void quprnt(x)
     if((strlen(x)+strlen(sysbuf))>4095)
        {
        strcpy(sysbuf,"");
-       loseme();
        syslog("Buffer overflow on user %s",globme);
-       crapup("PANIC - Buffer overflow");
+       raise LooseError("PANIC - Buffer overflow");
        }
     strcat(sysbuf,x);
     }
@@ -299,11 +297,9 @@ char *per;
 char *user;
     {
     FILE *x;
-    extern FILE *openlock();
     char z[256];
     sprintf(z,"%s%s",SNOOP,user);
-    x=openlock(z,per);
-    return(x);
+    return connect(z,per);
     }
 
 long snoopt= -1;
@@ -347,7 +343,7 @@ void snoopcom()
     user.send_message(sntn,globme,-401,0,"");
     fx=opensnoop(globme,"w");
     fprintf(fx," ");
-    fcloselock(fx);
+    fx.disconnect()
     }
 
 void viewsnoop()
@@ -361,7 +357,7 @@ void viewsnoop()
     while((!feof(fx))&&(fgets(z,127,fx)))
            printf("|%s",z);
     ftruncate(fileno(fx),0);
-    fcloselock(fx);
+    fx.disconnect()
     x=snoopt;
     snoopt= -1;
     /*

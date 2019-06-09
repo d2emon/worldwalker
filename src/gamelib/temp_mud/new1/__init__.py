@@ -6,7 +6,7 @@ from ..newuaf import NewUaf
 from ..objsys import ObjSys, dumpstuff, iscarrby
 from ..parse.messages import Message
 from ..support import Item, Player
-from ..tk import Tk, trapch
+from ..tk import Tk
 from .disease import Diseases
 from .messages import MSG_GLOBAL, MSG_WIZARD, MSG_WOUND
 from .utils import get_item
@@ -103,7 +103,7 @@ def mhitplayer(enemy):
         return
     roll = randperc()
     to_hit = 3 * (15 - NewUaf.my_lev) + 20
-    if Item(89).is_worn_by(Tk.mynum) or Item(113).is_worn_by(Tk.mynum) or Item(114).is_worn_by(Tk.mynum):
+    if Item(89).is_worn_by(user) or Item(113).is_worn_by(user) or Item(114).is_worn_by(user):
         to_hit -= 10
     if roll < to_hit:
         data = [
@@ -148,22 +148,21 @@ def teletrap(new_channel):
         user.location_id,
         "\001s{name}\001{name} has left.\n\001".format(name=Tk.globme),
     ).send()
-    user.location_id = new_channel
     Message(
         Tk,
         Tk,
         MSG_GLOBAL,
-        user.location_id,
+        new_channel,
         "\001s{name}\001{name} has arrived.\n\001".format(name=Tk.globme),
     ).send()
-    trapch(user.location_id)
+    user.go_to_location(new_channel)
 
 
 def on_flee_event():
     for item_id in range(ObjSys.numobs):
         item = Item(item_id)
-        if iscarrby(item_id, Tk.mynum) and not item.is_worn_by(Tk.mynum):
-            item.set_location(Player(Tk.mynum).location, 0)
+        if iscarrby(item_id, user) and not item.is_worn_by(user):
+            item.set_location(user.location, 0)
 
 
 """
@@ -185,7 +184,6 @@ typedef struct player_res PLAYER;
 #include <stdio.h>
 
 extern FILE * openuaf();
-extern FILE * openlock();
 extern FILE * openroom();
 extern char globme[];
 extern char wordbuf[];
@@ -242,7 +240,6 @@ extern char wordbuf[];
  
  opencom()
     {
-    extern long mynum;
     long a,b;
     b=ohereandget(&a);
     if(b==-1) return;
@@ -327,7 +324,6 @@ break;
  lockcom()
     {
     long a,b;
-    extern long mynum;
     b=ohereandget(&a);
     if(b==-1) return;
     if(!user.has_any([
@@ -361,7 +357,6 @@ break;
  unlockcom()
     {
     long a,b;
-    extern long mynum;
     b=ohereandget(&a);
     if(b==-1) return;
     if(!user.has_any([
@@ -565,7 +560,6 @@ break ;
  
  lightcom()
     {
-    extern long mynum;
     long a,b;
     b=ohereandget(&a);
     if(b== -1) return;
@@ -625,7 +619,6 @@ break ;
  pushcom()
     {
     extern char wordbuf[];
-    extern long mynum;
     long fil;
     long x;
     if(brkword()== -1)
@@ -643,12 +636,11 @@ break ;
        {
        case 126:
           bprintf("The tripwire moves and a huge stone crashes down from above!\n");
-          broad("\001dYou hear a thud and a squelch in the distance.\n\001");
-          loseme();
-          crapup("             S   P    L      A         T           !");
+          user.broadcast("\001dYou hear a thud and a squelch in the distance.\n\001");
+          raise LooseError("             S   P    L      A         T           !");
        case 162:
           bprintf("A trapdoor opens at your feet and you plumment downwards!\n");
-          user.location_id= -140;trapch(user.location_id);
+          user.location = -140
           return;
        case 130:
           if(state(132)==1)
@@ -720,8 +712,8 @@ break ;
              bprintf("It moves but nothing seems to happen\n");
           return;
        case 49:
-          broad("\001dChurch bells ring out around you\n\001");break;
-       case 104:if(Player(mynum).helper is None)
+          user.broadcast("\001dChurch bells ring out around you\n\001");break;
+       case 104:if(user.helper is None)
 	{
 		bprintf("You can't shift it alone, maybe you need help\n");
 		break;
@@ -750,7 +742,6 @@ break ;
     {
     long a,b;
     extern char globme[];
-    extern long mynum;
     b=victim(&a);
     if(b== -1) return;
     user.send_message(Player(a).name,globme,-10101,user.location_id,"");
@@ -760,7 +751,6 @@ break ;
     {
     long a,b;
     extern char globme[];
-    extern long mynum;
     b=vichfb(&a);
     if(b== -1) return;
     user.send_message(Player(a).name,globme,-10100,user.location_id,"");
@@ -769,7 +759,6 @@ break ;
  dumbcom()
     {
     long a,b;
-    extern long mynum;
     extern char globme[];
     b=victim(&a);
     if(b== -1) return;
@@ -779,7 +768,6 @@ break ;
  forcecom()
     {
     long a,b;
-    extern long mynum;
     extern char globme[];
     char z[128];
     b=victim(&a);
@@ -791,7 +779,6 @@ break ;
  missilecom()
     {
     long a,b;
-    extern long mynum;
     extern char globme[];
     extern long my_lev;
     extern long fighting,in_fight;
@@ -820,7 +807,6 @@ break ;
  changecom()
     {
     long a,b;
-    extern long mynum;
     extern char globme[];
     extern char wordbuf[];
     if(brkword()== -1)
@@ -843,7 +829,6 @@ break ;
  fireballcom()
     {
     long a,b;
-    extern long mynum;
     extern long fighting,in_fight;    
     extern char globme[];
     extern long my_lev;
@@ -851,7 +836,7 @@ break ;
     long ar[2];
     b=vichfb(&a);
     if(b== -1) return;
-    if(mynum==a)
+    if(user==a)
        {
        bprintf("Seems rather dangerous to me....\n");
        return;
@@ -878,7 +863,6 @@ break ;
  shockcom()
     {
     long a,b;
-    extern long mynum;
     extern char globme[];
     extern long my_lev;
     extern long fighting,in_fight;    
@@ -886,7 +870,7 @@ break ;
     long ar[2];
     b=vichfb(&a);
     if(b== -1) return;
-    if(a==mynum)
+    if(a==user)
        {
        bprintf("You are supposed to be killing other people not yourself\n");
        return;
@@ -911,11 +895,10 @@ break ;
  
  starecom()
     {
-    extern long mynum;
     long a,b;
     b=vichere(&a);
     if(b== -1) return;
-    if(a==mynum)
+    if(a==user)
        {
        bprintf("That is pretty neat if you can do it!\n");
        return;
@@ -926,17 +909,15 @@ break ;
  
  gropecom()
     {
-    extern long mynum;
     long a,b;
     extern long isforce;
     if(isforce){bprintf("You can't be forced to do that\n");return;}
     b=vichere(&a);
     if(b== -1) return;
-    if(a==mynum)
+    if(a==user)
        {
        bprintf("With a sudden attack of morality the machine edits your persona\n");
-       loseme();
-       crapup("Bye....... LINE TERMINATED - MORALITY REASONS");
+       raise LooseError("Bye....... LINE TERMINATED - MORALITY REASONS");
        }
     sillytp(a,"gropes you");
     bprintf("<Well what sort of noise do you want here ?>\n");
@@ -944,11 +925,10 @@ break ;
 
  squeezecom()
     {
-    extern long mynum;
     long a,b;
     b=vichere(&a);
     if(b== -1) return;
-    if(a==mynum)
+    if(a==user)
        {
        bprintf("Ok....\n");
        return;
@@ -961,11 +941,10 @@ break ;
 
  kisscom()
     {
-    extern long mynum;
     long a,b;
     b=vichere(&a);
     if(b== -1) return;
-    if(a==mynum)
+    if(a==user)
        {
        bprintf("Weird!\n");
        return;
@@ -976,11 +955,10 @@ break ;
  
  cuddlecom()
     {
-    extern long mynum;
     long a,b;
     b=vichere(&a);
     if(b== -1) return;
-    if(mynum==a)
+    if(user==a)
        {
        bprintf("You aren't that lonely are you ?\n");
        return;
@@ -990,11 +968,10 @@ break ;
 
  hugcom()
     {
-    extern long mynum;
     long a,b;
     b=vichere(&a);
     if(b== -1) return;
-    if(mynum==a)
+    if(user==a)
        {
        bprintf("Ohhh flowerr!\n");
        return;
@@ -1004,11 +981,10 @@ break ;
  
  slapcom()
     {
-    extern long mynum;
     long a,b;
     b=vichere(&a);
     if(b== -1) return;
-    if(mynum==a)
+    if(user==a)
        {
        bprintf("You slap yourself\n");
        return;
@@ -1018,11 +994,10 @@ break ;
  
  ticklecom()
     {
-    extern long mynum;
     long a,b;
     b=vichere(&a);
     if(b== -1) return;
-    if(a==mynum)
+    if(a==user)
        {
        bprintf("You tickle yourself\n");
        return;
@@ -1072,7 +1047,6 @@ long *x;
  vicf2(x,f1)
 long *x;
     {
-    extern long mynum;
     long a;
     extern long my_str,my_lev;
     long b,i;
@@ -1085,13 +1059,13 @@ long *x;
        }
     if(my_lev<10) my_str-=2;
 i=5;
-if(iscarrby(111,mynum)) i++;
-if(iscarrby(121,mynum)) i++;
-if(iscarrby(163,mynum)) i++;
+if(iscarrby(111,user)) i++;
+if(iscarrby(121,user)) i++;
+if(iscarrby(163,user)) i++;
     if((my_lev<10)&&(randperc()>i*my_lev))
        {
        bprintf("You fumble the magic\n");
-       if(f1==1){*x=mynum;bprintf("The spell reflects back\n");}
+       if(f1==1){*x=user;bprintf("The spell reflects back\n");}
        else
           {
           return(-1);
@@ -1152,7 +1126,7 @@ long  ail_deaf=0;
  new1rcv(isme,chan,to,from,code,text)
  char *to,*from,*text;
     {
-    extern long mynum,my_lev,ail_dumb,ail_crip;
+    extern long my_lev,ail_dumb,ail_crip;
     extern long ail_deaf,ail_blind;
     extern long my_sex;
     extern char globme[];
@@ -1246,7 +1220,7 @@ long  ail_deaf=0;
              if(my_sex)bprintf("Female\n");
              else
                 bprintf("Male\n");
-             calibme();
+        yield from user.update()
              }
           break;
        case -10109:
@@ -1377,7 +1351,7 @@ long  ail_deaf=0;
     zapped=1;
     openworld();
     dumpitems();
-    loseme();
+    user.loose();
     sprintf(ms,"%s has just died\n",globme);
     user.send_message(globme,globme,-10000,user.location_id,ms);
     sprintf(ms,"[ %s has just died ]\n",globme);
@@ -1387,7 +1361,6 @@ long  ail_deaf=0;
  
  woundmn(mon,am)
     {
-    extern long mynum;
     extern char globme[];
     long a;
     long b;
@@ -1395,7 +1368,7 @@ long  ail_deaf=0;
     a=Player(mon).strength - am;
     Player(mon).strength = a;
  
-    if(a>=0){mhitplayer(mon,mynum);}
+    if(a>=0){mhitplayer(mon,user);}
  
     else
        {
@@ -1411,14 +1384,14 @@ long  ail_deaf=0;
  
  mhitplayer(mon,mn)
     {
-    extern long my_lev,mynum;
+    extern long my_lev;
     long a,b,x[4];
     extern char globme[];
     if(Player(mon).location !=user.location_id) return;
     if((mon<0)||(mon>47)) return;
     a=randperc();
     b=3*(15-my_lev)+20;
-if((iswornby(89,mynum))||(iswornby(113,mynum))||(iswornby(114,mynum)))
+if((iswornby(89,user))||(iswornby(113,user))||(iswornby(114,user)))
        b-=10;
     if(a<b)
        {
@@ -1485,20 +1458,19 @@ PLAYER pinit[48]=
  wearcom()
     {
     long a,b;
-    extern long mynum;
     b=ohereandget(&a);
     if(b== -1) return(-1);
-    if(!iscarrby(a,mynum))
+    if(!iscarrby(a,user))
        {
        bprintf("You are not carrying this\n");
        return;
        }
-    if(iswornby(a,mynum))
+    if(iswornby(a,user))
        {
        bprintf("You are wearing this\n");
        return;
        }
-    if(((iswornby(89,mynum))||(iswornby(113,mynum))||(iswornby(114,mynum)))&&
+    if(((iswornby(89,user))||(iswornby(113,user))||(iswornby(114,user)))&&
          ((a==89)||(a==113)||(a==114)))
          {
          	bprintf("You can't use TWO shields at once...\n");
@@ -1516,10 +1488,9 @@ PLAYER pinit[48]=
  removecom()
     {
     long a,b;
-    extern long mynum;
     b=ohereandget(&a);
     if(b== -1) return;
-    if(!iswornby(a,mynum))
+    if(!iswornby(a,user))
        {
        bprintf("You are not wearing this\n");
        }
@@ -1616,7 +1587,6 @@ case 33:return(10);
  deafcom()
     {
     long a,b;
-    extern long mynum;
     extern char globme[64];
     b=victim(&a);
     if(b== -1) return;
@@ -1626,7 +1596,6 @@ case 33:return(10);
 blindcom()
     {
     long a,b;
-    extern long mynum;
     extern char globme[64];
     b=victim(&a);
     if(b== -1) return;
@@ -1639,22 +1608,20 @@ long newch;
        char block[200];
        sprintf(block,"%s%s%s%s%s","\001s",globme,"\001",globme," has left.\n\001");
        user.send_message(globme,globme,-10000,user.location_id,block);
-       user.location_id=newch;
        sprintf(block,"%s%s%s%s%s","\001s",globme,"\001",globme," has arrived.\n\001");
        user.send_message(globme,globme,-10000,newch,block);
-       trapch(user.location_id);
+       user.location = newch
 }
 
 on_flee_event()
 {
 	extern long  numobs;
-	extern long mynum;
 	long ct=0;
 	while(ct<numobs)
 	{
-		if((iscarrby(ct,mynum))&&(!iswornby(ct,mynum)))
+		if((iscarrby(ct,user))&&(!iswornby(ct,user)))
 		{
-			Item(ct).set_location(Player(mynum).location, 0);
+			Item(ct).set_location(user.location, 0);
 		}
 		ct++;
 	}

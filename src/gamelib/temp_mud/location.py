@@ -18,6 +18,11 @@ class Location:
         self.weather = Weather()
         self.__zone = None
 
+        self.death_room = False
+        self.no_brief = False
+        self.short = ""
+        self.description = []
+
     @property
     def climate(self):
         if not self.outdoors:
@@ -82,12 +87,34 @@ class Location:
     def load_exits(self, file):
         self.exits = [file.scanf() for _ in range(6)]
 
-    def show_name(self, user):
+    def get_name(self, user):
         user.set_wd_there(self.zone, self.in_zone)
         result = self.name
         if user.is_god:
             result += "[ {} ]".format(self.location_id)
-        yield result + "\n"
+        return result + "\n"
 
     def show_weather(self, weather_id):
         yield from self.climate.weather(weather_id)
+
+    # Tk
+    def reload(self):
+        self.death_room = False
+        self.no_brief = False
+        self.short = ""
+        self.description = ""
+        try:
+            data = self.load("r")
+            self.load_exits(data)
+            for s in data:
+                if s == "#DIE":
+                    self.death_room = True
+                elif s == "#NOBR":
+                    self.no_brief = True
+                elif self.short is None:
+                    self.short = s
+                else:
+                    self.description += s + "\n"
+            data.disconnect()
+        except FileNotFoundError:
+            self.short = "\nYou are on channel {}\n".format(self.location_id)

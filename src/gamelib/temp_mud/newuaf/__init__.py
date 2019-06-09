@@ -15,7 +15,6 @@ def delpers(*args):
 #include "files.h"
 
 extern FILE *openuaf();
-extern FILE *openlock();
 
 extern char globme[];
 
@@ -49,14 +48,14 @@ int act;
 			switch(act)
 			{
 			case 0:
-				fcloselock(a);
+				a.disconnect()
 				return(1);
 			case 1:	fseek(a,ftell(a)-sizeof(PERSONA),0);
 				return((long)a);
 			}
 		}
 	}
-	fcloselock(a);	
+	a.disconnect()	
 	return(-1);
 }
 
@@ -84,7 +83,7 @@ l1:	i=(FILE *)personactl(name,&x,PCTL_FIND);
 	strcpy(x.p_name,"");
 	x.p_level= -1;
 	fwrite(&x,sizeof(PERSONA),1,i);
-	fcloselock(i);
+	i.disconnect()
 	goto l1;
 }
 
@@ -109,21 +108,21 @@ PERSONA *pers;
 		{
 			bprintf("Save Failed - Device Full ?\n");
 			if(flen!=-1)ftruncate(fileno(i),flen);
-			fcloselock(i);
+			i.disconnect()
 			return;
 		}
-		fcloselock(i);
+		i.disconnect()
 		return;
 	}
 	fwrite(pers,sizeof(PERSONA),1,i);
-	fcloselock(i);
+	i.disconnect()
 }
 
 FILE *openuaf(perm)
 char *perm;
 {
 	FILE *i;
-	i=openlock(UAF_RAND,perm);
+	i=connect(UAF_RAND,perm);
 	if(i==NULL)
 	{
 		crapup("Cannot access UAF\n");
@@ -193,11 +192,10 @@ saveme()
 	extern char globme[];
 	extern long zapped;
 	PERSONA x;
-	extern int mynum;
 	strcpy(x.p_name,globme);
 	x.p_strength=my_str;
 	x.p_level=my_lev;
-	x.p_sex=Player(mynum).flags
+	x.p_sex=user.flags
 	x.p_score=my_sco;
 	if(zapped) return;
 	bprintf("\nSaving %s\n",globme);

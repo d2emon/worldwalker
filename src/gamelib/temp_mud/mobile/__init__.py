@@ -3,11 +3,6 @@ def dragget(*args):
 
 
 """
-#include <stdio.h>
-#include "files.h"
-
-extern FILE *openlock();
-
 on_timing()
 {
 	if(randperc()>80) onlook();
@@ -16,33 +11,31 @@ on_timing()
 onlook(  )
     {
 long a ;
-extern long mynum ;
 chkfight( fpbns( "shazareth" ) ) ;
-if( !iscarrby( 45, mynum ) )chkfight( fpbns( "wraith" ) ) ;
+if( !iscarrby( 45, user ) )chkfight( fpbns( "wraith" ) ) ;
 chkfight( fpbns( "bomber" ) ) ;
 chkfight( fpbns( "owin" ) ) ;
 chkfight( fpbns( "glowin" ) ) ;
 chkfight( fpbns( "smythe" ) ) ;
 chkfight( fpbns( "dio" ) ) ;
-if( !iscarrby( 45, mynum ) ) chkfight( fpbns( "zombie" ) ) ;
+if( !iscarrby( 45, user ) ) chkfight( fpbns( "zombie" ) ) ;
 chkfight( fpbns( "rat" ) ) ;
 chkfight( fpbns( "ghoul" ) ) ;
 chkfight( fpbns( "ogre" ) ) ;
 chkfight( fpbns( "riatha" ) ) ;
 chkfight( fpbns( "yeti" ) ) ;
 chkfight( fpbns( "guardian"));
-if( iscarrby( 32, mynum ) ) dorune(  ) ;
-if(Player(mynum).helping is not None) helpchkr();
+if( iscarrby( 32, user ) ) dorune(  ) ;
+if(user.helping is not None) helpchkr();
     }
  
  chkfight( x )
     {
-    extern long mynum ;
     if( x<0 ) return ; /* No such being */
     consid_move( x); /* Maybe move it */
     if( not Player( x ).exists ) return ;
     if( Player( x ).location!=user.location_id ) return ;
-    if( Player( mynum ).visible ) return ; /* Im invis */
+    if( user.visible ) return ; /* Im invis */
     if(randperc()>40) return;
 if( ( x==fpbns( "yeti" ) )&&( user.has_any([
     0, 0, 0, 0,
@@ -53,7 +46,7 @@ if( ( x==fpbns( "yeti" ) )&&( user.has_any([
 {
 return ;
 }
-    mhitplayer( x, mynum ) ;
+    mhitplayer( x, user ) ;
     }
  
  consid_move(x)
@@ -86,7 +79,6 @@ return ;
     long c ;
     char bk[ 128 ] ;
     extern long wordbuf[  ] ;
-    extern long mynum ;
     b=vichere( &a ) ;
     if( b== -1 ) return ;
     if( brkword(  )== -1 )
@@ -159,7 +151,7 @@ return ;
        return ;
        }
     time( &t ) ;
-    fl=openlock( RESET_N, "ruf" ) ;
+    fl=connect( RESET_N, "ruf" ) ;
     if(fl==NULL) goto errk;
     fscanf( fl, "%ld", &u ) ;
     fclose(fl ) ;
@@ -179,13 +171,13 @@ errk:t=my_lev ;
     {
     char bf[ 128 ] ;
     long ct ;
-    extern long mynum, my_lev;
+    extern long my_lev;
     extern long in_fight;
     if(in_fight) return;
     ct=0 ;
     while( ct<32 )
        {
-       if( ct==mynum ){ct++ ;continue ;}
+       if( ct==user ){ct++ ;continue ;}
        if( !strlen( Player( ct ).name ) ) {ct++ ;continue ;}
        if( Player( ct ).is_wizard ) {ct++ ;continue ;}
        if( Player( ct ).location==user.location_id ) goto hitrune ;
@@ -204,17 +196,16 @@ errk:t=my_lev ;
     extern long my_sco ;
     long a, b ;
     extern char globme[];
-    extern long mynum ;
     user.send_message( " ", " ", -10000, user.location_id, "You start sneezing ATISCCHHOOOOOO!!!!\n" ) ;
     if( ( not Player( 32 ).exists )||( Player( 32 ).location!=user.location_id ) )
     return ;
     /* Ok dragon and pepper time */
-    if( ( iscarrby( 89, mynum ) )&&( Item( 89 ).carry_flag==2 ) )
+    if( ( iscarrby( 89, user ) )&&( Item( 89 ).carry_flag==2 ) )
        {
        /* Fried dragon */
        strcpy( Player( 32 ).name, "" ) ; /* No dragon */
        my_sco+=100 ;
-       calibme(  ) ;
+        yield from user.update()
        return ;
        }
     else
@@ -222,8 +213,7 @@ errk:t=my_lev ;
        /* Whoops !*/
        bprintf( "The dragon sneezes forth a massive ball of flame.....\n" ) ;
        bprintf( "Unfortunately you seem to have been fried\n" ) ;
-       loseme(  ) ;
-       crapup( "Whoops.....   Frying tonight" ) ;
+       raise LooseError( "Whoops.....   Frying tonight" ) ;
        }
     }
  
@@ -241,13 +231,12 @@ if( l== -1 ) return( 0 ) ;
 
 helpchkr()
 {
-	extern long mynum;
-	long x=Player(mynum).helping
+	long x=user.helping
 	if(!user.in_setup) return;
 	if(not Player(x).exists) goto nhelp;
 	if(Player(x).location!=user.location_id) goto nhelp;
 	return;
 	nhelp:bprintf("You can no longer help \001c%s\001\n",Player(x).name);
-	Player(mynum).helping = None
+	user.helping = None
 }
 """

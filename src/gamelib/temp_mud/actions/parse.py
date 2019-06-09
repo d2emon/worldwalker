@@ -217,7 +217,7 @@ class Brief(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.switch_brief()
+        parser.user.switch_brief()
 
 
 class MapWorld(Action):

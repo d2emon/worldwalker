@@ -10,7 +10,6 @@ from ..objsys import ObjSys, dumpitems
 from ..opensys import closeworld, openworld
 from ..support import Item, Player, iscarrby
 from ..syslog import syslog
-from ..tk import trapch, loseme
 from .commands import COMMANDS
 from .messages import Message
 
@@ -74,15 +73,7 @@ def keysetup(*args):
     raise NotImplementedError()
 
 
-def lookin(*args):
-    raise NotImplementedError()
-
-
 def pbfr(*args):
-    raise NotImplementedError()
-
-
-def rte(*args):
     raise NotImplementedError()
 
 
@@ -91,10 +82,6 @@ def system(*args):
 
 
 def time(*args):
-    raise NotImplementedError()
-
-
-def update(*args):
     raise NotImplementedError()
 
 
@@ -137,15 +124,14 @@ class Parse:
         ).send()
         text = "\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=user.name)
         dumpitems()
-        user.location_id = location
         Message(
             user,
             user,
             MSG_GLOBAL,
-            user.location_id,
+            location,
             text,
         ).send()
-        trapch(user.location_id)
+        user.location_id = location
 
 
 def tsscom(parser):
@@ -172,8 +158,7 @@ def rmeditcom(parser):
         0,
         "\001s{name}\001{name} fades out of reality\n\001".format(name=user.name),
     ).send()  # Info
-    user.message_id = -2  # CODE NUMBER
-    update(user.name)
+    user.fade()  # CODE NUMBER
     pbfr()
     closeworld()
     try:
@@ -184,8 +169,7 @@ def rmeditcom(parser):
     user.message_id = None
     openworld()
     if Player.fpbns(user) is None:
-        loseme()
-        raise CrapupError("You have been kicked off")
+        raise LooseError("You have been kicked off")
     Message(
         user,
         user,
@@ -193,14 +177,13 @@ def rmeditcom(parser):
         0,
         "\001s{name}\001{name} re-enters the normal universe\n\001".format(name=user.name),
     ).send()
-    rte()
+    parser.read_messages()
 
 
 def u_system(parser):
     if NewUaf.my_lev < 10:
         raise CommandError("You'll have to leave the game first!\n")
-    user.message_id = -2
-    update(user.name)
+    user.fade()
     Message(
         user,
         user,
@@ -213,9 +196,8 @@ def u_system(parser):
     openworld()
     user.message_id = None
     if Player.fpbns(user.name) is None:
-        loseme()
-        raise CrapupError("You have been kicked off")
-    rte()
+        raise LooseError("You have been kicked off")
+    parser.read_messages()
     openworld()
     Message(
         user,
@@ -238,7 +220,7 @@ def inumcom(parser):
 def updcom(parser):
     if NewUaf.my_lev < 10:
         raise CommandError("Hmmm... you can't do that one\n")
-    loseme()
+    user.loose()
     Message(
         user,
         user,
@@ -265,7 +247,7 @@ def becom(parser):
         "{} has quit, via BECOME\n".format(user.name),
     ).send()
     keysetback()
-    loseme()
+    user.loose()
     closeworld()
     execl(Extras.EXE2, "   --}----- ABERMUD ------   ", "-n{}".format(user.name))  # GOTOSS eek!
     yield "Eek! someone's just run off with mud!!!!\n"
@@ -293,9 +275,9 @@ def rawcom(parser):
         raise CommandError("I don't know that verb\n")
     x = parser.getreinput()
     if NewUaf.my_lev == 10033 and x[0] == "!":
-        Broadcast(x[1:]).send(user)
+        user.broadcast(x[1:])
     else:
-        Broadcast("** SYSTEM : {}\n\007\007".format(x)).send(user)
+        user.broadcast("** SYSTEM : {}\n\007\007".format(x))
 
 
 def rollcom(parser):
@@ -323,10 +305,7 @@ def typocom(parser):
 def look_cmd(parser):
     word = parser.brkword()
     if word is None:
-        brhold = parser.brmode
-        parser.brmode = 0
-        lookin(user.location_id)
-        parser.brmode = brhold
+        user.look(True)
         return
     if word == "at":
         return examcom()
@@ -535,17 +514,16 @@ class Pronouns(Action):
     auto z[32];
     extern char globme[];
     extern long my_lev;
-    extern long mynum;
     if((my_lev<10)&&(Player(pl).location!=user.location_id))
        {
        bprintf("They are not here\n");
        return;
        }
-    if(!iscarrby(ob,mynum))
+    if(!iscarrby(ob,user))
        {
        bprintf("You are not carrying that\n");
        }
-    if(!cancarry(pl))
+    if(pl.overweight)
        {
        bprintf("They can't carry that\n");
        return;
@@ -563,7 +541,6 @@ class Pronouns(Action):
 
  stealcom()
     {
-    extern long mynum;
     extern long my_lev;
     extern char wordbuf[];
     long  a,b;
@@ -618,7 +595,7 @@ class Pronouns(Action):
        bprintf("They have that firmly to hand .. for KILLING people with\n");
        	return;
        }
-    if(!cancarry(mynum))
+    if(user.overweight)
        {
        bprintf("You can't carry any more\n");
        return;
@@ -635,7 +612,7 @@ class Pronouns(Action):
        	 user.send_message(Message(Player(c).name,globme,-10011,user.location_id,tb);
        	 if(c>15) woundmn(c,0);
        	}
-       Item(a).location(mynum,1);
+       Item(a).location(user,1);
        return;
        }
     else
@@ -653,9 +630,8 @@ class Pronouns(Action):
     user.send_message(Message(globme,globme,-10000,user.location_id,ms);
     sprintf(ms,"\001s%s\001%s appears in a puff of smoke\n\001",globme,globme);
     dumpitems();
-    user.location_id=loc;
-    user.send_message(Message(globme,globme,-10000,user.location_id,ms);
-    trapch(user.location_id);
+    user.send_message(Message(globme,globme,-10000,loc,ms);
+    user.location_id = loc
     }
  
  tsscom()
@@ -678,10 +654,9 @@ class Pronouns(Action):
  rmeditcom()
     {
     extern long my_lev;
-    extern long mynum;
     char ms[128];
     extern char globme[];
-    if(!Player(mynum).test_flag(3))
+    if(!user.test_flag(3))
        {
        bprintf("Dum de dum.....\n");
        return;
@@ -690,7 +665,6 @@ class Pronouns(Action):
     sprintf(ms,"\001s%s\001%s fades out of reality\n\001",globme,globme);
     user.send_message(Message(globme,globme,-10113,0,ms); /* Info */
     user.fade();/* CODE NUMBER */
-    update(globme);
     pbfr();
     closeworld();
     if(chdir(ROOMS)==-1) bprintf("Warning: Can't CHDIR\n");
@@ -700,12 +674,11 @@ class Pronouns(Action):
     openworld();
     if(fpbns(globme)== -1)
        {
-       loseme();
-       crapup("You have been kicked off");
+       raise LooseError("You have been kicked off");
        }
     sprintf(ms,"\001s%s\001%s re-enters the normal universe\n\001",globme,globme);
     user.send_message(Message(globme,globme,-10113,0,ms);
-    rte();
+    parser.read_messages()
     }
  
  u_system()
@@ -719,7 +692,6 @@ class Pronouns(Action):
        return;
        }
     user.fade()
-    update(globme);
     sprintf(x,"%s%s%s%s%s","\001s",globme,"\001",globme," has dropped into BB\n\001");
     user.send_message(Message(globme,globme,-10113,0,x);
     closeworld();
@@ -728,10 +700,9 @@ class Pronouns(Action):
     user.reset_position()
     if(fpbns(globme)== -1)
        {
-       loseme();
-       crapup("You have been kicked off");
+       raise LooseError("You have been kicked off");
        }
-    rte();
+    parser.read_messages()
     openworld();
     sprintf(x,"%s%s%s%s%s","\001s",globme,"\001",globme," has returned to AberMud\n\001");
     user.send_message(Message(globme,globme,-10113,0,x);
@@ -764,7 +735,7 @@ class Pronouns(Action):
        bprintf("Hmmm... you can't do that one\n");
        return;
        }
-    loseme();
+    user.loose()
     sprintf(x,"[ %s has updated ]\n",globme);
     user.send_message(Message(globme,globme,-10113,0,x);
     closeworld();
@@ -794,7 +765,7 @@ class Pronouns(Action):
     sprintf(x,"%s has quit, via BECOME\n",globme);
     user.send_message(Message("","",-10113,0,x);
     keysetback();
-    loseme();
+    user.loose();
     closeworld();
     sprintf(x,"-n%s",x2);
     execl(EXE2,"   --}----- ABERMUD ------   ",x,0);	/* GOTOSS eek! */
@@ -841,13 +812,13 @@ class Pronouns(Action):
     getreinput(x);
     if((my_lev==10033)&&(x[0]=='!'))
        {
-       Broadcast(x+1).send(user);
+       user.broadcast(x+1)
        return;
        }
     else
        {
        sprintf(y,"%s%s%s","** SYSTEM : ",x,"\n\007\007");
-       Broadcast(y).send(user);
+       user.broadcast(y);
        }
     }
  
@@ -907,7 +878,11 @@ look_cmd()
 	{
           brhold=brmode;
           brmode=0;
-          lookin(user.location_id);
+
+          user.look(parser.brief, parser.mode == parser.MODE_GAME)
+          if parser.user.location.no_brief:
+              parser.brief = False
+
           brmode=brhold;
           return;
         }
@@ -1014,7 +989,6 @@ emptycom()
 {
 	long a,b;
 	extern long numobs;
-        extern long mynum;
 	char x[81];
 	b=ohereandget(&a);
 	if(b==-1) return;
@@ -1023,7 +997,7 @@ emptycom()
 	{
 		if(iscontin(b,a))
 		{
-			Item(b).set_location(mynum,1);
+			Item(b).set_location(user,1);
 			bprintf("You empty the %s from the %s\n",Item(b).name,Item(a).name);
 			sprintf(x,"drop %s",Item(b).name);
 			gamecom(x);

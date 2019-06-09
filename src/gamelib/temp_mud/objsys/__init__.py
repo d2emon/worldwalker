@@ -36,7 +36,6 @@ def iscarrby(*args):
 #include <stdio.h>
 
 long numobs=NOBS;
-extern FILE *openlock();
 extern FILE *openworld();
 
 long objinfo[NOBS*4];
@@ -44,9 +43,8 @@ long objinfo[NOBS*4];
 
  inventory()
     {
-    extern long mynum;
    bprintf("You are carrying\n");
-    lobjsat(mynum);
+    lobjsat(user);
     }
 
  /*
@@ -120,7 +118,6 @@ char *nam;
 long ctrl,ct_inf;
 {
     extern char wd_it[];
-    extern long mynum;
     long a;
     long l1[32],l2[32];
     extern char wordbuf[];
@@ -140,12 +137,12 @@ if(!strcmp(l1,"green")) {brkword();return(6);}
              case 0:
                 return(a);
              case 1:/* Patch for shields */
-                if((a==112)&&(iscarrby(113,mynum))) return(113);
-                if((a==112)&&(iscarrby(114,mynum))) return(114);
-                if(user.is_available(a)) return(a);
+                if((a==112)&&(iscarrby(113,user))) return(113);
+                if((a==112)&&(iscarrby(114,user))) return(114);
+                if(user.item_is_available(a)) return(a);
                 break;
              case 2:
-                if(iscarrby(a,mynum)) return(a);
+                if(iscarrby(a,user)) return(a);
                 break;
              case 3:
                 if(iscarrby(a,ct_inf)) return(a);
@@ -208,7 +205,6 @@ if(x!=-1) return(x);
     
  getobj()
     {
-    extern long mynum;
     extern char globme[];
     extern char wordbuf[];
     long a,b;
@@ -259,17 +255,17 @@ else bprintf("The shields are all to firmly secured to the walls\n");
        return;
        }
 if(dragget()) return;
-    if(!cancarry(mynum))
+    if(user.overweight)
        {
       bprintf("You can't carry any more\n");
        return;
 }
-if((a==32)&&(state(a)==1)&&(Player(mynum).helper is None))
+if((a==32)&&(state(a)==1)&&(user.helper is None))
 {
 	bprintf("Its too well embedded to shift alone.\n");
 	return;
 }
-    Item(a).set_location(mynum,1);
+    Item(a).set_location(user,1);
     sprintf(bf,"\001D%s\001\001c takes the %s\n\001",globme,Item(a).name);
    bprintf("Ok...\n");
     user.send_message(globme,globme,-10000,user.location_id,bf);
@@ -302,7 +298,6 @@ extern long my_lev;
 
  dropitem()
     {
-    extern long mynum;
     extern char wordbuf[],globme[];
     extern long my_sco;
     long a,b,bf[32];
@@ -333,7 +328,7 @@ return;
    bprintf("It disappears down into the bottomless pit.....\n");
     user.send_message(globme,globme,-10000,user.location_id,bf);
     my_sco+=(tscale()*Item(a).base_value)/5;
-    calibme();
+        yield from user.update()
 Item(a).set_location(-6,0);
     }
  lisobs()
@@ -366,8 +361,7 @@ Item(a).set_location(-6,0);
     }
  dumpitems()
     {
-    extern long mynum;
-    dumpstuff(mynum,user.location_id);
+    dumpstuff(user,user.location_id);
     }
 
  dumpstuff(n,loc)
@@ -559,14 +553,13 @@ if((!!strlen(n2))&&(!strcmp(n1,n2))) return(a);
  lispeople()
     {
     extern long debug_mode;
-    extern long mynum;
     extern char wd_him[],wd_her[];
     long a,b;
     b=0;
     a=0;
     while(a<48)
        {
-       if(a==mynum)
+       if(a==user)
           {
           a++;
           continue;

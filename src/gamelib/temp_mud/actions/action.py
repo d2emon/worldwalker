@@ -461,7 +461,7 @@ class Action(BaseAction):
 class Special(BaseAction):
     @classmethod
     def action(cls, command, parser):
-        raise NotImplementedError("I don't know that verb\n")
+        raise NotImplementedError("\nUnknown . option\n")
 
     @classmethod
     def prepare(cls, parser, action):

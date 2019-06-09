@@ -68,12 +68,28 @@ class BasePlayer:
 
     # Other
     @property
+    def capacity(self):
+        if not self.is_wizard:
+            return None
+        if self.level < 0:
+            return None
+        return self.level + 5
+
+    @property
     def dead(self):
         return self.strength < 0
 
     @property
     def exists(self):
         return not self.name
+
+    @property
+    def is_wizard(self):
+        return self.level > 9
+
+    @property
+    def is_god(self):
+        return self.level > 9999
 
     @property
     def is_faded(self):

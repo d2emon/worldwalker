@@ -293,7 +293,7 @@ class SetPFlags(Action):
     commands = "pflags",
     @classmethod
     def validate(cls, command, parser):
-        if not parser.user.player.test_bit(2):
+        if not parser.user.test_bit(2):
             raise CommandError("You can't do that\n")
 
     @classmethod

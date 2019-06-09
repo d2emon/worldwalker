@@ -33,10 +33,16 @@ class Screen:
 
         try:
             World.load()
+            # if self.user.player_id >= maxu:
+            #     raise Exception("\nSorry AberMUD is full at the moment\n")
             self.buffer.add(*self.user.read_messages(reset_after_read=True))
             World.save()
         except ServiceError:
             raise CrapupError("Sorry AberMUD is currently unavailable")
+
+        self.user.reset_position()
+        self.parser.start()
+        self.user.in_setup = True
 
     def top(self):
         if self.tty != 4:
@@ -77,7 +83,7 @@ class Screen:
         self.buffer.add("\001l{}\n\001".format(work), raw=True)
 
         World.load()
-        self.buffer.add(*self.parser.read_messages())
+        self.buffer.add(*self.user.read_messages())
 
         if self.parser.parse(work) is None:
             return self.get_command()
@@ -85,7 +91,7 @@ class Screen:
     def main(self):
         self.buffer.show()
         self.get_command()
-        self.buffer.add(*self.parser.read_messages(True))
+        self.buffer.add(*self.user.read_messages(unique=True))
         World.save()
         self.buffer.show()
 
@@ -113,15 +119,13 @@ class Parser:
 
     def __init__(self, user):
         self.user = user
+        self.user.on_message = self.__on_message
 
         # TK
         self.__conversation_mode = self.CONVERSATION_NONE
-        self.mode = self.MODE_SPECIAL
+        self.__mode = self.MODE_SPECIAL
         # Unknown
         self.__debug_mode = False
-
-        self.__special(self.user, ".g")
-        self.user.in_setup = True
 
         self.string_buffer = ""
         self.__word_buffer = ""
@@ -136,6 +140,16 @@ class Parser:
         }
 
         self.verbs = VerbsList()
+
+    # Parse
+    @property
+    def mode(self):
+        return self.__mode
+
+    @mode.setter
+    def mode(self, value):
+        self.__mode = mode
+        self.user.show_players = value == self.MODE_GAME
 
     # Tk
     @property
@@ -159,6 +173,11 @@ class Parser:
             return action[1:]
         return self.__CONVERT.get(self.__conversation_mode, "{}").format(action)
 
+    def __on_message(self, message):
+        # Print appropriate stuff from data block
+        if self.__debug_mode:
+            yield "\n<{}>".format(message.code)
+
     def parse(self, action):
         action = self.__modify_action(action)
         if action is None:
@@ -172,6 +191,11 @@ class Parser:
 
         self.user.check_fight()
         return result
+
+    def start(self):
+        self.user.reset_position()
+        self.__special(self.user, ".g")
+        self.user.in_setup = True
 
     # Parse
     def __iter__(self):
@@ -233,7 +257,7 @@ class Parser:
         except NotImplementedError as e:
             yield e
 
-    # Unknown
+    # Tk
     def __special(self, user, action):
         action = Special.prepare(self, action)
         if not action:
@@ -243,23 +267,41 @@ class Parser:
         else:
             print("\nUnknown . option\n")
 
-    def read_messages(self, unique=False):
-        if unique and self.user.rd_qd:
-            return
-
-        # Tk
-        # Print appropriate stuff from data block
-        for message in self.user.read_messages():
-            if self.__debug_mode:
-                yield "\n<{}>".format(message.code)
-            yield from self.user.process_message(message)
-
-        if unique:
-            self.user.rd_qd = False
+    # Unknown
+    def set_there(self, zone, location_id):
+        self.pronouns['there'] = zone + " " + location_id
 
     # Unknown
     # For Actions
     def switch_debug(self):
-        if not self.user.player.test_flag(4):
+        if not self.user.test_flag(4):
             return
         self.__debug_mode = not self.__debug_mode
+
+    def start_game(self):
+        self.mode = self.MODE_GAME
+        self.user.show_players = True
+
+        self.user.reset_location_id()
+        self.user.initme()
+
+        World.load()
+        visible = 0 if not self.user.is_god else 10000
+        self.user.player.start(self.user.NewUaf.strength, self.user.NewUaf.level, visible, self.user.NewUaf.sex)
+
+        self.user.send_message(
+            self.user,
+            Message.WIZARD,
+            self.user.location_id,
+            "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self.user),
+        )
+
+        yield from self.user.read_messages(reset_after_read=True)
+        self.user.go_to_channel(self.user.location_id)
+
+        self.user.send_message(
+            self.user,
+            Message.GLOBAL,
+            self.user.location_id,
+            "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.user),
+        )

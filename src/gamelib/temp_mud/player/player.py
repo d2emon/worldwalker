@@ -125,16 +125,6 @@ class Player(BasePlayer):
     def fpbn(cls, player_name, not_found_error=None):
         raise NotImplementedError()
 
-    def put_on(self, name, location, position):
-        self.name = name
-        self.location_id = location
-        self.position = position
-        self.level = 1
-        self.visible = 0
-        self.strength = -1
-        self.weapon = None
-        self.sex = 0
-
     def start(self, strength, level, visible, sex):
         self.strength = strength
         self.level = level
@@ -168,6 +158,11 @@ class Player(BasePlayer):
     def get_timed_out(cls, timeout):
         return (player for player in cls.players()[:16] if player.is_timed_out(timeout))
 
+    # Tk
+    @classmethod
+    def new_player_id(cls):
+        return next((player.player_id for player in cls.players() if not player.exists), None)
+
+    # Unknown
     def dumpstuff(self, location):
         raise NotImplementedError()
-

@@ -51,7 +51,7 @@ void weapcom()
        return;
        }
     wpnheld=a;
-    	calibme();
+        yield from user.update()
     bprintf("OK...\n");
     }
 
@@ -66,7 +66,7 @@ void hitplayer(victim,wpn)
     long cth,ddn,res;
     if(not Player(victim).exists) return;
     /* Chance to hit stuff */
-    if((!iscarrby(wpn,mynum))&&(wpn!= -1))
+    if((!iscarrby(wpn,user))&&(wpn!= -1))
        {
        bprintf("You belatedly realise you dont have the %s,\nand are forced to use your hands instead..\n",Item(wpn).name);
        if(wpnheld==wpn) wpnheld= -1;
@@ -102,7 +102,7 @@ void hitplayer(victim,wpn)
  	       if(wpn!= -1)bprintf("with the %s",Item(wpn).name);
 	       bprintf("\n");
 	       ddn=randperc()%(dambyitem(wpn));
-	       x[0]=mynum;
+	       x[0]=user;
 	       x[1]=ddn;
 	       x[2]=wpn;
 	       if(Player(victim).strength < ddn)
@@ -124,13 +124,13 @@ void hitplayer(victim,wpn)
           	woundmn(victim,ddn);
           	}
        my_sco+=ddn*2;
-       calibme();
+        yield from user.update()
        return;
        }
     else
        {
 	       bprintf("You missed \001p%s\001\n",Player(victim).name);
-	       x[0]=mynum;
+	       x[0]=user;
 	       x[1]= -1;
 	       x[2]=wpn;
 	       if(victim<16) user.send_message(Player(victim).name,globme,-10021,user.location_id,(char *)x);
@@ -163,7 +163,7 @@ void hitplayer(victim,wpn)
 	       bprintf("You can't do that\n");
 	       return;
        }
-    if(a==mynum)
+    if(a==user)
        {
 	       bprintf("Come on, it will look better tomorrow...\n");
 	       return;
@@ -230,7 +230,7 @@ void  bloodrcv(array,isme)
     {
           syslog("%s slain by %s",globme,Player(array[0]).name);
           dumpitems();
-          loseme();
+          user.loose()
           closeworld();
           delpers(globme);
           openworld();
