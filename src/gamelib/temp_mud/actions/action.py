@@ -281,22 +281,12 @@ case 153:
           usercom();
           break;
 case 156:
-       case 157:
-          inumcom();
-          break;
-       case 158:
-          updcom();
-          break;
-       case 159:
-          becom();
-          break;
-       case 160:
-          systat();
-          break;
+case 157:
+case 158:
+case 159:
+case 160:
 
 case 161:
-          convcom();
-          break;
        case 162:
           snoopcom();
           break;

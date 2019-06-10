@@ -1,6 +1,6 @@
-from ..errors import CommandError, CrapupError
+from ..errors import CommandError, CrapupError, ServiceError
 from ..item import Item
-from ..player import Player
+from ..player.player import Player
 from ..world import World
 from .action import Action, ActionList
 
@@ -266,9 +266,7 @@ class RmEdit(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.on_before_editor()
         yield from parser.editor()
-        yield from parser.user.on_after_editor()
 
 
 class USystem(Action):
@@ -278,9 +276,87 @@ class USystem(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.on_before_system()
         yield from parser.honeyboard()
-        yield from parser.user.on_after_system()
+
+
+class INumber(Action):
+    # 157
+    commands = "inumber",
+    god_only = "Huh ?\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        item = Item.fobn(parser.require_next("What...\n"))
+        yield "Item Number is {}\n".format(item)
+
+
+class Update(Action):
+    # 158
+    commands = "update",
+    wizard_only = "Hmmm... you can't do that one\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.loose()
+        parser.user.send_message(
+            parser.user,
+            message_codes.MSG_WIZARD,
+            0,
+            "[ {} has updated ]\n".format(parser.user.name),
+        )
+        World.save()
+
+        try:
+            execl(EXE, "   --{----- ABERMUD -----}--   ", parser.user.name)  # GOTOSS eek!
+        except ServiceError:
+            yield "Eeek! someones pinched the executable!\n"
+
+
+class Become(Action):
+    # 159
+    commands = "become",
+    wizard_only = "Become what ?\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        x2 = parser.full()
+        if not x2:
+            raise CommandError("To become what ?, inebriated ?\n")
+        parser.user.send_message(
+            parser.user,
+            message_codes.MSG_WIZARD,
+            0,
+            "{} has quit, via BECOME\n".format(parser.user.name),
+        )
+
+        keysetback()
+        parser.user.loose()
+        World.save()
+
+        try:
+            execl(EXE2, "   --}----- ABERMUD ------   ", "-n{}".format(parser.user.name))  # GOTOSS eek!
+        except ServiceError:
+            yield "Eek! someone's just run off with mud!!!!\n"
+
+
+class SysStat(Action):
+    # 160
+    commands = "systat",
+
+    @classmethod
+    def action(cls, command, parser):
+        if parser.user.level < 10000000:
+            raise CommandError("What do you think this is a DEC 10 ?\n")
+
+
+class Converse(Action):
+    # 161
+    commands = "converse",
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.conversation_mode = parser.CONVERSATION_SAY
+        yield "Type '**' on a line of its own to exit converse mode\n"
 
 
 class Credits(Action):

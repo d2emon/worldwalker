@@ -3,72 +3,15 @@ globme holds global me data
 """
 from ..errors import CommandError
 
-from ..new1.messages import MSG_WIZARD
 from ..new1.utils import get_item
 from ..newuaf import NewUaf
 from ..objsys import ObjSys
-from ..opensys import closeworld, openworld
+from ..opensys import openworld
 from ..support import Item
 from ..syslog import syslog
 from .commands import COMMANDS
-from .messages import Message
 
 from ..actions.action import Action
-
-
-def inumcom(parser):
-    if NewUaf.my_lev < 10000:
-        raise CommandError("Huh ?\n")
-    word = parser.brkword()
-    if word is None:
-        raise CommandError("What...\n")
-    yield "Item Number is {}\n".format(Item.fobn(word))
-
-
-def updcom(parser):
-    if NewUaf.my_lev < 10:
-        raise CommandError("Hmmm... you can't do that one\n")
-    user.loose()
-    Message(
-        user,
-        user,
-        MSG_WIZARD,
-        0,
-        "[ {} has updated ]\n".format(user.name),
-    ).send()
-    closeworld()
-    execl(Extras.EXE, "   --{----- ABERMUD -----}--   ", user.name)  # GOTOSS eek!
-    yield "Eeek! someones pinched the executable!\n"
-
-
-def becom(parser):
-    if NewUaf.my_lev < 10:
-        raise CommandError("Become what ?\n")
-    x2 = parser.getreinput()
-    if not x2:
-        raise CommandError("To become what ?, inebriated ?\n")
-    Message(
-        None,
-        None,
-        MSG_WIZARD,
-        0,
-        "{} has quit, via BECOME\n".format(user.name),
-    ).send()
-    keysetback()
-    user.loose()
-    closeworld()
-    execl(Extras.EXE2, "   --}----- ABERMUD ------   ", "-n{}".format(user.name))  # GOTOSS eek!
-    yield "Eek! someone's just run off with mud!!!!\n"
-
-
-def systat(parser):
-    if NewUaf.my_lev < 10000000:
-        raise CommandError("What do you think this is a DEC 10 ?\n")
-
-
-def convcom(parser):
-    parser.converstion_mode = parser.CONVERSATION_SAY
-    yield "Type '**' on a line of its own to exit converse mode\n"
 
 
 def shellcom(parser):
@@ -207,86 +150,6 @@ class Pronouns(Action):
 
 
 """
- inumcom()
-    {
-    extern long my_lev;
-    extern char wordbuf[];
-    if(my_lev<10000)
-       {
-       bprintf("Huh ?\n");
-       return;
-       }
-    if(brkword()== -1)
-       {
-       bprintf("What...\n");
-       return;
-       }
-    bprintf("Item Number is %d\n",fobn(wordbuf));
-    }
- 
- updcom()
-    {
-    extern long my_lev;
-    char x[128];
-    extern char globme[];
-    if(my_lev<10)
-       {
-       bprintf("Hmmm... you can't do that one\n");
-       return;
-       }
-    user.loose()
-    sprintf(x,"[ %s has updated ]\n",globme);
-    user.send_message(Message(globme,globme,-10113,0,x);
-    closeworld();
-    sprintf(x,"%s",globme);
-    execl(EXE,
-    "   --{----- ABERMUD -----}--   ",x,0);  /* GOTOSS eek! */
-    bprintf("Eeek! someones pinched the executable!\n");
-    }
- 
- becom()
-    {
-    extern char globme[];
-    extern long my_lev;
-    char x[128];
-    char x2[128];
-    if(my_lev<10)
-       {
-       bprintf("Become what ?\n");
-       return;
-       }
-    getreinput(x2);
-    if(!strlen(x2))
-       {
-       bprintf("To become what ?, inebriated ?\n");
-       return;
-       }
-    sprintf(x,"%s has quit, via BECOME\n",globme);
-    user.send_message(Message("","",-10113,0,x);
-    keysetback();
-    user.loose();
-    closeworld();
-    sprintf(x,"-n%s",x2);
-    execl(EXE2,"   --}----- ABERMUD ------   ",x,0);	/* GOTOSS eek! */
-    bprintf("Eek! someone's just run off with mud!!!!\n");
-    }
- 
- systat()
-    {
-    extern long my_lev;
-    if(my_lev<10000000)
-       {
-       bprintf("What do you think this is a DEC 10 ?\n");
-       return;
-       }
-    }
- 
- convcom()
-    {
-    parser.converstion_mode = parser.CONVERSATION_SAY
-    bprintf("Type '**' on a line of its own to exit converse mode\n");
-    }
- 
  shellcom()
     {
     extern long my_lev;

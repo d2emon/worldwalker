@@ -262,9 +262,21 @@ class User(BasePlayer):
             raise LooseError("You have been kicked off")
 
     # Tk
-    def fade(self):
-        super().fade()
+    def fade_system(self, message, actions):
+        self.send_message(
+            self,
+            message_codes.WIZARD,
+            0,
+            message,
+        )
+        self.fade()
         self.save_position()
+        World.save()
+
+        yield from actions
+
+        self.__check_kick()
+        yield from self.read_messages()
 
     # Support
     def has_any(self, mask):
@@ -786,41 +798,15 @@ class User(BasePlayer):
                 woundmn(player, 0)
         item.setoloc(self, 1)
 
-    def on_before_editor(self):
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            0,
-            "\001s{name}\001{name} fades out of reality\n\001".format(name=self.name),
-        )  # Info
-        self.fade()  # CODE NUMBER
-
     def on_after_editor(self):
-        self.__check_kick()
-
         self.send_message(
             self,
             message_codes.WIZARD,
             0,
             "\001s{name}\001{name} re-enters the normal universe\n\001".format(name=self.name),
         )
-        yield from self.read_messages()
-
-    def on_before_system(self):
-        self.fade()
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            0,
-            "\001s{name}\001{name} has dropped into BB\n\001".format(name=self.name),
-        )
-        World.save()
 
     def on_after_system(self):
-        self.__check_kick()
-
-        yield from self.read_messages()
-
         World.load()
         self.send_message(
             self,

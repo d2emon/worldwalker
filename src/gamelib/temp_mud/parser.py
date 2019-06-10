@@ -316,14 +316,23 @@ class Parser:
         keysetup()
 
     def editor(self):
-        show_buffer()
-        World.save()
+        def actions():
+            show_buffer()
+            try:
+                chdir(ROOMS)
+            except ServiceError:
+                yield "Warning: Can't CHDIR\n"
 
-        try:
-            chdir(ROOMS)
-        except ServiceError:
-            yield "Warning: Can't CHDIR\n"
-        system("/cs_d/aberstudent/yr2/hy8/.sunbin/emacs")
+            yield from system("/cs_d/aberstudent/yr2/hy8/.sunbin/emacs")
+
+        self.user.fade_system("\001s{name}\001{name} fades out of reality\n\001".format(name=self.user.name), actions())
+
+        yield from parser.user.on_after_editor()
 
     def honeyboard(self):
-        system("/cs_d/aberstudent/yr2/hy8/bt")
+        def actions():
+            yield from system("/cs_d/aberstudent/yr2/hy8/bt")
+
+        self.user.fade_system("\001s{name}\001{name} has dropped into BB\n\001".format(name=self.user.name), actions())
+
+        yield from parser.user.on_after_system()
