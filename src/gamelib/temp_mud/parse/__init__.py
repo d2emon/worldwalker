@@ -1,161 +1,19 @@
 """
 globme holds global me data
 """
-from ..errors import CommandError, CrapupError
+from ..errors import CommandError
 
-from ..new1.messages import MSG_WIZARD, MSG_GLOBAL
+from ..new1.messages import MSG_WIZARD
 from ..new1.utils import get_item
 from ..newuaf import NewUaf
-from ..objsys import ObjSys, dumpitems
+from ..objsys import ObjSys
 from ..opensys import closeworld, openworld
-from ..support import Item, Player, iscarrby
+from ..support import Item
 from ..syslog import syslog
 from .commands import COMMANDS
 from .messages import Message
 
-from gamelib.temp_mud.actions.action import Action
-
-
-class Extras:
-    interrupt = None
-    wpnheld = None
-    ROOMS = None
-    GWIZ = None
-    EXE = None
-    EXE2 = None
-
-
-def chdir(*args):
-    raise NotImplementedError()
-
-
-def debug2(*args):
-    raise NotImplementedError()
-
-
-def disle3(*args):
-    raise NotImplementedError()
-
-
-def examcom(*args):
-    raise NotImplementedError()
-
-
-def execl(*args):
-    raise NotImplementedError()
-
-
-def fopen(*args):
-    raise NotImplementedError()
-
-
-def geteuid(*args):
-    raise NotImplementedError()
-
-
-def getuid(*args):
-    raise NotImplementedError()
-
-
-def hitplayer(*args):
-    raise NotImplementedError()
-
-
-def iscontin(*args):
-    raise NotImplementedError()
-
-
-def keysetback(*args):
-    raise NotImplementedError()
-
-
-def keysetup(*args):
-    raise NotImplementedError()
-
-
-def pbfr(*args):
-    raise NotImplementedError()
-
-
-def system(*args):
-    raise NotImplementedError()
-
-
-# ----
-
-
-def tsscom(parser):
-    if NewUaf.my_lev < 10000:
-        raise CommandError("I don't know that verb\n")
-    action = parser.getreinput()
-    closeworld()
-
-    keysetback()
-    if getuid() == geteuid():
-        system(action)
-    else:
-        raise CommandError("Not permitted on this ID\n")
-    keysetup()
-
-
-def rmeditcom(parser):
-    if user.player.tstflg(3):
-        raise CommandError("Dum de dum.....\n")
-    Message(
-        user,
-        user,
-        MSG_WIZARD,
-        0,
-        "\001s{name}\001{name} fades out of reality\n\001".format(name=user.name),
-    ).send()  # Info
-    user.fade()  # CODE NUMBER
-    pbfr()
-    closeworld()
-    try:
-        chdir(Extras.ROOMS)
-    except FileNotFoundError:
-        yield "Warning: Can't CHDIR\n"
-    system("/cs_d/aberstudent/yr2/hy8/.sunbin/emacs")
-    user.message_id = None
-    openworld()
-    if Player.fpbns(user) is None:
-        raise LooseError("You have been kicked off")
-    Message(
-        user,
-        user,
-        MSG_WIZARD,
-        0,
-        "\001s{name}\001{name} re-enters the normal universe\n\001".format(name=user.name),
-    ).send()
-    parser.read_messages()
-
-
-def u_system(parser):
-    if NewUaf.my_lev < 10:
-        raise CommandError("You'll have to leave the game first!\n")
-    user.fade()
-    Message(
-        user,
-        user,
-        MSG_WIZARD,
-        0,
-        "\001s{name}\001{name} has dropped into BB\n\001".format(name=user.name),
-    ).send()
-    closeworld()
-    system("/cs_d/aberstudent/yr2/hy8/bt")
-    openworld()
-    user.message_id = None
-    if Player.fpbns(user.name) is None:
-        raise LooseError("You have been kicked off")
-    parser.read_messages()
-    openworld()
-    Message(
-        user,
-        user,
-        MSG_WIZARD,
-        0,
-        "\001s{name}\001{name} has returned to AberMud\n\001".format(name=user.name),
-    ).send()
+from ..actions.action import Action
 
 
 def inumcom(parser):
@@ -349,80 +207,6 @@ class Pronouns(Action):
 
 
 """
- tsscom()
-    {
-    char s[128];
-    extern long my_lev;
-    if(my_lev<10000)
-       {
-       bprintf("I don't know that verb\n");
-       return;
-       }
-    getreinput(s);
-    closeworld();
-    keysetback();
-    if(getuid()==geteuid()) system(s);
-    else bprintf("Not permitted on this ID\n");
-    keysetup();
-    }
- 
- rmeditcom()
-    {
-    extern long my_lev;
-    char ms[128];
-    extern char globme[];
-    if(!user.test_flag(3))
-       {
-       bprintf("Dum de dum.....\n");
-       return;
-       }
-      
-    sprintf(ms,"\001s%s\001%s fades out of reality\n\001",globme,globme);
-    user.send_message(Message(globme,globme,-10113,0,ms); /* Info */
-    user.fade();/* CODE NUMBER */
-    pbfr();
-    closeworld();
-    if(chdir(ROOMS)==-1) bprintf("Warning: Can't CHDIR\n");
-    sprintf(ms,"/cs_d/aberstudent/yr2/hy8/.sunbin/emacs");
-    system(ms);
-    user.reset_position()
-    openworld();
-    if(fpbns(globme)== -1)
-       {
-       raise LooseError("You have been kicked off");
-       }
-    sprintf(ms,"\001s%s\001%s re-enters the normal universe\n\001",globme,globme);
-    user.send_message(Message(globme,globme,-10113,0,ms);
-    parser.read_messages()
-    }
- 
- u_system()
-    {
-    extern long my_lev;
-    extern char globme[];
-    char x[128];
-    if(my_lev<10)
-       {
-       bprintf("You'll have to leave the game first!\n");
-       return;
-       }
-    user.fade()
-    sprintf(x,"%s%s%s%s%s","\001s",globme,"\001",globme," has dropped into BB\n\001");
-    user.send_message(Message(globme,globme,-10113,0,x);
-    closeworld();
-    system("/cs_d/aberstudent/yr2/iy7/bt");
-    openworld();
-    user.reset_position()
-    if(fpbns(globme)== -1)
-       {
-       raise LooseError("You have been kicked off");
-       }
-    parser.read_messages()
-    openworld();
-    sprintf(x,"%s%s%s%s%s","\001s",globme,"\001",globme," has returned to AberMud\n\001");
-    user.send_message(Message(globme,globme,-10113,0,x);
-    }
- 
  inumcom()
     {
     extern long my_lev;

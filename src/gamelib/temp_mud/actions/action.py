@@ -272,21 +272,15 @@ case 144:
           break;
 
 case 151:
-          tsscom();
-          break;
-       case 152:
-          rmeditcom();
-          break;
+case 152:
        case 154:
           squeezecom();
           break;
-       case 153:
+case 153:
        case 155:
           usercom();
           break;
-       case 156:
-          u_system();
-          break;
+case 156:
        case 157:
           inumcom();
           break;

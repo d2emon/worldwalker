@@ -305,3 +305,25 @@ class Parser:
             self.user.location_id,
             "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.user),
         )
+
+    def tss(self, action):
+        World.save()
+
+        keysetback()
+        if getuid() != geteuid():
+            raise CommandError("Not permitted on this ID\n")
+        system(action)
+        keysetup()
+
+    def editor(self):
+        show_buffer()
+        World.save()
+
+        try:
+            chdir(ROOMS)
+        except ServiceError:
+            yield "Warning: Can't CHDIR\n"
+        system("/cs_d/aberstudent/yr2/hy8/.sunbin/emacs")
+
+    def honeyboard(self):
+        system("/cs_d/aberstudent/yr2/hy8/bt")

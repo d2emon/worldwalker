@@ -244,6 +244,45 @@ class Grope(Action):
         return gropecom()
 
 
+class Tss(Action):
+    # 151
+    commands = "tss",
+    god_only = "I don't know that verb\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.tss(parser.full())
+
+
+class RmEdit(Action):
+    # 152
+    commands = "rmedit",
+
+    @classmethod
+    def validate(cls, command, parser):
+        if not parser.user.player.tstflg(3):
+            raise CommandError("Dum de dum.....\n")
+        return True
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.on_before_editor()
+        yield from parser.editor()
+        yield from parser.user.on_after_editor()
+
+
+class USystem(Action):
+    # 156
+    commands = "honeyboard",
+    wizard_only = "You'll have to leave the game first!\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.on_before_system()
+        yield from parser.honeyboard()
+        yield from parser.user.on_after_system()
+
+
 class Credits(Action):
     # 169
     commands = "credits",
