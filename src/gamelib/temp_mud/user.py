@@ -1,9 +1,7 @@
-from .errors import CrapupError, ServiceError, CommandError, LooseError
-from .item import Item, Door
+from .errors import CommandError
+from .item import Item
 from .message import Message
 from .player import Player
-from .syslog import syslog
-from .world import World
 
 
 class User:

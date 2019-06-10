@@ -125,14 +125,6 @@ class Player(BasePlayer):
     def fpbn(cls, player_name, not_found_error=None):
         raise NotImplementedError()
 
-    def start(self, strength, level, visible, sex):
-        self.strength = strength
-        self.level = level
-        self.visible = visible
-        self.weapon = None
-        self.flags = sex
-        self.helping = None
-
     # Support
     # Flags
     # 0 sex

@@ -1,8 +1,12 @@
+from datetime import datetime
 from ..direction import DIRECTIONS
-from ..errors import CrapupError
-from ..item import Item
+from ..errors import CrapupError, LooseError, CommandError, ServiceError
+from ..item import Item, Door
 from ..location import Location
-from ..message import Message
+from ..message import message_codes
+from ..message.message import Message, Broadcast, Silly
+from ..message.process import handle
+from ..syslog import syslog
 from ..world import World
 from .base_player import BasePlayer
 from .player import Player
@@ -12,6 +16,7 @@ class User(BasePlayer):
     def __init__(self, name):
         self.player_id = 0
         self.__name = name
+        self.__data = None
 
         self.before_message = lambda message: None
 
@@ -81,8 +86,16 @@ class User(BasePlayer):
     def strength(self):
         raise NotImplementedError()
 
+    @strength.setter
+    def strength(self, value):
+        raise NotImplementedError()
+
     @property
     def visible(self):
+        raise NotImplementedError()
+
+    @visible.setter
+    def visible(self, value):
         raise NotImplementedError()
 
     @property
@@ -93,8 +106,16 @@ class User(BasePlayer):
     def level(self):
         raise NotImplementedError()
 
+    @level.setter
+    def level(self, value):
+        raise NotImplementedError()
+
     @property
     def weapon(self):
+        raise NotImplementedError()
+
+    @weapon.setter
+    def weapon(self, value):
         raise NotImplementedError()
 
     @property
@@ -103,6 +124,10 @@ class User(BasePlayer):
 
     @property
     def sex(self):
+        raise NotImplementedError()
+
+    @sex.setter
+    def sex(self, value):
         raise NotImplementedError()
 
     @property
@@ -145,6 +170,56 @@ class User(BasePlayer):
                 return False
         return True
 
+    # Parse
+    @property
+    def summoned_location(self):
+        return self.__summoned_location
+
+    @summoned_location.setter
+    def summoned_location(self, value):
+        self.__summoned_location = value
+        if not self.is_wizard:
+            self.__is_summoned = True
+
+    # Tk
+    @classmethod
+    def start_location_id(cls):
+        return -5 if randperc() > 50 else -183
+
+    # Unknown
+    def chksnp(self, *args):
+        raise NotImplementedError()
+
+    def initme(self, *args):
+        raise NotImplementedError()
+
+    def is_here(self, *args):
+        raise NotImplementedError()
+
+    def delpers(self, *args):
+        raise NotImplementedError()
+
+    def disle3(self, *args):
+        raise NotImplementedError()
+
+    def dumpitems(self, *args):
+        raise NotImplementedError()
+
+    def dumpstuff(self, *args):
+        raise NotImplementedError()
+
+    def lisobs(self, *args):
+        raise NotImplementedError()
+
+    def lispeople(self, *args):
+        raise NotImplementedError()
+
+    def on_look(self, *args):
+        raise NotImplementedError()
+
+    def save(self, *args):
+        raise NotImplementedError()
+
     # Support
     def item_is_available(self, item):
         if self.is_here(item):
@@ -152,10 +227,6 @@ class User(BasePlayer):
         return item.is_carried_by(self)
 
     # Tk
-    @classmethod
-    def start_location_id(cls):
-        return -5 if randperc() > 50 else -183
-
     def add(self):
         World.load()
         if Player.fpbn(self.name) is not None:
@@ -165,15 +236,15 @@ class User(BasePlayer):
         if self.player_id is None:
             raise CrapupError("\nSorry AberMUD is full at the moment\n")
 
-        # self.name = self.name
-        # self.location_id = self.location
-        # self.position = self.position
+        # self.data.name = self.name
+        # self.data.location_id = self.location
+        # self.data.position = self.position
         self.level = 1
         self.visible = 0
         self.strength = -1
         self.weapon = None
         self.sex = 0
-        # self.__data = self
+        self.__data = self
 
     def check_fight(self):
         self.Blood.check_fight()
@@ -182,10 +253,6 @@ class User(BasePlayer):
 
         if self.Blood.in_fight:
             self.Blood.in_fight -= 1
-
-    # Unknown
-    def dumpstuff(self, location):
-        raise NotImplementedError()
 
     # Tk
     def fade(self):
@@ -196,11 +263,42 @@ class User(BasePlayer):
     def has_any(self, mask):
         return any(item for item in self.__available_items if item.test_mask(mask))
 
+    # Parse
+    def hit_lightning(self, wizard):
+        if self.is_wizard:
+            yield "\001p{}\001 cast a lightning bolt at you\n".format(wizard.name)
+            return
+
+        # You are in the ....
+        yield "A massive lightning bolt arcs down out of the sky to strike"
+        self.send_message(
+            self,
+            message_codes.WIZARD,
+            self.location_id,
+            "[ \001p{}\001 has just been zapped by \001p{}\001 and terminated ]\n".format(
+                self.name,
+                wizard.name,
+            ),
+        )
+
+        yield " you between\nthe eyes\n"
+        self.zapped = True
+        self.delpers()
+        self.send_message(
+            self,
+            message_codes.GLOBAL,
+            self.location_id,
+            "\001s{user}\001{user} has just died.\n\001".format(user=self.name),
+        )
+
+        yield "You have been utterly destroyed by {}\n".format(wizard.name)
+        raise LooseError("Bye Bye.... Slain By Lightning")
+
     # Tk
     def look(self, full=False):
         World.save()
 
-        if self.__ail_blind:
+        if self.Disease.blind:
             yield "You are blind... you can't see a thing!\n"
 
         self.__location.reload()
@@ -213,8 +311,8 @@ class User(BasePlayer):
             return
 
         if self.__location.death_room:
-            if self.__ail_blind:
-                self.__ail_blind = False
+            if self.Disease.blind:
+                self.Disease.blind.cure()
             if self.is_wizard:
                 yield "<DEATH ROOM>\n"
             else:
@@ -223,15 +321,15 @@ class User(BasePlayer):
         yield self.__location.short
 
         brief = self.__brief and not full and not self.__location.no_brief
-        if not self.__ail_blind and not brief:
+        if not self.Disease.blind and not brief:
             yield "\n".join(self.__location.description)
 
         World.load()
 
-        if not self.__ail_blind:
-            lisobs()
+        if not self.Disease.blind:
+            self.lisobs()
             if self.show_players:
-                lispeople()
+                self.lispeople()
         yield "\n"
 
         self.on_look()
@@ -247,7 +345,7 @@ class User(BasePlayer):
         if self.visible < 10000:
             self.send_message(
                 self,
-                Message.WIZARD,
+                message_codes.WIZARD,
                 0,
                 "{} has departed from AberMUDII\n".format(self.name)
             )
@@ -255,23 +353,16 @@ class User(BasePlayer):
         World.save()
 
         if not self.zapped:
-            self.saveme()
+            self.save()
         self.chksnp()
 
     # Parse
     def on_messages(self):
-        ctm = time()
-        if ctm - self.__last_interrupt > 2:
+        time = datetime.now()
+        if (time - self.__last_interrupt).total_seconds() > 2:
             self.interrupt = True
         if self.interrupt:
-            self.__last_interrupt = ctm
-        """
-        ctm = time()
-        if ctm - cls.__last_io_interrupt > 2:
-            Extras.interrupt = True
-        if Extras.interrupt:
-            cls.__last_io_interrupt = ctm
-        """
+            self.__last_interrupt = time
 
         self.__update_invisibility()
 
@@ -280,7 +371,7 @@ class User(BasePlayer):
             self.__to_update = False
 
         if self.__is_summoned:
-            self.__summoned(self.__summoned_location)
+            self.__summoned(self.summoned_location)
 
         self.__update_fight()
 
@@ -288,10 +379,7 @@ class User(BasePlayer):
             self.strength += 1
             yield from self.update()
 
-        forchk()
-        """
-        DISEASES.force.check()
-        """
+        self.Disease.force.check()
 
         if self.__drunk_counter > 0:
             self.__drunk_counter -= 1
@@ -316,12 +404,12 @@ class User(BasePlayer):
         self.initme()
 
         World.load()
-        visible = 0 if not self.is_god else 10000
-        super().start(self.strength, self.level, visible, self.sex)
+        self.visible = 0 if not self.is_god else 10000
+        super().start()
 
         self.send_message(
             self,
-            Message.WIZARD,
+            message_codes.WIZARD,
             location_id,
             "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self.name),
         )
@@ -331,7 +419,7 @@ class User(BasePlayer):
 
         self.send_message(
             self,
-            Message.GLOBAL,
+            message_codes.GLOBAL,
             location_id,
             "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.name),
         )
@@ -340,14 +428,14 @@ class User(BasePlayer):
     def __summoned(self, location):
         self.send_message(
             self,
-            Message.GLOBAL,
+            message_codes.GLOBAL,
             self.location_id,
             "\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name),
         )
-        dumpitems()
+        self.dumpitems()
         self.send_message(
             self,
-            Message.GLOBAL,
+            message_codes.GLOBAL,
             location,
             "\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name),
         )
@@ -365,15 +453,15 @@ class User(BasePlayer):
         if not self.__in_setup:
             return
 
-        level = self.level_of(self.score)
+        level = self.NewUaf.level_of(self.score)
         if level != self.level:
             self.level = level
             yield "You are now {} ".format(self.name)
             syslog("{} to level {}".format(self.name, level))
-            disle3(level, self.sex)
+            self.disle3(level, self.sex)
             self.send_message(
                 self,
-                Message.WIZARD,
+                message_codes.WIZARD,
                 self.location_id,
                 "\001p{}\001 is now level {}\n".format(self.name, self.level),
             )
@@ -382,10 +470,10 @@ class User(BasePlayer):
 
         self.strength = min(self.strength, 30 + 10 * self.level)
 
-        self.data.level = self.level
-        self.data.strength = self.strength
-        self.data.sex = self.sex
-        self.data.weapon = self.__wpnheld
+        self.__data.level = self.level
+        self.__data.strength = self.strength
+        self.__data.sex = self.sex
+        self.__data.weapon = self.__wpnheld
 
     def __update_invisibility(self):
         if self.__invisibility_counter:
@@ -398,24 +486,23 @@ class User(BasePlayer):
             return
         enemy = self.Blood.get_enemy()
         if enemy.location != self.location_id:
-                self.Blood.stop_fight()
+            self.Blood.stop_fight()
         if not enemy.exists:
-                self.Blood.stop_fight()
+            self.Blood.stop_fight()
         if self.Blood.in_fight and self.interrupt:
-                self.Blood.in_fight = 0
-                hitplayer(enemy, self.__wpnheld)
+            self.Blood.in_fight = 0
+            hitplayer(enemy, self.__wpnheld)
 
     # Messages
-    # Unknown
+    # Tk
     def send_message(self, to_user, code, channel_id, message):
         Message(to_user, self, code, channel_id, message).send(self)
 
-    # Tk
     def broadcast(self, message):
         self.__force_read = True
         Broadcast(message).send(self)
 
-    # Unknown
+    # Weather
     def silly(self, message):
         Silly(self, message).send(self)
 
@@ -433,7 +520,7 @@ class User(BasePlayer):
 
         for message in self.__get_messages():
             yield from self.before_message(message)
-            yield from self.process_message(message)
+            yield from handle(self, message)
         self.save_position()
 
         yield from self.on_messages()
@@ -442,126 +529,6 @@ class User(BasePlayer):
             self.reset_position()
         if unique:
             self.__force_read = False
-
-    # Receive
-    # Parse
-    def process_message(self, message):
-        self.position = message.message_id
-        is_me = message.is_my(self.name.lower())
-
-        if message.code >= -3:
-            yield message.text
-            return
-        elif message.code == Message.FLEE and Player.fpbn(message.user_to) == self.Blood.fighting:
-            self.Blood.stop_fight()
-        elif message.code < -10099:
-            return new1rcv(
-                is_me,
-                message.channel_id,
-                message.user_to,
-                message.user_from,
-                message.code,
-                message.message,
-            )
-        elif message.code == Message.STOP_SNOOP:
-            if not is_me:
-                return
-            self.snoopd = None
-        elif message.code == Message.START_SNOOP:
-            if not is_me:
-                return
-            self.snoopd = Player.fpbns(message.user_from)
-        elif message.code == Message.CHANGE_STATS:
-            if not is_me:
-                return
-            self.level, self.score, self.strength = message.message
-            yield from self.update()
-        elif message.code == Message.TOO_EVIL:
-            yield "Something Very Evil Has Just Happened...\n"
-            raise LooseError("Bye Bye Cruel World....")
-        elif message.code == -750:
-            if not is_me:
-                return
-            if Player.fpbns(message.user_from) is not None:
-                self.loose()
-            World.save()
-            print("***HALT\n")
-            raise SystemExit(0)
-        elif message.code == -9900:
-            Player(message.message[0]).visible = message.message[1]
-        elif message.code == Message.GLOBAL:
-            if is_me:
-                return
-            if message.channel_id != self.location_id:
-                return
-            yield message.message
-        elif message.code == -10001:
-            if not is_me:
-                if message.channel_id == self.location_id:
-                    yield "\001cA massive lightning bolt strikes \001\001D{}\001\001c\n\001".format(message.user_to)
-                return
-            if self.is_wizard:
-                yield "\001p{}\001 cast a lightning bolt at you\n".format(message.user_from)
-                return
-            # You are in the ....
-            yield "A massive lightning bolt arcs down out of the sky to strike"
-            self.send_message(
-                self,
-                Message.WIZARD,
-                self.location_id,
-                "[ \001p{}\001 has just been zapped by \001p{}\001 and terminated ]\n".format(
-                    self.name,
-                    message.user_from,
-                ),
-            )
-            yield " you between\nthe eyes\n"
-            self.zapped = True
-            delpers(self)
-            self.send_message(
-                self,
-                Message.GLOBAL,
-                self.location_id,
-                "\001s{user}\001{user} has just died.\n\001".format(user=self.name),
-            )
-            yield "You have been utterly destroyed by {}\n".format(message.user_from)
-            raise LooseError("Bye Bye.... Slain By Lightning")
-        elif message.code == -10002:
-            if is_me:
-                return
-            if self.__location_id == message.channel_id or self.is_wizard:
-                yield "\001P{}\001\001d shouts '{}'\n\001".format(message.user_from, message.message)
-            else:
-                yield "\001dA voice shouts '{}'\n\001".format(message.message)
-        elif message.code == -10003:
-            if is_me:
-                return
-            if message.channel_id != self.location_id:
-                return
-            yield "\001P{}\001\001d says '{}'\n\001".format(message.user_from, message.message)
-        elif message.code == -10004:
-            if not is_me:
-                return
-            yield "\001P{}\001\001d tells you '{}'\n\001".format(message.user_from, message.message)
-        elif message.code == -10010:
-            if is_me:
-                raise LooseError("You have been kicked off")
-            yield "{} has been kicked off\n".format(message.user_to)
-        elif message.code == -10011:
-            yield message.message
-        elif message.code == -10020:
-            if not is_me:
-                return
-            yield "\001P{}\001\001d tells you '{}'\n\001".format(message.user_from, message.message)
-        elif message.code == -10021:
-            if message.channel_id != self.__location_id:
-                return
-            if not is_me:
-                return
-            self.__rdes = 1
-            self.__vdes = message.message[0]
-            bloodrcv(message.message, is_me)
-        elif message.code == Message.WEATHER:
-            self.__location.weather.receive(self, message)
 
     # For actions
     # Parse
@@ -609,7 +576,7 @@ class User(BasePlayer):
 
         self.send_message(
             self,
-            Message.GLOBAL,
+            message_codes.GLOBAL,
             self.location_id,
             "\001s{user.player.name}\001{user.name} has gone {direction} {message}.\n\001".format(
                 user=self,
@@ -619,7 +586,7 @@ class User(BasePlayer):
         )
         self.send_message(
             self,
-            Message.GLOBAL,
+            message_codes.GLOBAL,
             new_location,
             "\001s{user.name}\001{user.name}{message}.\n\001".format(
                 user=self,
@@ -643,17 +610,17 @@ class User(BasePlayer):
         World.load()
         self.send_message(
             self,
-            Message.GLOBAL,
+            message_codes.GLOBAL,
             self.location_id,
             "{} has left the game\n".format(self.name)
         )
         self.send_message(
             self,
-            Message.WIZARD,
+            message_codes.WIZARD,
             0,
             "[ Quitting Game : {} ]\n".format(self.name)
         )
-        dumpitems()
+        self.dumpitems()
         self.die()
         self.remove()
         World.save()
@@ -751,7 +718,7 @@ class User(BasePlayer):
         if player.tstflg(1):
             raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
         syslog("{} exorcised {}".format(self.name, player.name))
-        dumpstuff(player, player.location)
+        self.dumpstuff(player, player.location)
         self.send_message(
             player,
             -10010,

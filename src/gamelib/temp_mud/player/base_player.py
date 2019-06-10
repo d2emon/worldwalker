@@ -39,22 +39,42 @@ class BasePlayer:
     def visible(self):
         raise NotImplementedError()
 
+    @visible.setter
+    def visible(self, value):
+        raise NotImplementedError()
+
     @property
     def flags(self):
+        raise NotImplementedError()
+
+    @flags.setter
+    def flags(self, value):
         raise NotImplementedError()
 
     @property
     def level(self):
         raise NotImplementedError()
 
+    @level.setter
+    def level(self, value):
+        raise NotImplementedError()
+
     @property
     def weapon(self):
+        raise NotImplementedError()
+
+    @weapon.setter
+    def weapon(self, value):
         raise NotImplementedError()
 
     # 12
 
     @property
     def helping(self):
+        raise NotImplementedError()
+
+    @helping.setter
+    def helping(self, value):
         raise NotImplementedError()
 
     # Flags
@@ -106,7 +126,7 @@ class BasePlayer:
     def die(self):
         self.strength = -1
 
-    def dumpstuff(self, location):
+    def dumpstuff(self, *args):
         raise NotImplementedError()
 
     def fade(self):
@@ -123,6 +143,14 @@ class BasePlayer:
 
     def reset_position(self):
         self.position = -1
+
+    def start(self):
+        # self.strength = strength
+        # self.level = level
+        # self.visible = visible
+        self.weapon = None
+        # self.flags = sex
+        self.helping = None
 
     def timeout_death(self):
         self.dumpstuff(self.location_id)

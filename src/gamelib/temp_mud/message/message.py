@@ -13,35 +13,16 @@ Sectors 1-n  in pairs ie [128 words]
 0 = Text
 -1 = general request
 """
-from .errors import ServiceError, LooseError
-from .player import Player
-from .world import World
+from ..errors import ServiceError, LooseError
+from ..player.player import Player
+from ..world import World
+from . import message_codes
 
 
 MAX_MESSAGES = 199
 
 
 class Message:
-    BROADCAST = -1
-    STOP_SNOOP = -400
-    START_SNOOP = -401
-    CHANGE_STATS = -599
-    TOO_EVIL = -666
-    MSG_750 = -750
-    VISIBLE = -9900
-    GLOBAL = -10000
-    MSG_10001 = -10001
-    MSG_10002 = -10002
-    MSG_10003 = -10003
-    MSG_10004 = -10004
-    MSG_10010 = -10010
-    MSG_10011 = -10011
-    MSG_10020 = -10020
-    MSG_10021 = -10021
-    WEATHER = -10030
-    WIZARD = -10113
-    FLEE = - 20000
-
     def __init__(self, user_to, user_from, code, channel_id, message):
         self.message_id = None
         self.channel_id = channel_id
@@ -105,7 +86,7 @@ class Broadcast(Message):
         super().__init__(
             None,
             None,
-            self.BROADCAST,
+            message_codes.BROADCAST,
             None,
             message,
         )
@@ -116,7 +97,7 @@ class Silly(Message):
         super().__init__(
             user,
             user,
-            self.GLOBAL,
+            message_codes.GLOBAL,
             user.location.location_id,
             message.format(user),
         )

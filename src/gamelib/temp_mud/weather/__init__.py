@@ -2,7 +2,7 @@
 The next part of the universe...
 """
 from ..item import Item
-from ..message import Message
+from ..message import message_codes
 from ..weather_data import WEATHER_RAIN, WEATHER_START, WEATHER_TEXT
 
 """
@@ -72,13 +72,25 @@ class Weather(Item):
     def __init__(self):
         super().__init__(0)
 
+    @property
+    def state(self):
+        raise NotImplementedError()
+
+    @state.setter
+    def state(self, value):
+        raise NotImplementedError()
+
+    @classmethod
+    def fobna(cls, item_name):
+        raise NotImplementedError()
+
     # Weather
     def send_weather(self, user, new_weather):
         if self.state == new_weather:
             return
 
         self.state = new_weather
-        user.send_message(user, Message.WEATHER, None, new_weather)
+        user.send_message(user, message_codes.WEATHER, None, new_weather)
 
     def autochange(self, user):
         chance = randperc()
@@ -88,10 +100,3 @@ class Weather(Item):
             return self.send_weather(user, 2)
         else:
             return self.send_weather(user, 0)
-
-    @classmethod
-    def receive(cls, user, message):
-        if not user.location.outdoors():
-            return
-
-        yield user.location.climate.weather_start(message.message)

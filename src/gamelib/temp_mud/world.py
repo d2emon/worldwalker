@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class World:
     __reset_objects = []
     __reset_time = None
@@ -19,6 +22,10 @@ class World:
 
     @classmethod
     def save(cls):
+        raise NotImplementedError()
+
+    @classmethod
+    def resetplayers(cls):
         raise NotImplementedError()
 
     @classmethod
@@ -64,7 +71,5 @@ class World:
     @classmethod
     def reset(cls):
         cls.objects = cls.__reset_objects
-        cls.__reset_time = time()
-
-        resetplayers()
-
+        cls.__reset_time = datetime.now()
+        cls.resetplayers()
