@@ -81,10 +81,6 @@ def system(*args):
     raise NotImplementedError()
 
 
-def time(*args):
-    raise NotImplementedError()
-
-
 class Parse:
     __verbtxt = []
     __verbnum = []

@@ -12,7 +12,7 @@ class Direction(Action):
     def action(cls, command, parser):
         if cls.direction_id is None:
             raise CommandError("Thats not a valid direction\n")
-        return parser.user.go_in_direction(cls.direction_id)
+        return parser.user.go(cls.direction_id)
 
 
 class ExitsList(ActionList):
@@ -146,12 +146,6 @@ class Shout(Action):
     commands = "shout",
 
     @classmethod
-    def validate(cls, command, parser):
-        if parser.user.disease.dumb:
-            raise CommandError()
-        return True
-
-    @classmethod
     def action(cls, command, parser):
         return parser.user.shout(parser.full())
 
@@ -161,12 +155,6 @@ class Say(Action):
     commands = "say",
 
     @classmethod
-    def validate(cls, command, parser):
-        if parser.user.disease.dumb:
-            raise CommandError()
-        return True
-
-    @classmethod
     def action(cls, command, parser):
         return parser.user.say(parser.full())
 
@@ -174,12 +162,6 @@ class Say(Action):
 class Tell(Action):
     # 20
     commands = "tell",
-
-    @classmethod
-    def validate(cls, command, parser):
-        if parser.user.disease.dumb:
-            raise CommandError()
-        return True
 
     @classmethod
     def action(cls, command, parser):
