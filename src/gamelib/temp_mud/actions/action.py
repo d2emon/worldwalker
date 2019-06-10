@@ -77,18 +77,10 @@ case 20:
 case 21:
           saveme();
           break;
-       case 22:
-          scorecom();
-          break;
-       case 23:
-          exorcom();
-          break;
-       case 24:
-          givecom();
-          break;
-       case 25:
-          stealcom();
-          break;
+case 22:
+case 23:
+case 24:
+case 25:
        case 26:
           levcom();
           break;

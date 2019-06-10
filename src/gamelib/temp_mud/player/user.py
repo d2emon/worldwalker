@@ -31,10 +31,10 @@ class User(BasePlayer):
         self.__min_ms = "appears with an ear-splitting bang."
         self.__here_ms = "is here"
 
-        self.__tdes = 0
+        self.__is_summoned = 0  # tdes
+        self.__summoned_location = 0  # ades
         self.__vdes = 0
         self.__rdes = 0
-        self.__ades = 0
         self.zapped = False
 
         self.__last_interrupt = 0
@@ -279,13 +279,13 @@ class User(BasePlayer):
             yield from self.update()
             self.__to_update = False
 
-        if self.__tdes:
-            dosumm(self.__ades)
+        if self.__is_summoned:
+            self.__summoned(self.__summoned_location)
 
         self.__update_fight()
 
         if Item(18).iswornby(self) or randperc() < 10:
-            self.NewUaf.strength += 1
+            self.strength += 1
             yield from self.update()
 
         forchk()
@@ -298,8 +298,8 @@ class User(BasePlayer):
             if not self.Disease.dumb:
                 gamecom("hiccup")
 
+        self.__is_summoned = False
         self.__rdes = 0
-        self.__tdes = 0
         self.__vdes = 0
         self.interrupt = False
 
@@ -317,7 +317,7 @@ class User(BasePlayer):
 
         World.load()
         visible = 0 if not self.is_god else 10000
-        super().start(self.NewUaf.strength, self.NewUaf.level, visible, self.NewUaf.sex)
+        super().start(self.strength, self.level, visible, self.sex)
 
         self.send_message(
             self,
@@ -337,6 +337,22 @@ class User(BasePlayer):
         )
 
     # Parse
+    def __summoned(self, location):
+        self.send_message(
+            self,
+            Message.GLOBAL,
+            self.location_id,
+            "\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name),
+        )
+        dumpitems()
+        self.send_message(
+            self,
+            Message.GLOBAL,
+            location,
+            "\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name),
+        )
+        self.location_id = location
+
     def switch_brief(self):
         self.__brief = not self.__brief
 
@@ -349,27 +365,27 @@ class User(BasePlayer):
         if not self.__in_setup:
             return
 
-        level = self.NewUaf.level_of(self.NewUaf.score)
-        if level != self.NewUaf.level:
-            self.NewUaf.level = level
+        level = self.level_of(self.score)
+        if level != self.level:
+            self.level = level
             yield "You are now {} ".format(self.name)
             syslog("{} to level {}".format(self.name, level))
-            disle3(level, self.NewUaf.sex)
+            disle3(level, self.sex)
             self.send_message(
                 self,
                 Message.WIZARD,
-                self.location,
-                "\001p{}\001 is now level {}\n".format(self.name, self.NewUaf.level),
+                self.location_id,
+                "\001p{}\001 is now level {}\n".format(self.name, self.level),
             )
             if level == 10:
                 yield "\001f{}\001".format(GWIZ)
 
-        self.NewUaf.strength = min(self.NewUaf.strength, 30 + 10 * self.NewUaf.level)
+        self.strength = min(self.strength, 30 + 10 * self.level)
 
-        self.level = self.NewUaf.level
-        self.strength = self.NewUaf.strength
-        self.sex = self.NewUaf.sex
-        self.weapon = self.__wpnheld
+        self.data.level = self.level
+        self.data.strength = self.strength
+        self.data.sex = self.sex
+        self.data.weapon = self.__wpnheld
 
     def __update_invisibility(self):
         if self.__invisibility_counter:
@@ -458,7 +474,7 @@ class User(BasePlayer):
         elif message.code == Message.CHANGE_STATS:
             if not is_me:
                 return
-            self.NewUaf.level, self.NewUaf.score, self.NewUaf.strength = message.message
+            self.level, self.score, self.strength = message.message
             yield from self.update()
         elif message.code == Message.TOO_EVIL:
             yield "Something Very Evil Has Just Happened...\n"
@@ -667,19 +683,19 @@ class User(BasePlayer):
         elif item.item_id == 75:
             yield "very refreshing\n"
         elif item.item_id == 175:
-            if self.NewUaf.level < 3:
-                self.NewUaf.score += 40
+            if self.level < 3:
+                self.score += 40
                 yield "You feel a wave of energy sweeping through you.\n"
             else:
                 yield "Faintly magical by the taste.\n"
-                if self.NewUaf.strength < 40:
-                    self.NewUaf.strength += 2
+                if self.strength < 40:
+                    self.strength += 2
             yield from self.update()
         else:
             if item.is_edible:
                 item.destroy()
                 yield "Ok....\n"
-                self.NewUaf.strength += 12
+                self.strength += 12
                 yield from self.update()
             else:
                 yield "Thats sure not the latest in health food....\n"
@@ -715,3 +731,83 @@ class User(BasePlayer):
         if player is None:
             raise CommandError("No one with that name is playing\n")
         self.send_message(player, -10004, self.location_id, text)
+
+    def show_score(self):
+        if self.level == 1:
+            yield "Your strength is {}\n".format(self.strength)
+            return
+
+        yield "Your strength is {}(from {}),Your score is {}\nThis ranks you as %s ".format(
+            self.strength,
+            50 + 8 * self.level,
+            self.score,
+            self.name,
+        )
+        yield disle3(self.level, self.sex)
+
+    def exorcise(self, player):
+        if player is None:
+            raise CommandError("They aren't playing\n")
+        if player.tstflg(1):
+            raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
+        syslog("{} exorcised {}".format(self.name, player.name))
+        dumpstuff(player, player.location)
+        self.send_message(
+            player,
+            -10010,
+            self.location_id,
+            ""
+        )
+        player.remove()
+
+    def give(self, item, player):
+        if item is None:
+            raise CommandError("You aren't carrying that\n")
+        if player is None:
+            raise CommandError("I don't know who it is\n")
+
+        if not self.is_wizard and player.location_id != self.location_id:
+            raise CommandError("They are not here\n")
+        if not item.iscarrby(self):
+            raise CommandError("You are not carrying that\n")
+        if player.overweight:
+            raise CommandError("They can't carry that\n")
+        if not self.is_wizard and item.item_id == 32:
+            raise CommandError("It doesn't wish to be given away.....\n")
+        item.set_location(player, 1)
+        self.send_message(
+            player,
+            -10011,
+            self.location_id,
+            "\001p{}\001 gives you the {}\n".format(self.name, item.name),
+        )
+
+    def steal(self, item, player):
+        if item is None:
+            raise CommandError("They are not carrying that\n")
+        if player is None:
+            raise CommandError("Who is that ?\n")
+
+        if not self.is_wizard and player.location_id != self.location_id:
+            raise CommandError("But they aren't here\n")
+        if item.carry_flag == 2:
+            raise CommandError("They are wearing that\n")
+        if player.weapon == item:
+            raise CommandError("They have that firmly to hand .. for KILLING people with\n")
+        if self.overweight:
+            raise CommandError("You can't carry any more\n")
+
+        roll = randperc()
+        chance = (10 + self.level - player.level) * 5
+        if roll >= chance:
+            raise CommandError("Your attempt fails\n")
+        if roll & 1:
+            self.send_message(
+                player,
+                -10011,
+                self.location_id,
+                "\001p{}\001 steals the {} from you !\n".format(self.name, item.name),
+            )
+            if player.is_mobile:
+                woundmn(player, 0)
+        item.setoloc(self, 1)

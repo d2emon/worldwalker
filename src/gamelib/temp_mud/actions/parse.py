@@ -169,6 +169,66 @@ class Tell(Action):
         return parser.user.tell(player, parser.full())
 
 
+class Score(Action):
+    # 22
+    commands = "score",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.show_score()
+
+
+class Exorcise(Action):
+    # 23
+    commands = "exorcise",
+    wizard_only = "No chance....\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        player = Player.fpbn(parser.require_next("Exorcise who ?\n"))
+        parser.user.exorcise(player)
+
+
+class Give(Action):
+    # 24
+    commands = "give",
+
+    @classmethod
+    def action(cls, command, parser):
+        word = parser.require_next("Give what to who ?\n")
+        player = Player.fpbn(word)
+        if player is None:
+            item = Item.fobna(word)
+
+            player_name = parser.require_next("But to who ?\n")
+            if player_name == "to":
+                player_name = parser.require_next("But to who ?\n")
+
+            player = Player.fpbn(player_name)
+            if player is None:
+                raise CommandError("I don't know who {} is\n".format(player_name))
+        else:
+            item = Item.fobna(parser.require_next("Give them what ?\n"))
+        return parser.user.give(item, player)
+
+
+class Steal(Action):
+    # 25
+    commands = "steal","pinch",
+
+    @classmethod
+    def action(cls, command, parser):
+        item_name = parser.require_next("Steal what from who ?\n")
+
+        player_name = parser.require_next("From who ?\n")
+        if player_name == "from":
+            player_name = parser.require_next("From who ?\n")
+        player = Player.fpbn(player_name)
+
+        item = Item.fobncb(item_name, player)
+        return parser.user.steal(item, player)
+
+
 class Grope(Action):
     # 139
     commands = "grope",
