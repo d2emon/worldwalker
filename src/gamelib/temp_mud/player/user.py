@@ -325,45 +325,6 @@ class User(BasePlayer, Actor):
         raise LooseError("Bye Bye.... Slain By Lightning")
 
     # Tk
-    def look(self, full=False):
-        World.save()
-
-        if self.Disease.blind:
-            yield "You are blind... you can't see a thing!\n"
-
-        self.__location.reload()
-
-        if self.is_wizard:
-            yield self.__location.get_name(self)
-
-        if self.in_dark:
-            yield "It is dark\n"
-            return
-
-        if self.__location.death_room:
-            if self.Disease.blind:
-                self.Disease.blind.cure()
-            if self.is_wizard:
-                yield "<DEATH ROOM>\n"
-            else:
-                raise LooseError("bye bye.....\n")
-
-        yield self.__location.short
-
-        brief = self.__brief and not full and not self.__location.no_brief
-        if not self.Disease.blind and not brief:
-            yield "\n".join(self.__location.description)
-
-        World.load()
-
-        if not self.Disease.blind:
-            self.lisobs()
-            if self.show_players:
-                self.lispeople()
-        yield "\n"
-
-        self.on_look()
-
     def loose(self):
         # sig_aloff()
         # No interruptions while you are busy dying
@@ -729,16 +690,6 @@ class User(BasePlayer, Actor):
             0,
             "\001s{name}\001{name} has returned to AberMud\n\001".format(name=user.name),
         )
-
-    def look_in(self, item):
-        if item is None:
-            raise CommandError("What ?\n")
-        if not item.tstbit(14):
-            raise CommandError("That isn't a container\n")
-        if item.tstbit(2) and item.state != 0:
-            raise CommandError("It's closed!\n")
-        yield "The {} contains:\n".format(item.name)
-        item.aobjsat(3)
 
     def dig(self):
         item = Item(186)

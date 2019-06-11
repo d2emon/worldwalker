@@ -88,6 +88,12 @@ class Location:
         return fopen(self.__filename, mode)
 
     # Unknown
+    def lisobs(self, *args):
+        raise NotImplementedError()
+
+    def lispeople(self, *args):
+        raise NotImplementedError()
+
     def load_exits(self, file):
         self.exits = [file.scanf() for _ in range(6)]
 

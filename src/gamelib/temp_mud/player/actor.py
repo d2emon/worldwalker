@@ -1,5 +1,5 @@
 from ..direction import DIRECTIONS
-from ..errors import CommandError, CrapupError
+from ..errors import CommandError, CrapupError, LooseError
 from ..item import Item, Door
 from ..location import Location
 from ..message import message_codes
@@ -11,13 +11,21 @@ def is_door(location_id):
     return 999 < location_id < 2000
 
 
-class Actor:
+class BaseActor:
     @property
     def Blood(self):
         raise NotImplementedError()
 
     @property
     def Disease(self):
+        raise NotImplementedError()
+
+    @property
+    def in_dark(self):
+        raise NotImplementedError()
+
+    @property
+    def is_wizard(self):
         raise NotImplementedError()
 
     @property
@@ -58,6 +66,9 @@ class Actor:
     def dumpitems(self, *args):
         raise NotImplementedError()
 
+    def on_look(self, *args):
+        raise NotImplementedError()
+
     def read_messages(self, *args):
         raise NotImplementedError()
 
@@ -82,6 +93,10 @@ class Actor:
     @property
     def location(self):
         return Location(self.location_id)
+
+    # Messages
+    def broadcast(self, *args):
+        raise NotImplementedError()
 
     def send_global(self, message):
         self.send_message(
@@ -110,12 +125,12 @@ class Actor:
             raise CommandError("You can't just stroll out of a fight!\n"
                                "If you wish to leave a fight, you must FLEE in a direction\n")
         location_id = self.location.exits[direction_id]
-        map(lambda mobile: mobile.on_actor_leave(self, direction_id), MOBILES)
+        yield from map(lambda mobile: mobile.on_actor_leave(self, direction_id), MOBILES)
         self.Disease.crippled.check()
         if is_door(location_id):
             location_id = Door(location_id).go_through(self)
-        Location(location_id).on_enter(self)
-        map(lambda mobile: mobile.on_actor_enter(self, direction_id, location_id), MOBILES)
+        yield from Location(location_id).on_enter(self)
+        yield from map(lambda mobile: mobile.on_actor_enter(self, direction_id, location_id), MOBILES)
         if location_id >= 0:
             raise CommandError("You can't go that way\n")
 
@@ -167,8 +182,56 @@ class Actor:
         raise NotImplementedError()
 
     # 11 - 20
-    def look(self):
-        raise NotImplementedError()
+    def look(self, long=False):
+        # Tk
+        World.save()
+
+        self.location.reload()
+
+        if self.is_wizard:
+            yield self.location.get_name(self)
+
+        if self.location.death_room:
+            if self.Disease.blind:
+                self.Disease.blind.cure()
+            if self.is_wizard:
+                yield "<DEATH ROOM>\n"
+            else:
+                raise LooseError("bye bye.....\n")
+
+        if self.Disease.blind:
+            yield "You are blind... you can't see a thing!\n"
+            return
+
+        if self.in_dark:
+            yield "It is dark\n"
+            return
+
+        yield self.location.short
+
+        if long or not self.brief or self.location.no_brief:
+            yield "\n".join(self.location.description)
+
+        World.load()
+
+        if not self.Disease.blind:
+            self.location.lisobs()
+            if self.show_players:
+                self.location.lispeople()
+        yield "\n"
+
+        self.on_look()
+
+    def look_in(self, item):
+        # Parse
+        if item is None:
+            raise CommandError("What ?\n")
+        if not item.is_container:
+            raise CommandError("That isn't a container\n")
+        if item.is_closed:
+            raise CommandError("It's closed!\n")
+        yield "The {} contains:\n".format(item.name)
+        yield from item.aobjsat(3)
 
     def inventory(self):
         raise NotImplementedError()
@@ -177,7 +240,7 @@ class Actor:
         raise NotImplementedError()
 
     def reset_world(self):
-        raise NotImplementedError()
+        raise NotImplementedError("What ?\n")
 
     def zap(self):
         raise NotImplementedError()
@@ -575,3 +638,13 @@ class Actor:
 
     def empty(self):
         raise NotImplementedError()
+
+
+class Actor(BaseActor):
+    pass
+
+
+class Wizard(Actor):
+    def reset_world(self):
+        self.broadcast("Reset in progress....\nReset Completed....\n")
+        return World.reset()

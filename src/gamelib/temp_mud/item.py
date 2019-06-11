@@ -89,6 +89,10 @@ class Item:
         raise NotImplementedError()
 
     @property
+    def is_closable(self):
+        return self.test_bit(2)
+
+    @property
     def is_edible(self):
         return self.test_bit(6)
 
@@ -99,6 +103,14 @@ class Item:
         if self.test_bit(13):
             return True
         return False
+
+    @property
+    def is_container(self):
+        return self.test_bit(14)
+
+    @property
+    def is_closed(self):
+        return self.is_closable and self.state != 0
 
     @property
     def owner(self):
@@ -141,6 +153,10 @@ class Door(Item):
         super().__init__(door_id - 1000)
 
     @property
+    def is_closed(self):
+        return self.state != 0
+
+    @property
     def other_id(self):
         return self.item_id ^ 1  # other door side
 
@@ -152,12 +168,13 @@ class Door(Item):
     def invisible(self):
         return self.name != "door" or not self.description
 
-    def go_through(self, player):
-        new_location = self.other.location if self.state == 0 else 0
-        if new_location >= 0:
-            if player.in_dark or self.invisible:
-                # Invis doors
-                return 0
-            else:
-                raise CommandError("The door is not open\n")
-        return new_location
+    def go_through(self, actor):
+        new_location = self.other.location if not self.is_closed else 0
+        if new_location < 0:
+            return new_location
+
+        if actor.in_dark or self.invisible:
+            # Invis doors
+            return 0
+        else:
+            raise CommandError("The door is not open\n")

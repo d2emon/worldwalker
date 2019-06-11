@@ -84,11 +84,7 @@ class QuitWorld(Action):
 
     @classmethod
     def action(cls, command, parser):
-        yield from parser.user.quit_game()
-
-        parser.mode = parser.MODE_SPECIAL
-        saveme()
-        raise CrapupError("Goodbye")
+        return parser.user.quit_game()
 
 
 class Look(Action):
@@ -100,7 +96,7 @@ class Look(Action):
         word = next(parser)
         if word is None:
             parser.user.show_players = True
-            return parser.user.look(True)
+            return parser.user.look(full=True)
         elif word == "at":
             return examcom()
         elif word != "in" and word != "into":
@@ -116,8 +112,7 @@ class Reset(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.broadcast("Reset in progress....\nReset Completed....\n")
-        return World.reset()
+        return parser.user.reset_world()
 
 
 class Lightning(Action):
