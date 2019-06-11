@@ -1,25 +1,110 @@
+from ..errors import CommandError
+from ..item import Item, Door
+from ..location import Location
+from ..message import message_codes
+from .mobile import MOBILES
+
+
+DIRECTIONS = {
+    0: "north",
+    1: "east",
+    2: "south",
+    3: "west",
+    4: "up",
+    5: "down",
+}
+
+
+def is_door(location_id):
+    return 999 < location_id < 2000
+
+
 class Actor:
+    @property
+    def Blood(self):
+        raise NotImplementedError()
+
+    @property
+    def Disease(self):
+        raise NotImplementedError()
+
+    @property
+    def location_id(self):
+        raise NotImplementedError()
+
+    @location_id.setter
+    def location_id(self, value):
+        raise NotImplementedError()
+
+    @property
+    def in_ms(self):
+        raise NotImplementedError()
+
+    @property
+    def out_ms(self):
+        raise NotImplementedError()
+
+    def send_message(self, *args):
+        raise NotImplementedError()
+
+    @property
+    def has_shield(self):
+        shields = Item(113), Item(114), Item(89)
+        return any(item.iswornby(self) for item in shields)
+
+    @property
+    def in_fight(self):
+        return self.Blood.in_fight > 0
+
+    @property
+    def location(self):
+        return Location(self.location_id)
+
+    def send_global(self, message):
+        self.send_message(
+            self,
+            message_codes.GLOBAL,
+            self.location_id,
+            message,
+        )
+
     # 1 - 10
-    def go(self):
-        raise NotImplementedError()
+    def go(self, direction_id):
+        def get_location_id(new_location_id):
+            return new_location_id
 
-    def go_north(self):
-        raise NotImplementedError()
+        # 1 - 7
+        direction = DIRECTIONS.get(direction_id)
+        if direction is None:
+            raise CommandError("Thats not a valid direction\n")
+        if self.in_fight > 0:
+            raise CommandError("You can't just stroll out of a fight!\n"
+                               "If you wish to leave a fight, you must FLEE in a direction\n")
+        location_id = self.location.exits[direction_id]
+        map(lambda mobile: mobile.on_actor_leave(self, direction_id), MOBILES)
+        self.Disease.crippled.check()
+        if is_door(location_id):
+            location_id = Door(location_id).go_through(self)
+        Location(location_id).on_enter(self)
+        map(lambda mobile: mobile.on_actor_enter(self, direction_id, location_id), MOBILES)
+        if location_id >= 0:
+            raise CommandError("You can't go that way\n")
 
-    def go_east(self):
-        raise NotImplementedError()
-
-    def go_south(self):
-        raise NotImplementedError()
-
-    def go_west(self):
-        raise NotImplementedError()
-
-    def go_up(self):
-        raise NotImplementedError()
-
-    def go_down(self):
-        raise NotImplementedError()
+        self.send_global(
+            "\001s{actor.data.name}\001{actor.name} has gone {direction} {message}.\n\001".format(
+                actor=self,
+                direction=direction,
+                message=self.out_ms
+            ),
+        )
+        self.location_id = location_id
+        self.send_global(
+            "\001s{actor.name}\001{actor.name}{message}.\n\001".format(
+                actor=self,
+                # direction=direction,
+                message=self.in_ms
+            ),
+        )
 
     def quit_game(self):
         raise NotImplementedError()

@@ -149,7 +149,12 @@ class Door(Item):
     def invisible(self):
         return self.name != "door" or not self.description
 
-    def go_through(self):
-        if self.state == 0:
-            return self.other.location
-        return 0
+    def go_through(self, player):
+        new_location = self.other.location if self.state == 0 else 0
+        if new_location >= 0:
+            if player.in_dark or self.invisible:
+                # Invis doors
+                return 0
+            else:
+                raise CommandError("The door is not open\n")
+        return new_location

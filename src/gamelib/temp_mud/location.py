@@ -123,3 +123,11 @@ class Location:
             data.disconnect()
         except FileNotFoundError:
             self.short = "\nYou are on channel {}\n".format(self.location_id)
+
+    # Events
+    def on_enter(self, actor):
+        if self.location_id == -139:
+            if actor.has_shield:
+                yield "The shield protects you from the worst of the lava stream's heat\n"
+            else:
+                raise CommandError("The intense heat drives you back\n")
