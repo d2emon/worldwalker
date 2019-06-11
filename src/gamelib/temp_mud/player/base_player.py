@@ -132,6 +132,12 @@ class BasePlayer:
     def fade(self):
         self.position = -2
 
+    def get_lightning(self):
+        if not self.is_mobile:
+            return
+        self.woundmn(10000)
+        # DIE
+
     def is_helping(self, player):
         return self.location_id == player.location_id and self.helping == player.player_id
 
@@ -155,3 +161,6 @@ class BasePlayer:
     def timeout_death(self):
         self.dumpstuff(self.location_id)
         self.remove()
+
+    def woundmn(self, *args):
+        raise NotImplementedError()

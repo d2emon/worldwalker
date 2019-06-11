@@ -3,6 +3,7 @@ from ..errors import CommandError, CrapupError, LooseError
 from ..item import Item, Door
 from ..location import Location
 from ..message import message_codes
+from ..syslog import syslog
 from ..world import World
 from .mobile import MOBILES
 
@@ -11,7 +12,7 @@ def is_door(location_id):
     return 999 < location_id < 2000
 
 
-class BaseActor:
+class Actor:
     @property
     def Blood(self):
         raise NotImplementedError()
@@ -242,8 +243,8 @@ class BaseActor:
     def reset_world(self):
         raise NotImplementedError("What ?\n")
 
-    def zap(self):
-        raise NotImplementedError()
+    def lightning(self, target):
+        raise NotImplementedError("Your spell fails.....\n")
 
     def eat(self):
         raise NotImplementedError()
@@ -640,11 +641,15 @@ class BaseActor:
         raise NotImplementedError()
 
 
-class Actor(BaseActor):
-    pass
-
-
 class Wizard(Actor):
     def reset_world(self):
         self.broadcast("Reset in progress....\nReset Completed....\n")
         return World.reset()
+
+    def lightning(self, target):
+        if target is None:
+            raise CommandError("There is no one on with that name\n")
+        self.send_message(target, -10001, target.location, "")
+        syslog("{} zapped {}".format(self.name, target.name))
+        target.get_lightning()
+        self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
