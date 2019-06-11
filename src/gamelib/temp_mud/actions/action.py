@@ -330,13 +330,8 @@ case 184:
 case 185:
 case 186:
 case 187:
-       case 188:
-          digcom();
-          break;
-       case 189:
-          emptycom();
-          break;
-
+case 188:
+case 189:
 default:
 """
 
