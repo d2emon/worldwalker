@@ -290,26 +290,18 @@ case 161:
        case 162:
           snoopcom();
           break;
-       case 163:
-          shellcom();
-          break;
-       case 164:
-          rawcom();
-          break;
+case 163:
+case 164:
 case 165:
        case 166:
           cuddlecom();
           break;
 case 167:
-       case 168:
-          rollcom();
-          break;
+case 168:
 case 169:
 case 170:
 
 case 171:
-          debugcom();
-          break;
        case 172:
           jumpcom();
           break;
@@ -318,12 +310,8 @@ case 171:
           break;
 case 173:
 case 174:
-       case 175:
-          bugcom();
-          break;
-       case 176:
-          typocom();
-          break;
+case 175:
+case 176:
        case 177:
           pncom();
           break;

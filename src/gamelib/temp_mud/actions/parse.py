@@ -1,6 +1,7 @@
 from ..errors import CommandError, CrapupError, ServiceError
 from ..item import Item
 from ..player.player import Player
+from ..syslog import syslog
 from ..world import World
 from .action import Action, ActionList
 
@@ -359,6 +360,47 @@ class Converse(Action):
         yield "Type '**' on a line of its own to exit converse mode\n"
 
 
+class Shell(Action):
+    # 163
+    commands = "shell",
+    god_only = "There is nothing here you can shell\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.conversation_mode = parser.CONVERSATION_TSS
+        yield "Type ** on its own on a new line to exit shell\n"
+
+
+class Raw(Action):
+    # 164
+    commands = "raw",
+    god_only = "I don't know that verb\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        raw = parser.full()
+        if parser.user.level == 10033 and raw[0] == "!":
+            parser.user.broadcast(raw[1:])
+        else:
+            parser.user.broadcast("** SYSTEM : {}\n\007\007".format(raw))
+
+
+class Roll(Action):
+    # 168
+    commands = "roll",
+
+    @classmethod
+    def action(cls, command, parser):
+        # item = get_item(parser)
+        item = parser.ohereandget()
+        if item is None:
+            return
+        if item.item_id in [122, 123]:
+            parser.gamecom("push pillar")
+        else:
+            raise CommandError("You can't roll that\n")
+
+
 class Credits(Action):
     # 169
     commands = "credits",
@@ -375,6 +417,16 @@ class Brief(Action):
     @classmethod
     def action(cls, command, parser):
         parser.user.switch_brief()
+
+
+class Debug(Action):
+    # 171
+    commands = "debug",
+    god_only = "I don't know that verb\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        return debug2()
 
 
 class MapWorld(Action):
@@ -395,6 +447,24 @@ class Flee(Action):
     def action(cls, command, parser):
         yield from parser.user.flee()
         return Go.execute(command, parser)
+
+
+class Bug(Action):
+    # 175
+    commands = "bug",
+
+    @classmethod
+    def action(cls, command, parser):
+        syslog("Bug by {} : {}".format(parser.user.name, parser.full()))
+
+
+class Typo(Action):
+    # 176
+    commands = "typo",
+
+    @classmethod
+    def action(cls, command, parser):
+        syslog("Typo by {} in {} : {}".format(parser.user.name, parser.user.location_id, parser.full()))
 
 
 class DebugMode(Action):

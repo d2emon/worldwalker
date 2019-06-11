@@ -14,45 +14,6 @@ from .commands import COMMANDS
 from ..actions.action import Action
 
 
-def shellcom(parser):
-    if NewUaf.my_lev < 10000:
-        raise CommandError("There is nothing here you can shell\n")
-    parser.conversation_mode = parser,CONVERSATION_TSS
-    yield "Type ** on its own on a new line to exit shell\n"
-
-
-def rawcom(parser):
-    if NewUaf.my_lev < 10000:
-        raise CommandError("I don't know that verb\n")
-    x = parser.getreinput()
-    if NewUaf.my_lev == 10033 and x[0] == "!":
-        user.broadcast(x[1:])
-    else:
-        user.broadcast("** SYSTEM : {}\n\007\007".format(x))
-
-
-def rollcom(parser):
-    item = get_item(parser)
-    if item.item_id in [122, 123]:
-        parser.gamecom("push pillar")
-    else:
-        raise CommandError("You can't roll that\n")
-
-
-def debugcom(parser):
-    if NewUaf.my_lev < 10000:
-        raise CommandError("I don't know that verb\n")
-    debug2()
-
-
-def bugcom(parser):
-    syslog("Bug by {} : {}".format(user.name, parser.getreinput()))
-
-
-def typocom(parser):
-    syslog("Typo by {} in {} : {}".format(user.name, user.location_id, parser.getreinput()))
-
-
 def look_cmd(parser):
     word = parser.brkword()
     if word is None:
@@ -150,86 +111,6 @@ class Pronouns(Action):
 
 
 """
- shellcom()
-    {
-    extern long my_lev;
-    if(my_lev<10000)
-       {
-       bprintf("There is nothing here you can shell\n");
-       return;
-       }
-    parser.converstion_mode = parser.CONVERSATION_TSS
-    bprintf("Type ** on its own on a new line to exit shell\n");
-    }
- 
- rawcom()
-    {
-    extern long my_lev;
-    char x[100],y[100];
-    if(my_lev<10000)
-       {
-       bprintf("I don't know that verb\n");
-       return;
-       }
-    getreinput(x);
-    if((my_lev==10033)&&(x[0]=='!'))
-       {
-       user.broadcast(x+1)
-       return;
-       }
-    else
-       {
-       sprintf(y,"%s%s%s","** SYSTEM : ",x,"\n\007\007");
-       user.broadcast(y);
-       }
-    }
- 
- rollcom()
-    {
-    auto long  a,b;
-    b=ohereandget(&a);
-    if(b== -1) return;
-    switch(a)
-       {
-       case 122:;
-       case 123:
-          gamecom("push pillar");
-          break;
-       default:
-          bprintf("You can't roll that\n");
-       }
-    }
- 
-long brmode=0;
- 
- debugcom()
-    {
-    extern long my_lev;
-    if(my_lev<10000)
-       {
-       bprintf("I don't know that verb\n");
-       return;
-       }
-    debug2();
-    }
-
-bugcom()
-{
-	char x[120];
-	extern char globme[];
-	getreinput(x);
-	syslog("Bug by %s : %s",globme,x);
-}
-
-typocom()
-{
-	char x[120],y[32];
-	extern char globme[];
-	sprintf(y,"%s in %d",globme,user.location_id);
-	getreinput(x);
-	syslog("Typo by %s : %s",y,x);
-}
-
 look_cmd()
 {
 	int a;
