@@ -814,3 +814,13 @@ class User(BasePlayer):
             0,
             "\001s{name}\001{name} has returned to AberMud\n\001".format(name=user.name),
         )
+
+    def look_in(self, item):
+        if item is None:
+            raise CommandError("What ?\n")
+        if not item.tstbit(14):
+            raise CommandError("That isn't a container\n")
+        if item.tstbit(2) and item.state != 0:
+            raise CommandError("It's closed!\n")
+        yield "The {} contains:\n".format(item.name)
+        item.aobjsat(3)

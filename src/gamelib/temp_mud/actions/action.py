@@ -58,8 +58,6 @@ case 8:
           break;
 
 case 11:
-          look_cmd();
-          break;
        case 12:
           inventory();
           break;
@@ -327,18 +325,10 @@ case 181:
        case 182:
           frobnicate();
           break;
-       case 183:
-          setincom();
-          break;
-       case 184:
-          setoutcom();
-          break;
-       case 185:
-          setmincom();
-          break;
-       case 186:
-          setmoutcom();
-          break;
+case 183:
+case 184:
+case 185:
+case 186:
 case 187:
        case 188:
           digcom();

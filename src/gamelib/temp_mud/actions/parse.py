@@ -91,6 +91,23 @@ class QuitWorld(Action):
         raise CrapupError("Goodbye")
 
 
+class Look(Action):
+    # 11
+    commands = "look",
+
+    @classmethod
+    def action(cls, command, parser):
+        word = next(parser)
+        if word is None:
+            parser.user.show_players = True
+            return parser.user.look(True)
+        elif word == "at":
+            return examcom()
+        elif word != "in" and word != "into":
+            item = Item.fobna(parser.require_next("In what ?\n"))
+            return parser.user.look_in(item)
+
+
 class Reset(Action):
     # 14
     full_match = True
@@ -474,4 +491,47 @@ class DebugMode(Action):
     @classmethod
     def action(cls, command, parser):
         parser.switch_debug()
+
+
+class SetMessage(Action):
+    @classmethod
+    def validate(cls, command, parser):
+        if not parser.user.is_god and parser.user.name != "Lorry":
+            raise CommandError("No way !\n")
+
+
+class SetIn(SetMessage):
+    # 183
+    commands = "setin",
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.in_ms = parser.full()
+
+
+class SetOut(SetMessage):
+    # 184
+    commands = "setout",
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.out_ms = parser.full()
+
+
+class SetMin(SetMessage):
+    # 185
+    commands = "setmin",
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.min_ms = parser.full()
+
+
+class SetMout(SetMessage):
+    # 186
+    commands = "setmout",
+
+    @classmethod
+    def action(cls, command, parser):
+        parser.user.mout_ms = parser.full()
 
