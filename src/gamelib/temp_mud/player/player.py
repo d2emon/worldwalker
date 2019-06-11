@@ -125,6 +125,10 @@ class Player(BasePlayer):
     def fpbn(cls, player_name, not_found_error=None):
         raise NotImplementedError()
 
+    @classmethod
+    def fpbns(cls, *args):
+        raise NotImplementedError()
+
     # Support
     # Flags
     # 0 sex
@@ -141,7 +145,7 @@ class Player(BasePlayer):
         self.__data[9][flag_id] = False
 
     def __test_flag(self, flag_id):
-        if flag_id == self.FLAG_CAN_CHANGE_FLAGS and self.name == "Debugger":
+        if flag_id == self.__FLAG_CAN_CHANGE_FLAGS and self.name == "Debugger":
             return True
         return self.flags[flag_id]
 

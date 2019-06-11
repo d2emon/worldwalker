@@ -110,6 +110,9 @@ class Item:
     def fobna(cls, item_name):
         raise NotImplementedError()
 
+    def iswornby(self, *args):
+        raise NotImplementedError()
+
     # Support
     def create(self):
         self.clear_bit(0)

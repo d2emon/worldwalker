@@ -1,18 +1,10 @@
-from ..errors import CommandError
+from ..direction import DIRECTIONS
+from ..errors import CommandError, CrapupError
 from ..item import Item, Door
 from ..location import Location
 from ..message import message_codes
+from ..world import World
 from .mobile import MOBILES
-
-
-DIRECTIONS = {
-    0: "north",
-    1: "east",
-    2: "south",
-    3: "west",
-    4: "up",
-    5: "down",
-}
 
 
 def is_door(location_id):
@@ -34,6 +26,22 @@ class Actor:
 
     @location_id.setter
     def location_id(self, value):
+        # if value == 0:
+        #     self.__location_id = 0
+        raise NotImplementedError()
+
+    @property
+    def name(self):
+        raise NotImplementedError()
+
+    @property
+    def show_players(self):
+        raise NotImplementedError()
+
+    @show_players.setter
+    def show_players(self, value):
+        # if not value:
+        #     parser.mode = parser.MODE_SPECIAL
         raise NotImplementedError()
 
     @property
@@ -44,7 +52,22 @@ class Actor:
     def out_ms(self):
         raise NotImplementedError()
 
+    def die(self, *args):
+        raise NotImplementedError()
+
+    def dumpitems(self, *args):
+        raise NotImplementedError()
+
+    def read_messages(self, *args):
+        raise NotImplementedError()
+
+    def remove(self, *args):
+        raise NotImplementedError()
+
     def send_message(self, *args):
+        raise NotImplementedError()
+
+    def save_player(self, *args):
         raise NotImplementedError()
 
     @property
@@ -68,11 +91,17 @@ class Actor:
             message,
         )
 
+    def send_wizard(self, message):
+        self.send_message(
+            self,
+            message_codes.WIZARD,
+            0,
+            message,
+        )
+
     # 1 - 10
     def go(self, direction_id):
-        def get_location_id(new_location_id):
-            return new_location_id
-
+        # Parse
         # 1 - 7
         direction = DIRECTIONS.get(direction_id)
         if direction is None:
@@ -107,7 +136,29 @@ class Actor:
         )
 
     def quit_game(self):
-        raise NotImplementedError()
+        # Parse
+        if self.Disease.is_force:
+            raise CommandError("You can't be forced to do that\n")
+
+        yield from self.read_messages()
+
+        if self.in_fight:
+            raise CommandError("Not in the middle of a fight!\n")
+
+        yield "Ok"
+
+        World.load()
+        self.send_global("{} has left the game\n".format(self.name))
+        self.send_wizard("[ Quitting Game : {} ]\n".format(self.name))
+        self.dumpitems()
+        self.die()
+        self.remove()
+        World.save()
+
+        self.location_id = 0
+        self.show_players = False
+        self.save_player()
+        raise CrapupError("Goodbye")
 
     def take(self):
         raise NotImplementedError()
@@ -252,7 +303,7 @@ class Actor:
         raise NotImplementedError()
 
     # 101 - 110
-    def remove(self):
+    def remove_clothes(self):
         raise NotImplementedError()
 
     def put(self):

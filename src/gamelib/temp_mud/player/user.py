@@ -1,5 +1,4 @@
 from datetime import datetime
-from ..direction import DIRECTIONS
 from ..errors import CrapupError, LooseError, CommandError, ServiceError
 from ..item import Item, Door
 from ..location import Location
@@ -8,11 +7,19 @@ from ..message.message import Message, Broadcast, Silly
 from ..message.process import handle
 from ..syslog import syslog
 from ..world import World
+from .actor import Actor
 from .base_player import BasePlayer
 from .player import Player
 
 
-class User(BasePlayer):
+GWIZ = None
+
+
+def randperc():
+    raise NotImplementedError()
+
+
+class User(BasePlayer, Actor):
     def __init__(self, name):
         self.player_id = 0
         self.__name = name
@@ -50,6 +57,10 @@ class User(BasePlayer):
 
         # Unknown
         self.has_farted = False
+        self.__interrupt = None
+        self.__wpnheld = None
+
+        self.NewUaf = None
 
         # makebfr()
         self.reset_position()
@@ -248,7 +259,7 @@ class User(BasePlayer):
 
     def check_fight(self):
         self.Blood.check_fight()
-        if self.Blood.fighting and  self.Blood.get_enemy().location != self.location_id:
+        if self.Blood.fighting and self.Blood.get_enemy().location != self.location_id:
             self.Blood.stop_fight()
 
         if self.Blood.in_fight:
@@ -379,8 +390,8 @@ class User(BasePlayer):
     def on_messages(self):
         time = datetime.now()
         if (time - self.__last_interrupt).total_seconds() > 2:
-            self.interrupt = True
-        if self.interrupt:
+            self.__interrupt = True
+        if self.__interrupt:
             self.__last_interrupt = time
 
         self.__update_invisibility()
@@ -403,12 +414,12 @@ class User(BasePlayer):
         if self.__drunk_counter > 0:
             self.__drunk_counter -= 1
             if not self.Disease.dumb:
-                gamecom("hiccup")
+                self.hiccup()
 
         self.__is_summoned = False
         self.__rdes = 0
         self.__vdes = 0
-        self.interrupt = False
+        self.__interrupt = False
 
     def save_position(self):
         if abs(self.position - self.__position_saved) < 10:
@@ -508,9 +519,9 @@ class User(BasePlayer):
             self.Blood.stop_fight()
         if not enemy.exists:
             self.Blood.stop_fight()
-        if self.Blood.in_fight and self.interrupt:
+        if self.in_fight and self.__interrupt:
             self.Blood.in_fight = 0
-            hitplayer(enemy, self.__wpnheld)
+            enemy.hitplayer(self.__wpnheld)
 
     # Messages
     # Tk
@@ -551,102 +562,6 @@ class User(BasePlayer):
 
     # For actions
     # Parse
-    def go(self, direction_id):
-        if self.Blood.in_fight > 0:
-            raise CommandError("You can't just stroll out of a fight!\n"
-                               "If you wish to leave a fight, you must FLEE in a direction\n")
-
-        treasure = Item(32)
-        golem = Player(25)
-        if golem.exists and golem.location == self.location_id and treasure.iscarrby(self):
-            raise CommandError("\001cThe Golem\001 bars the doorway!\n")
-
-        self.Disease.crippled.check()
-
-        new_location = self.location.exits[direction_id]
-
-        if 999 < new_location < 2000:
-            door = Door(new_location)
-            new_location = door.go_through()
-            if new_location >= 0:
-                if self.in_dark or door.invisible:
-                    raise CommandError("You can't go that way\n")  # Invis doors
-                else:
-                    raise CommandError("The door is not open\n")
-
-        if new_location == -139:
-            shields = Item(113), Item(114), Item(89)
-            if any(item.iswornby(self) for item in shields):
-                yield "The shield protects you from the worst of the lava stream's heat\n"
-            else:
-                raise CommandError("The intense heat drives you back\n")
-
-        # Direction::on_go
-        if direction_id == 2:
-            sorcerors = Item(101), Item(102), Item(103)
-            figure = Player.fpbns("figure")
-            if figure is not None and figure != self and figure.location == self.location_id:
-                if any(item.iswornby(self) for item in sorcerors):
-                    raise CommandError("\001pThe Figure\001 holds you back\n"
-                                       "\001pThe Figure\001 says 'Only true sorcerors may pass'\n")
-
-        if new_location >= 0:
-            raise CommandError("You can't go that way\n")
-
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            self.location_id,
-            "\001s{user.player.name}\001{user.name} has gone {direction} {message}.\n\001".format(
-                user=self,
-                direction=DIRECTIONS[direction_id],
-                message=self.__out_ms
-            ),
-        )
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            new_location,
-            "\001s{user.name}\001{user.name}{message}.\n\001".format(
-                user=self,
-                direction=DIRECTIONS[direction_id],
-                message=self.__out_ms
-            ),
-        )
-        self.location_id = new_location
-
-    def quit_game(self):
-        if self.Disease.is_force:
-            raise CommandError("You can't be forced to do that\n")
-
-        yield from self.read_messages()
-
-        if self.Blood.in_fight:
-            raise CommandError("Not in the middle of a fight!\n")
-
-        yield "Ok"
-
-        World.load()
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            self.location_id,
-            "{} has left the game\n".format(self.name)
-        )
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            0,
-            "[ Quitting Game : {} ]\n".format(self.name)
-        )
-        self.dumpitems()
-        self.die()
-        self.remove()
-        World.save()
-
-        self.__location_id = 0
-        self.show_players = False
-
     def lightning(self, victim):
         if victim is None:
             raise CommandError("There is no one on with that name\n")
