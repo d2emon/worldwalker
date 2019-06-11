@@ -125,6 +125,15 @@ class Item:
     def iswornby(self, *args):
         raise NotImplementedError()
 
+    def eat(self, actor):
+        if not self.is_edible:
+            raise CommandError("That's sure not the latest in health food....\n")
+
+        self.destroy()
+        yield "Ok....\n"
+        actor.strength += 12
+        yield from actor.update()
+
     # Support
     def create(self):
         self.clear_bit(0)
@@ -178,3 +187,27 @@ class Door(Item):
             return 0
         else:
             raise CommandError("The door is not open\n")
+
+
+class Item11(Item):
+    def eat(self, actor):
+        yield "You feel funny, and then pass out\n"
+        yield "You wake up elsewhere....\n"
+        self.teleport(-1076)
+
+
+class Item75(Item):
+    def eat(self, actor):
+        yield "very refreshing\n"
+
+
+class Item175(Item):
+    def eat(self, actor):
+        if actor.level < 3:
+            actor.score += 40
+            yield "You feel a wave of energy sweeping through you.\n"
+        else:
+            yield "Faintly magical by the taste.\n"
+            if actor.strength < 40:
+                actor.strength += 2
+        yield from actor.update()

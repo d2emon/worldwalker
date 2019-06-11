@@ -523,45 +523,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def lightning(self, victim):
-        if victim is None:
-            raise CommandError("There is no one on with that name\n")
-        self.send_message(victim.name, -10001, victim.location, "")
-        syslog("{} zapped {}".format(self.name, victim.name))
-
-        if victim.is_mobile:
-            woundmn(victim, 10000)
-            # DIE
-
-        self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
-
-    def eat(self, item):
-        if item is None:
-            raise CommandError("There isn't one of those here\n")
-        elif item.item_id == 11:
-            yield "You feel funny, and then pass out\n"
-            yield "You wake up elsewhere....\n"
-            self.teleport(-1076)
-        elif item.item_id == 75:
-            yield "very refreshing\n"
-        elif item.item_id == 175:
-            if self.level < 3:
-                self.score += 40
-                yield "You feel a wave of energy sweeping through you.\n"
-            else:
-                yield "Faintly magical by the taste.\n"
-                if self.strength < 40:
-                    self.strength += 2
-            yield from self.update()
-        else:
-            if item.is_edible:
-                item.destroy()
-                yield "Ok....\n"
-                self.strength += 12
-                yield from self.update()
-            else:
-                yield "Thats sure not the latest in health food....\n"
-
     def play(self, item):
         if item is None:
             raise CommandError("That isn't here\n")

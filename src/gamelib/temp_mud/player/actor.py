@@ -246,8 +246,10 @@ class Actor:
     def lightning(self, target):
         raise NotImplementedError("Your spell fails.....\n")
 
-    def eat(self):
-        raise NotImplementedError()
+    def eat(self, item):
+        if item is None:
+            raise CommandError("There isn't one of those here\n")
+        item.eat(self)
 
     def play(self):
         raise NotImplementedError()
@@ -643,10 +645,12 @@ class Actor:
 
 class Wizard(Actor):
     def reset_world(self):
+        # Parse
         self.broadcast("Reset in progress....\nReset Completed....\n")
         return World.reset()
 
     def lightning(self, target):
+        # Parse
         if target is None:
             raise CommandError("There is no one on with that name\n")
         self.send_message(target, -10001, target.location, "")
