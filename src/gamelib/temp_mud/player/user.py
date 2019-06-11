@@ -523,12 +523,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def play(self, item):
-        if item is None:
-            raise CommandError("That isn't here\n")
-        if not self.item_is_available(item):
-            raise CommandError("That isn't here\n")
-
     def shout(self, text):
         self.Disease.dumb.check()
         self.send_message(

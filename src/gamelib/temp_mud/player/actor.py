@@ -67,6 +67,9 @@ class Actor:
     def dumpitems(self, *args):
         raise NotImplementedError()
 
+    def item_is_available(self, *args):
+        raise NotImplementedError()
+
     def on_look(self, *args):
         raise NotImplementedError()
 
@@ -251,8 +254,12 @@ class Actor:
             raise CommandError("There isn't one of those here\n")
         item.eat(self)
 
-    def play(self):
-        raise NotImplementedError()
+    def play(self, item):
+        if item is None:
+            raise CommandError("That isn't here\n")
+        if not self.item_is_available(item):
+            raise CommandError("That isn't here\n")
+        item.play(self)
 
     def shout(self):
         raise NotImplementedError()

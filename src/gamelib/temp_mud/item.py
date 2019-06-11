@@ -134,6 +134,9 @@ class Item:
         actor.strength += 12
         yield from actor.update()
 
+    def play(self, actor):
+        pass
+
     # Support
     def create(self):
         self.clear_bit(0)
