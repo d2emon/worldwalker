@@ -424,7 +424,6 @@ bprintf("\n");
     }
  disl4(n,s)
     {
-    extern long hasfarted;
     switch(n)
        {
        case 1:
@@ -483,7 +482,7 @@ else bprintf("zard");
 break;
 case 18:bprintf("The Cuddly Toy");
 break;
-case 19:if(!hasfarted) bprintf("Of The Opera");
+case 19:if(!user.has_farted) bprintf("Of The Opera");
 else bprintf("Raspberry Blower Of Old London Town");
 break;
 case 20:bprintf("The 50Hz E.R.C.S");

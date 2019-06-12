@@ -28,13 +28,13 @@ class Location:
     @property
     def climate(self):
         if not self.outdoors:
-            return Indoors
+            return Indoors.climate()
         elif -179 <= self.location_id <= -199:
-            return ClimateWarm
+            return ClimateWarm.climate()
         elif -100 <= self.location_id <= -178:
-            return ClimateCold
+            return ClimateCold.climate()
         else:
-            return Climate
+            return Climate.climate()
 
     @property
     def in_zone(self):
@@ -106,7 +106,7 @@ class Location:
 
     # Weather
     def weather_description(self):
-        yield from self.climate.weather(self.weather.state)
+        yield from self.climate.weather
 
     # Tk
     def reload(self):

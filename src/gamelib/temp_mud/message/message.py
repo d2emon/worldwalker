@@ -15,6 +15,7 @@ Sectors 1-n  in pairs ie [128 words]
 """
 from ..errors import ServiceError, LooseError
 from ..player.player import Player
+from ..weather import Weather
 from ..world import World
 from . import message_codes
 
@@ -58,7 +59,7 @@ class Message:
             message_id = self.save()
             if message_id >= MAX_MESSAGES:
                 self.cleanup(user)
-                autochange_weather(user)
+                next(Weather())
         except ServiceError:
             raise LooseError("\nAberMUD: FILE_ACCESS : Access failed\n")
 

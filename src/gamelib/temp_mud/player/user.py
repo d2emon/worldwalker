@@ -55,8 +55,10 @@ class User(BasePlayer, Actor):
         self.__drunk_counter = 0
         self.__to_update = False
 
-        # Unknown
+        # Weather
         self.has_farted = False
+
+        # Unknown
         self.__interrupt = None
         self.__wpnheld = None
 

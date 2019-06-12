@@ -22,6 +22,14 @@ class Actor:
         raise NotImplementedError()
 
     @property
+    def has_farted(self):
+        raise NotImplementedError()
+
+    @has_farted.setter
+    def has_farted(self):
+        raise NotImplementedError()
+
+    @property
     def in_dark(self):
         raise NotImplementedError()
 

@@ -12,7 +12,7 @@ class __WeatherAction(Action):
 
     @classmethod
     def action(cls, command, parser):
-        Weather().send_weather(parser.user, cls.weather_id)
+        Weather().weather_id = cls.weather_id
 
 
 class Storm(__WeatherAction):
