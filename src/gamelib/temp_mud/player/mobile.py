@@ -1,6 +1,7 @@
 from ..errors import CommandError
 
 
+
 class Mobile:
     def __init__(self, player_id):
         self.player_id = player_id
@@ -10,7 +11,14 @@ class Mobile:
         raise NotImplementedError()
 
     @property
+    def is_mobile(self):
+        raise NotImplementedError()
+
+    @property
     def location_id(self):
+        raise NotImplementedError()
+
+    def woundmn(self, *args):
         raise NotImplementedError()
 
     def on_actor_leave(self, actor, direction_id):
@@ -26,6 +34,10 @@ class Mobile:
         if actor.location_id != self.location_id:
             return
         pass
+
+    def on_steal(self):
+        if self.is_mobile:
+            self.woundmn(0)
 
 
 class Golem(Mobile):

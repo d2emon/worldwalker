@@ -8,6 +8,10 @@ from ..world import World
 from .mobile import MOBILES
 
 
+def randperc():
+    raise NotImplementedError()
+
+
 def is_door(location_id):
     return 999 < location_id < 2000
 
@@ -78,6 +82,10 @@ class Actor:
         raise NotImplementedError()
 
     @property
+    def overweight(self):
+        raise NotImplementedError()
+
+    @property
     def sex(self):
         raise NotImplementedError()
 
@@ -142,6 +150,14 @@ class Actor:
         self.send_message(
             self,
             message_codes.GLOBAL,
+            self.location_id,
+            message,
+        )
+
+    def send_personal(self, target, message):
+        self.send_message(
+            target,
+            message_codes.PERSONAL,
             self.location_id,
             message,
         )
@@ -347,16 +363,32 @@ class Actor:
             raise CommandError("They can't carry that\n")
 
         item.on_give(self)
-        item.set_location(target, 1)
-        self.send_message(
-            target,
-            -10011,
-            self.location_id,
-            "\001p{}\001 gives you the {}\n".format(self.name, item.name),
-        )
+        item.set_location(target, item.CARRIED)
+        self.send_personal(target, "\001p{}\001 gives you the {}\n".format(self.name, item.name))
 
     def steal(self, item, target):
-        raise NotImplementedError()
+        if item is None:
+            raise CommandError("They are not carrying that\n")
+        if target is None:
+            raise CommandError("Who is that ?\n")
+
+        if not self.is_wizard and target.location_id != self.location_id:
+            raise CommandError("But they aren't here\n")
+        if item.carry_flag == item.WEARING:
+            raise CommandError("They are wearing that\n")
+        if target.weapon == item:
+            raise CommandError("They have that firmly to hand .. for KILLING people with\n")
+        if self.overweight:
+            raise CommandError("You can't carry any more\n")
+
+        roll = randperc()
+        chance = (10 + self.level - target.level) * 5
+        if roll >= chance:
+            raise CommandError("Your attempt fails\n")
+        item.set_location(self, item.CARRIED)
+        if roll & 1:
+            self.send_personal(target, "\001p{}\001 steals the {} from you !\n".format(self.name, item.name))
+            target.on_steal()
 
     def levels(self):
         raise NotImplementedError()

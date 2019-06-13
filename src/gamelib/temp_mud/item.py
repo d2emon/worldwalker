@@ -19,7 +19,7 @@ Stam:state:loc:flag
 
 class Item:
     CARRY_0 = 0
-    CARRY_1 = 1
+    CARRIED = 1
     WEARING = 2
     IN_CONTAINER = 3
 

@@ -124,8 +124,9 @@ def __exorcise(user, message):
     yield "{} has been kicked off\n".format(message.user_to)
 
 
-# GIVE
-def __give(user, message):
+# PERSONAL
+@__private
+def __personal(user, message):
     yield message.message
 
 
@@ -160,7 +161,7 @@ MESSAGE_HANDLERS = {
     message_codes.SAY: __say,
     message_codes.TELL: __tell,
     message_codes.EXORCISE: __exorcise,
-    message_codes.GIVE: __give,
+    message_codes.PERSONAL: __personal,
     message_codes.MSG_10020: __code_10020,  #
     message_codes.MSG_10021: __code_10021,  #
     message_codes.WEATHER: set_weather,

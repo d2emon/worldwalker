@@ -531,36 +531,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def steal(self, item, player):
-        if item is None:
-            raise CommandError("They are not carrying that\n")
-        if player is None:
-            raise CommandError("Who is that ?\n")
-
-        if not self.is_wizard and player.location_id != self.location_id:
-            raise CommandError("But they aren't here\n")
-        if item.carry_flag == 2:
-            raise CommandError("They are wearing that\n")
-        if player.weapon == item:
-            raise CommandError("They have that firmly to hand .. for KILLING people with\n")
-        if self.overweight:
-            raise CommandError("You can't carry any more\n")
-
-        roll = randperc()
-        chance = (10 + self.level - player.level) * 5
-        if roll >= chance:
-            raise CommandError("Your attempt fails\n")
-        if roll & 1:
-            self.send_message(
-                player,
-                -10011,
-                self.location_id,
-                "\001p{}\001 steals the {} from you !\n".format(self.name, item.name),
-            )
-            if player.is_mobile:
-                woundmn(player, 0)
-        item.setoloc(self, 1)
-
     def on_after_editor(self):
         self.send_message(
             self,
