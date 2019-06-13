@@ -294,7 +294,7 @@ class INumber(Action):
     @classmethod
     def action(cls, command, parser):
         item = Item.fobn(parser.require_next("What...\n"))
-        return parser.user.inumber(item)
+        return parser.user.item_number(item)
 
 
 class Update(Action):
@@ -314,24 +314,7 @@ class Become(Action):
 
     @classmethod
     def action(cls, command, parser):
-        x2 = parser.full()
-        if not x2:
-            raise CommandError("To become what ?, inebriated ?\n")
-        parser.user.send_message(
-            parser.user,
-            message_codes.MSG_WIZARD,
-            0,
-            "{} has quit, via BECOME\n".format(parser.user.name),
-        )
-
-        keysetback()
-        parser.user.loose()
-        World.save()
-
-        try:
-            execl(EXE2, "   --}----- ABERMUD ------   ", "-n{}".format(parser.user.name))  # GOTOSS eek!
-        except ServiceError:
-            yield "Eek! someone's just run off with mud!!!!\n"
+        parser.user.become(parser.full())
 
 
 class SysStat(Action):

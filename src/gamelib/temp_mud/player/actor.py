@@ -10,6 +10,7 @@ from .player import Player
 
 
 EXE = None
+EXE2 = None
 
 
 def execl(*args):
@@ -699,14 +700,14 @@ class Actor:
     def honeyboard(self):
         raise NotImplementedError("You'll have to leave the game first!\n")
 
-    def inumber(self, item):
+    def item_number(self, item):
         raise NotImplementedError("Huh ?\n")
 
     def update_system(self):
         raise NotImplementedError("Hmmm... you can't do that one\n")
 
-    def become(self):
-        raise NotImplementedError()
+    def become(self, name):
+        raise NotImplementedError("Become what ?\n")
 
     def systat(self):
         raise NotImplementedError()
@@ -851,7 +852,7 @@ class Wizard(Actor):
         World.load()
         self.send_wizard("\001s{name}\001{name} has returned to AberMud\n\001".format(name=self.name))
 
-    def inumber(self, item):
+    def item_number(self, item):
         raise NotImplementedError("Huh ?\n")
 
     def update_system(self):
@@ -863,6 +864,21 @@ class Wizard(Actor):
             execl(EXE, "   --{----- ABERMUD -----}--   ", self.name)  # GOTOSS eek!
         except ServiceError:
             raise CommandError("Eeek! someones pinched the executable!\n")
+
+    def become(self, name):
+        if not name:
+            raise CommandError("To become what ?, inebriated ?\n")
+
+        self.send_wizard("{} has quit, via BECOME\n".format(self.name))
+
+        # keysetback()
+        self.loose()
+        World.save()
+
+        try:
+            execl(EXE2, "   --}----- ABERMUD ------   ", "-n{}".format(self.name))  # GOTOSS eek!
+        except ServiceError:
+            raise CommandError("Eek! someone's just run off with mud!!!!\n")
 
 
 class God(Wizard):
@@ -883,5 +899,5 @@ class God(Wizard):
             raise CommandError("Not permitted on this ID\n")
         World.tss(command)
 
-    def inumber(self, item):
+    def item_number(self, item):
         yield "Item Number is {}\n".format(item)
