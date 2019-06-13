@@ -26,6 +26,26 @@ def is_door(location_id):
     return 999 < location_id < 2000
 
 
+def wizard_action(message):
+    def wrapper(f):
+        def wrapped(self, *args):
+            if not self.is_wizard:
+                raise NotImplementedError(message)
+            return f(self, *args)
+        return wrapped
+    return wrapper
+
+
+def god_action(message):
+    def wrapper(f):
+        def wrapped(self, *args):
+            if not self.is_god:
+                raise NotImplementedError(message)
+            return f(self, *args)
+        return wrapped
+    return wrapper
+
+
 class Actor:
     @property
     def Blood(self):
@@ -41,6 +61,10 @@ class Actor:
 
     @conversation_mode.setter
     def conversation_mode(self, value):
+        raise NotImplementedError()
+
+    @property
+    def __euid(self):
         raise NotImplementedError()
 
     @property
@@ -115,6 +139,14 @@ class Actor:
     def score(self):
         raise NotImplementedError()
 
+    @property
+    def __uid(self):
+        raise NotImplementedError()
+
+    @property
+    def __is_valid_uid(self):
+        return self.__uid == self.__euid
+
     def die(self, *args):
         raise NotImplementedError()
 
@@ -152,9 +184,6 @@ class Actor:
         raise NotImplementedError()
 
     def send_message(self, *args):
-        raise NotImplementedError()
-
-    def __system(self, *args):
         raise NotImplementedError()
 
     @property
@@ -199,12 +228,28 @@ class Actor:
             message,
         )
 
+    def __send_exorcise(self, target):
+        self.send_message(
+            target,
+            message_codes.EXORCISE,
+            self.location_id,
+            None,
+        )
+
     def send_global(self, message):
         self.send_message(
             self,
             message_codes.GLOBAL,
             self.location_id,
             message,
+        )
+
+    def __send_lightning(self, target):
+        self.send_message(
+            target,
+            message_codes.LIGHTNING,
+            target.location_id,
+            None,
         )
 
     def send_personal(self, target, message):
@@ -348,18 +393,30 @@ class Actor:
     def who(self):
         raise NotImplementedError()
 
+    @wizard_action("What ?\n")
     def reset_world(self):
-        raise NotImplementedError("What ?\n")
+        # Parse
+        self.broadcast("Reset in progress....\nReset Completed....\n")
+        return World.reset()
 
+    @wizard_action("Your spell fails.....\n")
     def lightning(self, target):
-        raise NotImplementedError("Your spell fails.....\n")
+        # Parse
+        if target is None:
+            raise CommandError("There is no one on with that name\n")
+        self.__send_lightning(target)
+        syslog("{} zapped {}".format(self.name, target.name))
+        target.get_lightning()
+        self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
 
     def eat(self, item):
+        # Parse
         if item is None:
             raise CommandError("There isn't one of those here\n")
         item.eat(self)
 
     def play(self, item):
+        # Parse
         if item is None:
             raise CommandError("That isn't here\n")
         if not self.item_is_available(item):
@@ -367,16 +424,19 @@ class Actor:
         item.play(self)
 
     def shout(self, message):
+        # Parse
         self.Disease.dumb.check()
         self.communicate(-10104 if self.is_wizard else message_codes.SHOUT, message)
         yield "Ok!"
 
     def say(self, message):
+        # Parse
         self.Disease.dumb.check()
         self.communicate(message_codes.SAY, message)
         yield "You say '{}'\n".format(message)
 
     def tell(self, target, message):
+        # Parse
         self.Disease.dumb.check()
         if target is None:
             raise CommandError("No one with that name is playing\n")
@@ -387,6 +447,7 @@ class Actor:
         raise NotImplementedError()
 
     def show_score(self):
+        # Parse
         if self.level == 1:
             yield "Your strength is {}\n".format(self.strength)
             return
@@ -399,10 +460,18 @@ class Actor:
         )
         yield self.disle3(self.level, self.sex)
 
+    @wizard_action("No chance....\n")
     def exorcise(self, target):
-        raise NotImplementedError("No chance....\n")
+        # Parse
+        if target is None:
+            raise CommandError("They aren't playing\n")
+
+        target.exorcised()
+        syslog("{} exorcised {}".format(self.name, target.name))
+        self.__send_exorcise(target)
 
     def give(self, item, target):
+        # Parse
         if item is None:
             raise CommandError("You aren't carrying that\n")
         if target is None:
@@ -420,6 +489,7 @@ class Actor:
         self.send_personal(target, "\001p{}\001 gives you the {}\n".format(self.name, item.name))
 
     def steal(self, item, target):
+        # Parse
         if item is None:
             raise CommandError("They are not carrying that\n")
         if target is None:
@@ -686,10 +756,15 @@ class Actor:
         raise NotImplementedError()
 
     # 151 - 160
+    @god_action("I don't know that verb\n")
     def tss(self, command):
-        raise NotImplementedError("I don't know that verb\n")
+        # Parse
+        if not self.__is_valid_uid:
+            raise CommandError("Not permitted on this ID\n")
+        World.tss(command)
 
     def remote_editor(self):
+        # Parse
         if not self.is_editor:
             raise CommandError("Dum de dum.....\n")
 
@@ -706,32 +781,68 @@ class Actor:
     def users(self):
         raise NotImplementedError()
 
+    @wizard_action("You'll have to leave the game first!\n")
     def honeyboard(self):
-        raise NotImplementedError("You'll have to leave the game first!\n")
+        # Parse
+        self.send_wizard("\001s{name}\001{name} has dropped into BB\n\001".format(name=self.name))
+        yield from self.__fade_system(World.honeyboard())
 
+        World.load()
+        self.send_wizard("\001s{name}\001{name} has returned to AberMud\n\001".format(name=self.name))
+
+    @god_action("Huh ?\n")
     def item_number(self, item):
-        raise NotImplementedError("Huh ?\n")
+        # Parse
+        yield "Item Number is {}\n".format(item)
 
+    @wizard_action("Hmmm... you can't do that one\n")
     def update_system(self):
-        raise NotImplementedError("Hmmm... you can't do that one\n")
+        # Parse
+        self.loose()
+        self.send_wizard("[ {} has updated ]\n".format(self.name))
+        World.save()
 
+        try:
+            execl(EXE, "   --{----- ABERMUD -----}--   ", self.name)  # GOTOSS eek!
+        except ServiceError:
+            raise CommandError("Eeek! someones pinched the executable!\n")
+
+    @wizard_action("Become what ?\n")
     def become(self, name):
-        raise NotImplementedError("Become what ?\n")
+        # Parse
+        if not name:
+            raise CommandError("To become what ?, inebriated ?\n")
+
+        self.send_wizard("{} has quit, via BECOME\n".format(self.name))
+
+        # keysetback()
+        self.loose()
+        World.save()
+
+        try:
+            execl(EXE2, "   --}----- ABERMUD ------   ", "-n{}".format(self.name))  # GOTOSS eek!
+        except ServiceError:
+            raise CommandError("Eek! someone's just run off with mud!!!!\n")
 
     def sys_stat(self):
+        # Parse
         if self.level < 10000000:
             raise NotImplementedError("What do you think this is a DEC 10 ?\n")
 
     # 161 - 170
     def converse(self):
+        # Parse
         self.conversation_mode = Parser.CONVERSATION_SAY
         yield "Type '**' on a line of its own to exit converse mode\n"
 
     def snoop(self):
         raise NotImplementedError()
 
+    @god_action("There is nothing here you can shell\n")
     def shell(self):
-        raise NotImplementedError("There is nothing here you can shell\n")
+        # Parse
+        self.conversation_mode = Parser.CONVERSATION_TSS
+        yield "Type ** on its own on a new line to exit shell\n"
 
     def raw(self):
         raise NotImplementedError()
@@ -812,110 +923,3 @@ class Actor:
 
     def empty(self):
         raise NotImplementedError()
-
-
-class Wizard(Actor):
-    def __send_exorcise(self, target):
-        self.send_message(
-            target,
-            message_codes.EXORCISE,
-            self.location_id,
-            None,
-        )
-
-    def __send_lightning(self, target):
-        self.send_message(
-            target,
-            message_codes.LIGHTNING,
-            target.location_id,
-            None,
-        )
-
-    def reset_world(self):
-        # Parse
-        self.broadcast("Reset in progress....\nReset Completed....\n")
-        return World.reset()
-
-    def lightning(self, target):
-        # Parse
-        if target is None:
-            raise CommandError("There is no one on with that name\n")
-        self.__send_lightning(target)
-        syslog("{} zapped {}".format(self.name, target.name))
-        target.get_lightning()
-        self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
-
-    def exorcise(self, target):
-        if target is None:
-            raise CommandError("They aren't playing\n")
-
-        target.exorcised()
-        syslog("{} exorcised {}".format(self.name, target.name))
-        self.__send_exorcise(target)
-
-    def tss(self, command):
-        raise NotImplementedError("I don't know that verb\n")
-
-    def honeyboard(self):
-        self.send_wizard("\001s{name}\001{name} has dropped into BB\n\001".format(name=self.name))
-        yield from self.__fade_system(World.honeyboard())
-
-        World.load()
-        self.send_wizard("\001s{name}\001{name} has returned to AberMud\n\001".format(name=self.name))
-
-    def item_number(self, item):
-        raise NotImplementedError("Huh ?\n")
-
-    def update_system(self):
-        self.loose()
-        self.send_wizard("[ {} has updated ]\n".format(self.name))
-        World.save()
-
-        try:
-            execl(EXE, "   --{----- ABERMUD -----}--   ", self.name)  # GOTOSS eek!
-        except ServiceError:
-            raise CommandError("Eeek! someones pinched the executable!\n")
-
-    def become(self, name):
-        if not name:
-            raise CommandError("To become what ?, inebriated ?\n")
-
-        self.send_wizard("{} has quit, via BECOME\n".format(self.name))
-
-        # keysetback()
-        self.loose()
-        World.save()
-
-        try:
-            execl(EXE2, "   --}----- ABERMUD ------   ", "-n{}".format(self.name))  # GOTOSS eek!
-        except ServiceError:
-            raise CommandError("Eek! someone's just run off with mud!!!!\n")
-
-    def shell(self):
-        raise NotImplementedError("There is nothing here you can shell\n")
-
-
-class God(Wizard):
-    @property
-    def __is_valid_uid(self):
-        return self.__uid == self.__euid
-
-    @property
-    def __uid(self):
-        raise NotImplementedError()
-
-    @property
-    def __euid(self):
-        raise NotImplementedError()
-
-    def tss(self, command):
-        if not self.__is_valid_uid:
-            raise CommandError("Not permitted on this ID\n")
-        World.tss(command)
-
-    def item_number(self, item):
-        yield "Item Number is {}\n".format(item)
-
-    def shell(self):
-        self.conversation_mode = Parser.CONVERSATION_TSS
-        yield "Type ** on its own on a new line to exit shell\n"
