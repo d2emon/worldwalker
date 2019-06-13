@@ -653,49 +653,59 @@ class Actor:
     # 50
     @not_dumb_action
     def laugh(self):
+        # Weather
         self.__silly_sound("falls over laughing")
         yield "You start to laugh\n"
 
     # 51 - 60
     @not_dumb_action
     def cry(self):
+        # Weather
         self.__silly_visual("bursts into tears")
         yield "You burst into tears\n"
 
     @not_dumb_action
     def burp(self):
+        # Weather
         self.__silly_sound("burps loudly")
         yield "You burp rudely\n"
 
     def fart(self):
+        # Weather
         self.__silly_sound("lets off a real rip roarer")
         yield "Fine...\n"
         self.has_farted = True
 
     @not_dumb_action
     def hiccup(self):
-        self.__silly_sound("\001d hiccups")
+        # Weather
+        self.__silly_sound(" hiccups")
         yield "You hiccup\n"
 
     def grin(self):
+        # Weather
         self.__silly_visual("grins evilly")
         yield "You grin evilly\n"
 
     def smile(self):
+        # Weather
         self.__silly_visual("smiles happily")
         yield "You smile happily\n"
 
     def wink(self):
+        # Weather
         self.__silly_visual("winks suggestively")
         yield "You wink\n"
 
     @not_dumb_action
     def snigger(self):
+        # Weather
         self.__silly_sound("sniggers")
         yield "You snigger\n"
 
     @wizard_action("You are just not up to this yet\n")
     def pose(self):
+        # Weather
         pose_id = randperc() % 5
 
         yield "POSE :{}\n".format(pose_id)
@@ -714,6 +724,7 @@ class Actor:
 
     @wizard_action("Sorry, wizards only\n")
     def set_item_bit(self, item, bit_id, value):
+        # Weather
         if value is None:
             yield "The bit is {}\n".format("TRUE" if item.test_bit(bit_id) else "FALSE")
             return
@@ -730,6 +741,7 @@ class Actor:
 
     @wizard_action("Sorry, wizards only\n")
     def set_item_byte(self, item, byte_id, value):
+        # Weather
         if value is None:
             yield "Current Value is : {}\n".format(item.get_byte(byte_id))
             return
@@ -743,6 +755,7 @@ class Actor:
 
     @wizard_action("Sorry, wizards only\n")
     def set_item_state(self, item, value):
+        # Weather
         if value < 0:
             raise CommandError("States start at 0\n")
         if value > item.max_state:
@@ -751,6 +764,7 @@ class Actor:
 
     @wizard_action("Sorry, wizards only\n")
     def set_player_strength(self, player, value):
+        # Weather
         if player is None:
             raise CommandError("Set what ?\n")
 
@@ -761,11 +775,13 @@ class Actor:
 
     # 61 - 66
     def pray(self):
+        # Weather
         self.__silly_visual("falls down and grovels in the dirt")
         yield "Ok\n"
 
     @wizard_action("What ?\n")
     def set_weather(self, weather_id):
+        # Weather
         # 62-65, 104
         Weather().weather_id = weather_id
 
@@ -899,10 +915,12 @@ class Actor:
 
     # 141 - 150
     def groan(self):
+        # Weather
         self.__silly_sound("groans loudly")
         yield "You groan\n"
 
     def moan(self):
+        # Weather
         self.__silly_sound("starts making moaning noises")
         yield "You start to moan\n"
 
@@ -910,6 +928,7 @@ class Actor:
         raise NotImplementedError()
 
     def yawn(self):
+        # Weather
         self.__silly_sound("yawns")
 
     def wizlist(self):
@@ -1029,6 +1048,7 @@ class Actor:
 
     @not_dumb_action
     def purr(self):
+        # Weather
         self.__silly_sound("starts purring")
         yield "MMMMEMEEEEEEEOOOOOOOWWWWWWW!!\n"
 
@@ -1036,6 +1056,7 @@ class Actor:
         raise NotImplementedError()
 
     def sulk(self):
+        # Weather
         self.__silly_visual("sulks")
         yield "You sulk....\n"
 
@@ -1112,6 +1133,7 @@ class Actor:
 
     # 181 - 189
     def set_player_flags(self, player, flag_id, value):
+        # Weather
         if not self.can_set_flags:
             raise CommandError("You can't do that\n")
         if player is None:
@@ -1155,6 +1177,7 @@ class Actor:
 
     @god_action("Your emotions are strictly limited!\n")
     def emote(self, message):
+        # Weather
         self.silly("\001P{user.name}\001 " + message + "\n")
 
     def dig(self):
