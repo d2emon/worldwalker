@@ -86,8 +86,8 @@ def __global_message(user, message):
     yield message.message
 
 
-# -10001
-def __code_10001(user, message):
+# LIGHTNING
+def __lightning(user, message):
     if __is_me(user, message):
         return user.hit_lightning(message.user_from)
 
@@ -95,7 +95,7 @@ def __code_10001(user, message):
         yield "\001cA massive lightning bolt strikes \001\001D{}\001\001c\n\001".format(message.user_to)
 
 
-# -10002
+# SHOUT
 @__public
 def __shout(user, message):
     if user.__location_id == message.channel_id or user.is_wizard:
@@ -104,22 +104,22 @@ def __shout(user, message):
         yield "\001dA voice shouts '{}'\n\001".format(message.message)
 
 
-# -10003
+# SAY
 @__public
 @__local
 def __say(user, message):
     yield "\001P{}\001\001d says '{}'\n\001".format(message.user_from, message.message)
 
 
-# -10004
+# TELL
 @__public
 def __tell(user, message):
     yield "\001P{}\001\001d tells you '{}'\n\001".format(message.user_from, message.message)
 
 
-# -10010
-def __code_10010(user, message):
-    if __is_me:
+# EXORCISE
+def __exorcise(user, message):
+    if __is_me(user, message):
         raise LooseError("You have been kicked off")
     yield "{} has been kicked off\n".format(message.user_to)
 
@@ -155,11 +155,11 @@ MESSAGE_HANDLERS = {
     message_codes.MSG_750: __code_750,
     message_codes.VISIBLE: __set_visible,
     message_codes.GLOBAL: __global_message,
-    message_codes.MSG_10001: __code_10001,
+    message_codes.LIGHTNING: __lightning,
     message_codes.SHOUT: __shout,
     message_codes.SAY: __say,
     message_codes.TELL: __tell,
-    message_codes.MSG_10010: __code_10010,
+    message_codes.EXORCISE: __exorcise,
     message_codes.MSG_10011: __code_10011,
     message_codes.MSG_10020: __code_10020,
     message_codes.MSG_10021: __code_10021,

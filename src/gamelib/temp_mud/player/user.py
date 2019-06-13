@@ -525,21 +525,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def exorcise(self, player):
-        if player is None:
-            raise CommandError("They aren't playing\n")
-        if player.tstflg(1):
-            raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
-        syslog("{} exorcised {}".format(self.name, player.name))
-        self.dumpstuff(player, player.location)
-        self.send_message(
-            player,
-            -10010,
-            self.location_id,
-            ""
-        )
-        player.remove()
-
     def give(self, item, player):
         if item is None:
             raise CommandError("You aren't carrying that\n")

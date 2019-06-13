@@ -330,8 +330,8 @@ class Actor:
         )
         yield self.disle3(self.level, self.sex)
 
-    def exorcise(self):
-        raise NotImplementedError()
+    def exorcise(self, player):
+        raise NotImplementedError("No chance....\n")
 
     def give(self):
         raise NotImplementedError()
@@ -704,6 +704,22 @@ class Actor:
 
 
 class Wizard(Actor):
+    def __send_exorcise(self, target):
+        self.send_message(
+            target,
+            message_codes.EXORCISE,
+            self.location_id,
+            None,
+        )
+
+    def __send_lightning(self, target):
+        self.send_message(
+            target,
+            message_codes.LIGHTNING,
+            target.location_id,
+            None,
+        )
+
     def reset_world(self):
         # Parse
         self.broadcast("Reset in progress....\nReset Completed....\n")
@@ -713,7 +729,18 @@ class Wizard(Actor):
         # Parse
         if target is None:
             raise CommandError("There is no one on with that name\n")
-        self.send_message(target, -10001, target.location, "")
+        self.__send_lightning(target)
         syslog("{} zapped {}".format(self.name, target.name))
         target.get_lightning()
         self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
+
+    def exorcise(self, target):
+        if target is None:
+            raise CommandError("They aren't playing\n")
+        if not target.can_be_exorcised:
+            raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
+
+        syslog("{} exorcised {}".format(self.name, target.name))
+        target.dumpstuff(target.location)
+        self.__send_exorcise(target)
+        target.remove()

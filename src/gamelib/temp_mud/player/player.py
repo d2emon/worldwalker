@@ -111,6 +111,10 @@ class Player(BasePlayer):
     def is_mobile(self):
         return self.player_id >= 16
 
+    @property
+    def can_be_exorcised(self):
+        return not self.__test_flag(1)
+
     # Support
     @property
     def helper(self):
