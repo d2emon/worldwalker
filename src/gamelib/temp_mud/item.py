@@ -136,6 +136,12 @@ class Item:
     def iscarrby(self, *args):
         raise NotImplementedError()
 
+    def iscontin(self, *args):
+        raise NotImplementedError()
+
+    def contain(self):
+        return [item for item in self.items() if item.iscontin(self)]
+
     def eat(self, actor):
         if not self.is_edible:
             raise CommandError("That's sure not the latest in health food....\n")

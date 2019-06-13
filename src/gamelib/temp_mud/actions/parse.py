@@ -510,12 +510,4 @@ class Empty(Action):
     def action(cls, command, parser):
         # container = get_item(parser)
         container = parser.ohereandget()
-        if container is None:
-            return
-        for item in Item.items():
-            if not item.iscontin(container):
-                item.set_location(parser.user.location_id, 1)
-                yield "You empty the {} from the {}\n".format(item.name, container.name)
-                parser.gamecom("drop {}".format(item.name))
-                pbfr()
-                World.load()
+        return parser.user.empty(container)

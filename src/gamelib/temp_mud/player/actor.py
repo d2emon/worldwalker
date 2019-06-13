@@ -257,6 +257,9 @@ class Actor:
     def send_message(self, *args):
         raise NotImplementedError()
 
+    def show_buffer(self, *args):
+        raise NotImplementedError()
+
     def update(self, *args):
         raise NotImplementedError()
 
@@ -414,7 +417,7 @@ class Actor:
     def take(self):
         raise NotImplementedError()
 
-    def drop(self):
+    def drop(self, item):
         raise NotImplementedError()
 
     # 11 - 20
@@ -1043,5 +1046,12 @@ class Actor:
         self.location.on_dig_here(self)
         yield from map(lambda item: item.on_dig(self), ITEMS)
 
-    def empty(self):
-        raise NotImplementedError()
+    def empty(self, container):
+        if container is None:
+            raise CommandError()
+        for item in container.contain():
+            item.set_location(self.location_id, item.CARRIED)
+            yield "You empty the {} from the {}\n".format(item.name, container.name)
+            self.drop(item)
+            self.show_buffer()
+            World.load()
