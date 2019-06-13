@@ -1,3 +1,6 @@
+from ..errors import CommandError
+
+
 class BasePlayer:
     SEX_MALE = 0
     SEX_FEMALE = 1
@@ -123,11 +126,28 @@ class BasePlayer:
     def is_mobile(self):
         raise NotImplementedError()
 
+    @property
+    def can_be_exorcised(self):
+        raise NotImplementedError()
+
+    @property
+    def is_editor(self):
+        raise NotImplementedError()
+
+    def check_kicked(self):
+        raise NotImplementedError()
+
     def die(self):
         self.strength = -1
 
     def dumpstuff(self, *args):
         raise NotImplementedError()
+
+    def exorcised(self):
+        if not self.can_be_exorcised:
+            raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
+        self.dumpstuff(self.location_id)
+        self.remove()
 
     def fade(self):
         self.position = -2

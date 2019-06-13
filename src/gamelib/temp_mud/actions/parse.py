@@ -264,7 +264,7 @@ class Tss(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.tss(parser.full())
+        return parser.player.tss(parser.full())
 
 
 class RmEdit(Action):
@@ -272,14 +272,8 @@ class RmEdit(Action):
     commands = "rmedit",
 
     @classmethod
-    def validate(cls, command, parser):
-        if not parser.user.player.tstflg(3):
-            raise CommandError("Dum de dum.....\n")
-        return True
-
-    @classmethod
     def action(cls, command, parser):
-        yield from parser.editor()
+        return parser.player.remote_editor()
 
 
 class USystem(Action):
@@ -289,7 +283,7 @@ class USystem(Action):
 
     @classmethod
     def action(cls, command, parser):
-        yield from parser.honeyboard()
+        return parser.player.honeyboard()
 
 
 class INumber(Action):

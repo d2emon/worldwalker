@@ -267,36 +267,6 @@ class User(BasePlayer, Actor):
         if self.Blood.in_fight:
             self.Blood.in_fight -= 1
 
-    # Parse
-    def __check_kick(self):
-        self.reset_position()
-        World.load()
-        if Player.fpbns(self.name) is None:
-            raise LooseError("You have been kicked off")
-
-    def exorcised(self):
-        if not self.can_be_exorcised:
-            raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
-        self.dumpstuff(self.location_id)
-        self.remove()
-
-    # Tk
-    def fade_system(self, message, actions):
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            0,
-            message,
-        )
-        self.fade()
-        self.save_position()
-        World.save()
-
-        yield from actions
-
-        self.__check_kick()
-        yield from self.read_messages()
-
     # Support
     def has_any(self, mask):
         return any(item for item in self.__available_items if item.test_mask(mask))
@@ -531,23 +501,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def on_after_editor(self):
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            0,
-            "\001s{name}\001{name} re-enters the normal universe\n\001".format(name=self.name),
-        )
-
-    def on_after_system(self):
-        World.load()
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            0,
-            "\001s{name}\001{name} has returned to AberMud\n\001".format(name=user.name),
-        )
-
     def dig(self):
         item = Item(186)
         if item.location == self.location_id and item.is_destroyed:

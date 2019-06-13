@@ -1,4 +1,5 @@
 from datetime import datetime
+from .errors import ServiceError
 
 
 class World:
@@ -73,3 +74,37 @@ class World:
         cls.objects = cls.__reset_objects
         cls.__reset_time = datetime.now()
         cls.resetplayers()
+
+    # Parse
+    @classmethod
+    def __system(cls, command):
+        raise NotImplementedError
+
+    @classmethod
+    def __keys_set_back(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def __keys_set_up(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def remote_editor(cls):
+        cls.show_buffer()
+        try:
+            cls.chdir(ROOMS)
+        except ServiceError:
+            yield "Warning: Can't CHDIR\n"
+
+        return cls.__system("/cs_d/aberstudent/yr2/hy8/.sunbin/emacs")
+
+    @classmethod
+    def tss(cls, command):
+        World.save()
+
+        with cls.__keys():
+            return cls.__system(command)
+
+    @classmethod
+    def honeyboard(cls):
+        return cls.__system("/cs_d/aberstudent/yr2/hy8/bt")

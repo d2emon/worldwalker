@@ -115,6 +115,10 @@ class Player(BasePlayer):
     def can_be_exorcised(self):
         return not self.__test_flag(1)
 
+    @property
+    def is_editor(self):
+        return not self.__test_flag(3)
+
     # Support
     @property
     def helper(self):

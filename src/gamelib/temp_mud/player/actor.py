@@ -1,11 +1,15 @@
 from ..direction import DIRECTIONS
-from ..errors import CommandError, CrapupError, LooseError
+from ..errors import CommandError, CrapupError, LooseError, ServiceError
 from ..item import Item, Door
 from ..location import Location
 from ..message import message_codes
 from ..syslog import syslog
 from ..world import World
 from .mobile import MOBILES
+from .player import Player
+
+
+ROOMS = None
 
 
 def randperc():
@@ -35,6 +39,10 @@ class Actor:
 
     @property
     def in_dark(self):
+        raise NotImplementedError()
+
+    @property
+    def is_editor(self):
         raise NotImplementedError()
 
     @property
@@ -102,6 +110,9 @@ class Actor:
     def dumpitems(self, *args):
         raise NotImplementedError()
 
+    def fade(self, *args):
+        raise NotImplementedError()
+
     def item_is_available(self, *args):
         raise NotImplementedError()
 
@@ -114,10 +125,19 @@ class Actor:
     def remove(self, *args):
         raise NotImplementedError()
 
+    def reset_position(self, *args):
+        raise NotImplementedError()
+
     def save_player(self, *args):
         raise NotImplementedError()
 
+    def save_position(self, *args):
+        raise NotImplementedError()
+
     def send_message(self, *args):
+        raise NotImplementedError()
+
+    def __system(self, *args):
         raise NotImplementedError()
 
     @property
@@ -132,6 +152,22 @@ class Actor:
     @property
     def location(self):
         return Location(self.location_id)
+
+    def check_kicked(self):
+        self.reset_position()
+        World.load()
+        if Player.fpbns(self.name) is None:
+            raise LooseError("You have been kicked off")
+
+    def __fade_system(self, actions):
+        self.fade()
+        self.save_position()
+        World.save()
+
+        yield from actions
+
+        self.check_kicked()
+        yield from self.read_messages()
 
     # Messages
     def broadcast(self, *args):
@@ -633,11 +669,16 @@ class Actor:
         raise NotImplementedError()
 
     # 151 - 160
-    def tss(self):
-        raise NotImplementedError()
+    def tss(self, command):
+        raise NotImplementedError("I don't know that verb\n")
 
-    def rmedit(self):
-        raise NotImplementedError()
+    def remote_editor(self):
+        if not self.is_editor:
+            raise CommandError("Dum de dum.....\n")
+
+        self.send_wizard("\001s{name}\001{name} fades out of reality\n\001".format(name=self.name))
+        self.__fade_system(World.remote_editor())
+        self.send_wizard("\001s{name}\001{name} re-enters the normal universe\n\001".format(name=self.name))
 
     def loc(self):
         raise NotImplementedError()
@@ -649,7 +690,7 @@ class Actor:
         raise NotImplementedError()
 
     def honeyboard(self):
-        raise NotImplementedError()
+        raise NotImplementedError("You'll have to leave the game first!\n")
 
     def inumber(self):
         raise NotImplementedError()
@@ -792,3 +833,32 @@ class Wizard(Actor):
         target.exorcised()
         syslog("{} exorcised {}".format(self.name, target.name))
         self.__send_exorcise(target)
+
+    def tss(self, command):
+        raise NotImplementedError("I don't know that verb\n")
+
+    def honeyboard(self):
+        self.send_wizard("\001s{name}\001{name} has dropped into BB\n\001".format(name=self.name))
+        yield from self.__fade_system(World.honeyboard())
+
+        World.load()
+        self.send_wizard("\001s{name}\001{name} has returned to AberMud\n\001".format(name=self.name))
+
+
+class God(Wizard):
+    @property
+    def __is_valid_uid(self):
+        return self.__uid == self.__euid
+
+    @property
+    def __uid(self):
+        raise NotImplementedError()
+
+    @property
+    def __euid(self):
+        raise NotImplementedError()
+
+    def tss(self, command):
+        if not self.__is_valid_uid:
+            raise CommandError("Not permitted on this ID\n")
+        World.tss(command)

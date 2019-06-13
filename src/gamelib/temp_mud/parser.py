@@ -305,34 +305,3 @@ class Parser:
             self.user.location_id,
             "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.user),
         )
-
-    def tss(self, action):
-        World.save()
-
-        keysetback()
-        if getuid() != geteuid():
-            raise CommandError("Not permitted on this ID\n")
-        system(action)
-        keysetup()
-
-    def editor(self):
-        def actions():
-            show_buffer()
-            try:
-                chdir(ROOMS)
-            except ServiceError:
-                yield "Warning: Can't CHDIR\n"
-
-            yield from system("/cs_d/aberstudent/yr2/hy8/.sunbin/emacs")
-
-        self.user.fade_system("\001s{name}\001{name} fades out of reality\n\001".format(name=self.user.name), actions())
-
-        yield from parser.user.on_after_editor()
-
-    def honeyboard(self):
-        def actions():
-            yield from system("/cs_d/aberstudent/yr2/hy8/bt")
-
-        self.user.fade_system("\001s{name}\001{name} has dropped into BB\n\001".format(name=self.user.name), actions())
-
-        yield from parser.user.on_after_system()
