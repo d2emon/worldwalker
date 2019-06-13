@@ -844,8 +844,12 @@ class Actor:
         self.conversation_mode = Parser.CONVERSATION_TSS
         yield "Type ** on its own on a new line to exit shell\n"
 
-    def raw(self):
-        raise NotImplementedError()
+    @god_action("I don't know that verb\n")
+    def raw(self, message):
+        if self.level == 10033 and message[0] == "!":
+            self.broadcast(message[1:])
+        else:
+            self.broadcast("** SYSTEM : {}\n\007\007".format(message))
 
     def purr(self):
         raise NotImplementedError()

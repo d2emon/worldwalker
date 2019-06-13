@@ -352,11 +352,7 @@ class Raw(Action):
 
     @classmethod
     def action(cls, command, parser):
-        raw = parser.full()
-        if parser.user.level == 10033 and raw[0] == "!":
-            parser.user.broadcast(raw[1:])
-        else:
-            parser.user.broadcast("** SYSTEM : {}\n\007\007".format(raw))
+        parser.user.raw(parser.full())
 
 
 class Roll(Action):
