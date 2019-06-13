@@ -1,6 +1,6 @@
 from ..direction import DIRECTIONS
 from ..errors import CommandError, CrapupError, LooseError, ServiceError
-from ..item import Item, Door
+from ..item import Item, Door, ITEMS
 from ..location import Location
 from ..message import message_codes
 from ..parser import Parser
@@ -1040,7 +1040,8 @@ class Actor:
         raise NotImplementedError()
 
     def dig(self):
-        raise NotImplementedError()
+        self.location.on_dig_here(self)
+        yield from map(lambda item: item.on_dig(self), ITEMS)
 
     def empty(self):
         raise NotImplementedError()

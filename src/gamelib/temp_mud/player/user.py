@@ -495,21 +495,3 @@ class User(BasePlayer, Actor):
             self.reset_position()
         if unique:
             self.__force_read = False
-
-    # For actions
-    # Parse
-    def dig(self):
-        item = Item(186)
-        if item.location == self.location_id and item.is_destroyed:
-            yield "You uncover a stone slab!\n"
-            item.create()
-            return
-
-        if self.location_id not in (-172, -192):
-            raise CommandError("You find nothing.\n")
-
-        item = Item(176)
-        if item.state == 0:
-            raise CommandError("You widen the hole, but with little effect.\n")
-        item.state = 0
-        yield "You rapidly dig through to another passage.\n"

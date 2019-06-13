@@ -51,6 +51,10 @@ class Location:
         return True
 
     @property
+    def items(self):
+        return [item for item in ITEMS if item.location == self.location_id]
+
+    @property
     def name(self):
         return str(self.zone) + self.in_zone
 
@@ -131,6 +135,15 @@ class Location:
             self.short = "\nYou are on channel {}\n".format(self.location_id)
 
     # Events
+    def on_dig_here(self, actor):
+        events = [event for event in map(lambda item: item.on_dig_here(self), ITEMS) if event is not None]
+        if events:
+            yield from events
+            return
+
+        if self.location_id not in (-172, -192):
+            raise CommandError("You find nothing.\n")
+
     def on_enter(self, actor):
         if self.location_id == -139:
             if actor.has_shield:

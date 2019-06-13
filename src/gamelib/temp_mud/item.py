@@ -177,6 +177,12 @@ class Item:
     def on_give(self, actor):
         return None
 
+    def on_dig(self, actor):
+        return None
+
+    def on_dig_here(self, actor):
+        return None
+
 
 class Door(Item):
     def __init__(self, door_id):
@@ -211,33 +217,49 @@ class Door(Item):
 
 
 class Item11(Item):
+    def __init__(self):
+        super().__init__(11)
+
     def eat(self, actor):
         yield "You feel funny, and then pass out\n"
         yield "You wake up elsewhere....\n"
-        self.teleport(-1076)
+        actor.teleport(-1076)
 
 
 class Item32(Item):
+    def __init__(self):
+        super().__init__(32)
+
     def on_give(self, actor):
         if not actor.is_wizard:
             raise CommandError("It doesn't wish to be given away.....\n")
 
 
 class Item75(Item):
+    def __init__(self):
+        super().__init__(75)
+
     def eat(self, actor):
         yield "very refreshing\n"
 
 
 class Item122(Item):
+    def __init__(self, item_id=122):
+        super().__init__(item_id)
+
     def roll(self, actor):
         actor.push("pillar")
 
 
 class Item123(Item122):
-    pass
+    def __init__(self):
+        super().__init__(123)
 
 
 class Item175(Item):
+    def __init__(self):
+        super().__init__(175)
+
     def eat(self, actor):
         if actor.level < 3:
             actor.score += 40
@@ -247,3 +269,37 @@ class Item175(Item):
             if actor.strength < 40:
                 actor.strength += 2
         yield from actor.update()
+
+
+class Item176(Item):
+    def __init__(self):
+        super().__init__(176)
+
+    def on_dig(self, actor):
+        if self.state == 0:
+            raise CommandError("You widen the hole, but with little effect.\n")
+        self.state = 0
+        yield "You rapidly dig through to another passage.\n"
+
+
+class Item186(Item):
+    def __init__(self):
+        super().__init__(176)
+
+    def on_dig_here(self, actor):
+        if self.location == actor.location_id and self.is_destroyed:
+            yield "You uncover a stone slab!\n"
+            self.create()
+            return
+
+
+ITEMS = [
+    Item11(),
+    Item32(),
+    Item75(),
+    Item122(),
+    Item123(),
+    Item175(),
+    Item176(),
+    Item186(),
+]
