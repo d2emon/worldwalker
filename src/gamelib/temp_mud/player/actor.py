@@ -5,6 +5,7 @@ from ..location import Location
 from ..message import message_codes
 from ..parser import Parser
 from ..syslog import syslog
+from ..weather import Weather
 from ..world import World
 from .mobile import MOBILES
 from .player import Player
@@ -51,6 +52,13 @@ def message_action(f):
     def wrapped(self, *args):
         if not self.can_modify_messages:
             raise NotImplementedError("No way !\n")
+        return f(self, *args)
+    return wrapped
+
+
+def not_dumb_action(f):
+    def wrapped(self, *args):
+        self.Disease.dumb.check()
         return f(self, *args)
     return wrapped
 
@@ -292,6 +300,12 @@ class Actor:
         self.check_kicked()
         yield from self.read_messages()
 
+    def __silly_sound(self, message):
+        self.silly("\001P{user.name}\001\001d " + message + "\n\001")
+
+    def __silly_visual(self, message):
+        self.silly("\001s{user.name}\001{user.name} " + message + "\n\001")
+
     # Messages
     def broadcast(self, *args):
         raise NotImplementedError()
@@ -352,6 +366,9 @@ class Actor:
             0,
             message,
         )
+
+    def silly(self, message):
+        raise NotImplementedError()
 
     # 1 - 10
     def go(self, direction_id):
@@ -508,21 +525,21 @@ class Actor:
             raise CommandError("That isn't here\n")
         item.play(self)
 
+    @not_dumb_action
     def shout(self, message):
         # Parse
-        self.Disease.dumb.check()
         self.communicate(-10104 if self.is_wizard else message_codes.SHOUT, message)
         yield "Ok!"
 
+    @not_dumb_action
     def say(self, message):
         # Parse
-        self.Disease.dumb.check()
         self.communicate(message_codes.SAY, message)
         yield "You say '{}'\n".format(message)
 
+    @not_dumb_action
     def tell(self, target, message):
         # Parse
-        self.Disease.dumb.check()
         if target is None:
             raise CommandError("No one with that name is playing\n")
         self.communicate(message_codes.TELL, message, target)
@@ -630,36 +647,66 @@ class Actor:
         raise NotImplementedError()
 
     # 50
+    @not_dumb_action
     def laugh(self):
-        raise NotImplementedError()
+        self.__silly_sound("falls over laughing")
+        yield "You start to laugh\n"
 
     # 51 - 60
+    @not_dumb_action
     def cry(self):
-        raise NotImplementedError()
+        self.__silly_visual("bursts into tears")
+        yield "You burst into tears\n"
 
+    @not_dumb_action
     def burp(self):
-        raise NotImplementedError()
+        self.__silly_sound("burps loudly")
+        yield "You burp rudely\n"
 
     def fart(self):
-        raise NotImplementedError()
+        self.__silly_sound("lets off a real rip roarer")
+        yield "Fine...\n"
+        self.has_farted = True
 
+    @not_dumb_action
     def hiccup(self):
-        raise NotImplementedError()
+        self.__silly_sound("\001d hiccups")
+        yield "You hiccup\n"
 
     def grin(self):
-        raise NotImplementedError()
+        self.__silly_visual("grins evilly")
+        yield "You grin evilly\n"
 
     def smile(self):
-        raise NotImplementedError()
+        self.__silly_visual("smiles happily")
+        yield "You smile happily\n"
 
     def wink(self):
-        raise NotImplementedError()
+        self.__silly_visual("winks suggestively")
+        yield "You wink\n"
 
+    @not_dumb_action
     def snigger(self):
-        raise NotImplementedError()
+        self.__silly_sound("sniggers")
+        yield "You snigger\n"
 
+    @wizard_action("You are just not up to this yet\n")
     def pose(self):
-        raise NotImplementedError()
+        pose_id = randperc() % 5
+
+        yield "POSE :{}\n".format(pose_id)
+
+        if pose_id == 0:
+            pass
+        elif pose_id == 1:
+            self.__silly_visual("throws out one arm and sends a huge bolt of fire high\ninto the sky")
+            self.broadcast("\001cA massive ball of fire explodes high up in the sky\n\001")
+        elif pose_id == 2:
+            self.__silly_visual("turns casually into a hamster before resuming normal shape")
+        elif pose_id == 3:
+            self.__silly_visual("starts sizzling with magical energy")
+        elif pose_id == 4:
+            self.__silly_visual("begins to crackle with magical fire")
 
     def set(self):
         raise NotImplementedError()
@@ -668,17 +715,10 @@ class Actor:
     def pray(self):
         raise NotImplementedError()
 
-    def storm(self):
-        raise NotImplementedError()
-
-    def rain(self):
-        raise NotImplementedError()
-
-    def sun(self):
-        raise NotImplementedError()
-
-    def snow(self):
-        raise NotImplementedError()
+    @wizard_action("What ?\n")
+    def set_weather(self, weather_id):
+        # 62-65, 104
+        Weather().weather_id = weather_id
 
     def go_to(self):
         raise NotImplementedError()
@@ -697,8 +737,7 @@ class Actor:
     def wave(self):
         raise NotImplementedError()
 
-    def blizzard(self):
-        raise NotImplementedError()
+    # 104 -> set_weather
 
     def open(self):
         raise NotImplementedError()
@@ -1011,6 +1050,7 @@ class Actor:
         raise NotImplementedError()
 
     def switch_debug(self):
+        # Parse
         if not self.is_debugger:
             raise CommandError
 
@@ -1025,28 +1065,34 @@ class Actor:
 
     @message_action
     def set_in(self, message):
+        # Parse
         self.in_ms = message
 
     @message_action
     def set_out(self, message):
+        # Parse
         self.out_ms = message
 
     @message_action
     def set_magic_in(self, message):
+        # Parse
         self.min_ms = message
 
     @message_action
     def set_magic_out(self, message):
+        # Parse
         self.mout_ms = message
 
     def emote(self):
         raise NotImplementedError()
 
     def dig(self):
+        # Parse
         self.location.on_dig_here(self)
         yield from map(lambda item: item.on_dig(self), ITEMS)
 
     def empty(self, container):
+        # Parse
         if container is None:
             raise CommandError()
         for item in container.contain():

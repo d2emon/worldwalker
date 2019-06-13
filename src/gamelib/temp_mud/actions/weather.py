@@ -6,13 +6,105 @@ from ..weather_data import WEATHER_SUN, WEATHER_RAIN, WEATHER_STORM, WEATHER_SNO
 from .action import Action
 
 
+# Silly Section
+class Laugh(Action):
+    # 50
+    commands = "laugh",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.laugh()
+
+
+class Cry(Action):
+    # 51
+    commands = "cry",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.cry()
+
+
+class Burp(Action):
+    # 52
+    commands = "burp",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.burp()
+
+
+class Fart(Action):
+    # 53
+    commands = "fart",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.fart()
+
+
+class Hiccup(Action):
+    # 54
+    commands = "hiccup",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.hiccup()
+
+
+class Grin(Action):
+    # 55
+    commands = "grin",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.grin()
+
+
+class Smile(Action):
+    # 56
+    commands = "smile",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.smile()
+
+
+class Wink(Action):
+    # 57
+    commands = "wink",
+    # At person later maybe ?
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.wink()
+
+
+class Snigger(Action):
+    # 58
+    commands = "snigger",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.snigger()
+
+
+class Pose(Action):
+    # 59
+    commands = "pose",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.pose()
+
+
 class __WeatherAction(Action):
     weather_id = None
     wizard_only = "What ?\n"
 
     @classmethod
     def action(cls, command, parser):
-        Weather().weather_id = cls.weather_id
+        parser.user.set_weather(cls.weather_id)
 
 
 class Storm(__WeatherAction):
@@ -43,132 +135,6 @@ class Blizzard(__WeatherAction):
     # 104
     commands = "blizzard",
     weather_id = WEATHER_BLIZZARD
-
-
-# Silly Section
-class Silly(Action):
-    not_dumb = False
-
-    sound = None
-    visual = None
-    message = ""
-    result = ""
-
-    @classmethod
-    def validate(cls, command, parser):
-        super().validate(command, parser)
-        if cls.not_dumb:
-            parser.user.diseases.dumb.check()
-
-    @classmethod
-    def action(cls, command, parser):
-        message = cls.message
-        if cls.sound is not None:
-            message += "\001P{user.name}\001\001d " + cls.sound + "\n\001"
-        if cls.visual is not None:
-            message += "\001s{user.name}\001{user.name} " + cls.visual + "\n\001"
-        parser.user.silly(message)
-        yield cls.result
-
-
-class Laugh(Silly):
-    # 50
-    commands = "laugh",
-    not_dumb = True
-    sound = "falls over laughing"
-    result = "You start to laugh\n"
-
-
-class Cry(Silly):
-    # 51
-    commands = "cry",
-    not_dumb = True
-    visual = "bursts into tears"
-    result = "You burst into tears\n"
-
-
-class Burp(Silly):
-    # 52
-    commands = "burp",
-    not_dumb = True
-    sound = "burps loudly"
-    result = "You burp rudely\n"
-
-
-class Fart(Silly):
-    # 53
-    commands = "fart",
-    sound = "lets off a real rip roarer"
-    result = "Fine...\n"
-
-    @classmethod
-    def action(cls, command, parser):
-        parser.user.has_farted = True
-        super().action(command, parser)
-
-
-class Hiccup(Silly):
-    # 54
-    commands = "hiccup",
-    not_dumb = True
-    sound = "\001d hiccups"
-    result = "You hiccup\n"
-
-
-class Grin(Silly):
-    # 55
-    commands = "grin",
-    visual = "grins evilly"
-    result = "You grin evilly\n"
-
-
-class Smile(Silly):
-    # 56
-    commands = "smile",
-    visual = "smiles happily"
-    result = "You smile happily\n"
-
-
-class Wink(Silly):
-    # 57
-    commands = "wink",
-    # At person later maybe ?
-    visual = "winks suggestively"
-    result = "You wink\n"
-
-
-class Snigger(Silly):
-    # 58
-    commands = "snigger",
-    not_dumb = True
-    sound = "sniggers"
-    result = "You snigger\n"
-
-
-class Pose(Silly):
-    # 59
-    commands = "pose",
-    wizard_only = "You are just not up to this yet\n"
-
-    @classmethod
-    def action(cls, command, parser):
-        pose_id = randperc() % 5
-
-        yield "POSE :{}\n".format(pose_id)
-
-        if pose_id == 0:
-            pass
-        elif pose_id == 1:
-            parser.user.silly("\001s{user.name}\001{user.name} throws out one arm and sends a huge bolt of fire high\n"
-                              "into the sky\n\001")
-            parser.user.broadcast("\001cA massive ball of fire explodes high up in the sky\n\001")
-        elif pose_id == 2:
-            parser.user.silly("\001s{user.name}\001{user.name} turns casually into a hamster before resuming normal "
-                              "shape\n\001")
-        elif pose_id == 3:
-            parser.user.silly("\001s{user.name}\001{user.name} starts sizzling with magical energy\n\001")
-        elif pose_id == 4:
-            parser.user.silly("\001s{user.name}\001{user.name} begins to crackle with magical fire\n\001")
 
 
 class SetValue(Action):
