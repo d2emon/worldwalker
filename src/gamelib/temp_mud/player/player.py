@@ -116,6 +116,10 @@ class Player(BasePlayer):
         return not self.__test_flag(1)
 
     @property
+    def can_set_flags(self):
+        return not self.__test_flag(2)
+
+    @property
     def is_editor(self):
         return not self.__test_flag(3)
 

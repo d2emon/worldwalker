@@ -101,7 +101,6 @@ class Pose(Action):
 class SetValue(Action):
     # 60
     commands = "set",
-    wizard_only = "Sorry, wizards only\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -136,7 +135,6 @@ class Pray(Action):
 
 class __WeatherAction(Action):
     weather_id = None
-    wizard_only = "What ?\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -221,44 +219,21 @@ class Sulk(Action):
 class SetPFlags(Action):
     # 181
     commands = "pflags",
-    @classmethod
-    def validate(cls, command, parser):
-        if not parser.user.test_bit(2):
-            raise CommandError("You can't do that\n")
 
     @classmethod
     def action(cls, parser, user):
-        try:
-            player = Player.fpbn(parser.require_next("Whose PFlags ?\n"))
-        except NotFoundError:
-            raise CommandError("Who is that ?\n")
-
+        player = Player.fpbn(parser.require_next("Whose PFlags ?\n"))
         flag_id = parser.require_next("Flag number ?\n")
-
-        value = next(parser)
-        if value is None:
-            yield "Value is : {}\n".format("TRUE" if player.test_flag(flag_id) else "FALSE")
-            return
-        else:
-            value = int(value)
-
-        if value not in range(2) or player.player_id not in range(31):
-            raise CommandError("Out of range\n")
-
-        if value:
-            player.set_flag(flag_id)
-        else:
-            player.clear_flag(flag_id)
+        parser.user.set_player_flags(player, flag_id, next(parser))
 
 
-class Emote(Silly):
+class Emote(Action):
     # 187
     commands = "emote",
     """
     (C) Jim Finnis
     """
-    god_only = "Your emotions are strictly limited!\n"
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.silly("\001P{user.name}\001 " + parser.full() + "\n")
+        parser.user.emote(parser.full())

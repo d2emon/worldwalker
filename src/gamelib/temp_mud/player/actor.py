@@ -81,8 +81,8 @@ class Actor:
         raise NotImplementedError()
 
     @property
-    def can_modify_messages(self):
-        return self.is_god or self.name == "Lorry"
+    def can_set_flags(self):
+        raise NotImplementedError()
 
     @property
     def conversation_mode(self):
@@ -270,6 +270,10 @@ class Actor:
 
     def update(self, *args):
         raise NotImplementedError()
+
+    @property
+    def can_modify_messages(self):
+        return self.is_god or self.name == "Lorry"
 
     @property
     def has_shield(self):
@@ -1107,8 +1111,24 @@ class Actor:
         self.debug_mode = not self.debug_mode
 
     # 181 - 189
-    def pflags(self):
-        raise NotImplementedError()
+    def set_player_flags(self, player, flag_id, value):
+        if not self.can_set_flags:
+            raise CommandError("You can't do that\n")
+        if player is None:
+            raise CommandError("Who is that ?\n")
+        if value is None:
+            yield "Value is : {}\n".format("TRUE" if player.test_flag(flag_id) else "FALSE")
+            return
+        else:
+            value = int(value)
+
+        if value not in range(2) or player.player_id not in range(31):
+            raise CommandError("Out of range\n")
+
+        if value:
+            player.set_flag(flag_id)
+        else:
+            player.clear_flag(flag_id)
 
     def frobnicate(self):
         raise NotImplementedError()
@@ -1133,8 +1153,9 @@ class Actor:
         # Parse
         self.mout_ms = message
 
-    def emote(self):
-        raise NotImplementedError()
+    @god_action("Your emotions are strictly limited!\n")
+    def emote(self, message):
+        self.silly("\001P{user.name}\001 " + message + "\n")
 
     def dig(self):
         # Parse

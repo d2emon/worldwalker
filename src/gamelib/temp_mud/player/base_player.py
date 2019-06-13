@@ -131,6 +131,10 @@ class BasePlayer:
         raise NotImplementedError()
 
     @property
+    def can_set_flags(self):
+        raise NotImplementedError()
+
+    @property
     def is_editor(self):
         raise NotImplementedError()
 
