@@ -304,7 +304,7 @@ class Update(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.update_system()
+        return parser.user.update_system()
 
 
 class Become(Action):
@@ -314,7 +314,7 @@ class Become(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.become(parser.full())
+        return parser.user.become(parser.full())
 
 
 class SysStat(Action):
@@ -323,7 +323,7 @@ class SysStat(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.sys_stat()
+        return parser.user.sys_stat()
 
 
 class Converse(Action):
@@ -332,7 +332,7 @@ class Converse(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.converse()
+        return parser.user.converse()
 
 
 class Shell(Action):
@@ -342,7 +342,7 @@ class Shell(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.shell()
+        return parser.user.shell()
 
 
 class Raw(Action):
@@ -352,7 +352,7 @@ class Raw(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.raw(parser.full())
+        return parser.user.raw(parser.full())
 
 
 class Roll(Action):
@@ -363,7 +363,7 @@ class Roll(Action):
     def action(cls, command, parser):
         # item = get_item(parser)
         item = parser.ohereandget()
-        parser.user.roll(item)
+        return parser.user.roll(item)
 
 
 class Credits(Action):
@@ -372,7 +372,7 @@ class Credits(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.credits()
+        return parser.user.credits()
 
 
 class Brief(Action):
@@ -381,7 +381,7 @@ class Brief(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.switch_brief()
+        return parser.user.switch_brief()
 
 
 class Debug(Action):
@@ -391,7 +391,7 @@ class Debug(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return debug2()
+        return parser.user.debug()
 
 
 class MapWorld(Action):

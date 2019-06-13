@@ -156,6 +156,9 @@ class Actor:
     def __is_valid_uid(self):
         return self.__uid == self.__euid
 
+    def debug2(self, *args):
+        raise NotImplementedError()
+
     def die(self, *args):
         raise NotImplementedError()
 
@@ -885,8 +888,9 @@ class Actor:
         self.brief = not self.brief
 
     # 171 - 180
+    @god_action("I don't know that verb\n")
     def debug(self):
-        raise NotImplementedError()
+        return self.debug2()
 
     def jump(self):
         raise NotImplementedError()
