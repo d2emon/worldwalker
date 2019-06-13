@@ -708,8 +708,52 @@ class Actor:
         elif pose_id == 4:
             self.__silly_visual("begins to crackle with magical fire")
 
-    def set(self):
-        raise NotImplementedError()
+    @wizard_action("Sorry, wizards only\n")
+    def set_item_bit(self, item, bit_id, value):
+        if value is None:
+            yield "The bit is {}\n".format("TRUE" if item.test_bit(bit_id) else "FALSE")
+            return
+        else:
+            value = int(value)
+
+        if value not in range(2) or bit_id not in range(16):
+            raise CommandError("Number out of range\n")
+
+        if not value:
+            item.clear_bit(bit_id)
+        else:
+            item.set_bit(bit_id)
+
+    @wizard_action("Sorry, wizards only\n")
+    def set_item_byte(self, item, byte_id, value):
+        if value is None:
+            yield "Current Value is : {}\n".format(item.get_byte(byte_id))
+            return
+        else:
+            value = int(value)
+
+        if value not in range(256) or byte_id not in range(2):
+            raise CommandError("Number out of range\n")
+
+        item.set_byte(byte_id, value)
+
+    @wizard_action("Sorry, wizards only\n")
+    def set_item_state(self, item, value):
+        if value < 0:
+            raise CommandError("States start at 0\n")
+        if value > item.max_state:
+            raise CommandError("Sorry max state for that is {}\n".format(item.max_state))
+        item.state = value
+
+    @wizard_action("Sorry, wizards only\n")
+    def set_player_strength(self, player, value):
+        if player is None:
+            raise CommandError("Set what ?\n")
+
+        if not player.is_mobile:
+            raise CommandError("Mobiles only\n")
+
+        player.strength = value
 
     # 61 - 66
     def pray(self):

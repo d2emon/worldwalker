@@ -143,74 +143,25 @@ class SetValue(Action):
     wizard_only = "Sorry, wizards only\n"
 
     @classmethod
-    def __set_bit(cls, parser, item):
-        bit_id = int(parser.require_next("Which bit ?\n"))
-
-        value = next(parser)
-        if value is None:
-            yield "The bit is {}\n".format("TRUE" if item.test_bit(bit_id) else "FALSE")
-            return
-        else:
-            value = int(value)
-
-        if value not in range(2) or bit_id not in range(16):
-            raise CommandError("Number out of range\n")
-
-        if not value:
-            item.clear_bit(bit_id)
-        else:
-            item.set_bit(bit_id)
-
-    @classmethod
-    def __set_byte(cls, parser, item):
-        byte_id = int(parser.require_next("Which byte ?\n"))
-
-        value = next(parser)
-        if value is None:
-            yield "Current Value is : {}\n".format(item.get_byte(byte_id))
-            return
-        else:
-            value = int(value)
-
-        if value not in range(256) or byte_id not in range(2):
-            raise CommandError("Number out of range\n")
-
-        item.set_byte(byte_id, value)
-
-    @classmethod
-    def __set_mobile(cls, parser, mobile):
-        try:
-            player = Player.fpbn(mobile)
-        except NotFoundError:
-            raise CommandError("Set what ?\n")
-
-        if not player.is_mobile:
-            raise CommandError("Mobiles only\n")
-
-        player.strength = int(parser.require_next("To what value ?\n"))
-
-    @classmethod
-    def __set_state(cls, item, state):
-        if state < 0:
-            raise CommandError("States start at 0\n")
-        if state > item.max_state:
-            raise CommandError("Sorry max state for that is {}\n".format(item.max_state))
-        item.state = state
-
-    @classmethod
     def action(cls, command, parser):
-        item_name = parser.require_next("set what\n")
-        item = Item.fobna(item_name)
+        name = parser.require_next("set what\n")
+        item = Item.fobna(name)
         if item is None:
-            return cls.__set_mobile(parser, item_name)
+            player = Player.fpbn(name)
+            value = parser.require_next("To what value ?\n")
+            return parser.user.set_player_strength(player, int(value))
 
         value = parser.require_next("Set to what value ?\n")
         if value == "bit":
-            return cls.__set_bit(parser, item)
+            bit_id = int(parser.require_next("Which bit ?\n"))
+            value = next(parser)
+            return parser.user.set_item_bit(item, bit_id, value)
         elif value == "byte":
-            return cls.__set_byte(parser, item)
+            byte_id = int(parser.require_next("Which byte ?\n"))
+            value = next(parser)
+            return parser.user.set_item_byte(item, byte_id, value)
         else:
-            return cls.__set_state(item, int(value))
+            return parser.user.set_item_state(item, int(value))
 
 
 class Pray(Silly):
