@@ -122,6 +122,10 @@ class Item:
     def fobna(cls, item_name):
         raise NotImplementedError()
 
+    @classmethod
+    def fobncb(cls, item_name, owner):
+        raise NotImplementedError()
+
     def iswornby(self, *args):
         raise NotImplementedError()
 
@@ -158,6 +162,10 @@ class Item:
 
     def test_mask(self, mask):
         return all(self.test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
+
+    # Events
+    def on_give(self, actor):
+        return None
 
 
 class Door(Item):
@@ -197,6 +205,12 @@ class Item11(Item):
         yield "You feel funny, and then pass out\n"
         yield "You wake up elsewhere....\n"
         self.teleport(-1076)
+
+
+class Item32(Item):
+    def on_give(self, actor):
+        if not actor.is_wizard:
+            raise CommandError("It doesn't wish to be given away.....\n")
 
 
 class Item75(Item):

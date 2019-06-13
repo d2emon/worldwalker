@@ -124,8 +124,8 @@ def __exorcise(user, message):
     yield "{} has been kicked off\n".format(message.user_to)
 
 
-# -10011
-def __code_10011(user, message):
+# GIVE
+def __give(user, message):
     yield message.message
 
 
@@ -148,21 +148,21 @@ def __code_10021(user, message):
 
 
 MESSAGE_HANDLERS = {
-    message_codes.STOP_SNOOP: __stop_snoop,
-    message_codes.START_SNOOP: __start_snoop,
-    message_codes.CHANGE_STATS: __change_stats,
-    message_codes.TOO_EVIL: __too_evil,
-    message_codes.MSG_750: __code_750,
-    message_codes.VISIBLE: __set_visible,
+    message_codes.STOP_SNOOP: __stop_snoop,  #
+    message_codes.START_SNOOP: __start_snoop,  #
+    message_codes.CHANGE_STATS: __change_stats,  #
+    message_codes.TOO_EVIL: __too_evil,  #
+    message_codes.MSG_750: __code_750,  #
+    message_codes.VISIBLE: __set_visible,  #
     message_codes.GLOBAL: __global_message,
     message_codes.LIGHTNING: __lightning,
     message_codes.SHOUT: __shout,
     message_codes.SAY: __say,
     message_codes.TELL: __tell,
     message_codes.EXORCISE: __exorcise,
-    message_codes.MSG_10011: __code_10011,
-    message_codes.MSG_10020: __code_10020,
-    message_codes.MSG_10021: __code_10021,
+    message_codes.GIVE: __give,
+    message_codes.MSG_10020: __code_10020,  #
+    message_codes.MSG_10021: __code_10021,  #
     message_codes.WEATHER: set_weather,
 
     # < -10099

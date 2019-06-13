@@ -330,13 +330,32 @@ class Actor:
         )
         yield self.disle3(self.level, self.sex)
 
-    def exorcise(self, player):
+    def exorcise(self, target):
         raise NotImplementedError("No chance....\n")
 
-    def give(self):
-        raise NotImplementedError()
+    def give(self, item, target):
+        if item is None:
+            raise CommandError("You aren't carrying that\n")
+        if target is None:
+            raise CommandError("I don't know who it is\n")
 
-    def steal(self):
+        if not self.is_wizard and target.location_id != self.location_id:
+            raise CommandError("They are not here\n")
+        if not item.iscarrby(self):
+            raise CommandError("You are not carrying that\n")
+        if target.overweight:
+            raise CommandError("They can't carry that\n")
+
+        item.on_give(self)
+        item.set_location(target, 1)
+        self.send_message(
+            target,
+            -10011,
+            self.location_id,
+            "\001p{}\001 gives you the {}\n".format(self.name, item.name),
+        )
+
+    def steal(self, item, target):
         raise NotImplementedError()
 
     def levels(self):
@@ -737,10 +756,7 @@ class Wizard(Actor):
     def exorcise(self, target):
         if target is None:
             raise CommandError("They aren't playing\n")
-        if not target.can_be_exorcised:
-            raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
 
+        target.exorcised()
         syslog("{} exorcised {}".format(self.name, target.name))
-        target.dumpstuff(target.location)
         self.__send_exorcise(target)
-        target.remove()

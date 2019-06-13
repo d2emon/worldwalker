@@ -274,6 +274,12 @@ class User(BasePlayer, Actor):
         if Player.fpbns(self.name) is None:
             raise LooseError("You have been kicked off")
 
+    def exorcised(self):
+        if not self.can_be_exorcised:
+            raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
+        self.dumpstuff(self.location_id)
+        self.remove()
+
     # Tk
     def fade_system(self, message, actions):
         self.send_message(
@@ -525,28 +531,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def give(self, item, player):
-        if item is None:
-            raise CommandError("You aren't carrying that\n")
-        if player is None:
-            raise CommandError("I don't know who it is\n")
-
-        if not self.is_wizard and player.location_id != self.location_id:
-            raise CommandError("They are not here\n")
-        if not item.iscarrby(self):
-            raise CommandError("You are not carrying that\n")
-        if player.overweight:
-            raise CommandError("They can't carry that\n")
-        if not self.is_wizard and item.item_id == 32:
-            raise CommandError("It doesn't wish to be given away.....\n")
-        item.set_location(player, 1)
-        self.send_message(
-            player,
-            -10011,
-            self.location_id,
-            "\001p{}\001 gives you the {}\n".format(self.name, item.name),
-        )
-
     def steal(self, item, player):
         if item is None:
             raise CommandError("They are not carrying that\n")
