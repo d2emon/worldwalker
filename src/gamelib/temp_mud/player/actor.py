@@ -757,7 +757,8 @@ class Actor:
 
     # 61 - 66
     def pray(self):
-        raise NotImplementedError()
+        self.__silly_visual("falls down and grovels in the dirt")
+        yield "Ok\n"
 
     @wizard_action("What ?\n")
     def set_weather(self, weather_id):
@@ -894,16 +895,18 @@ class Actor:
 
     # 141 - 150
     def groan(self):
-        raise NotImplementedError()
+        self.__silly_sound("groans loudly")
+        yield "You groan\n"
 
     def moan(self):
-        raise NotImplementedError()
+        self.__silly_sound("starts making moaning noises")
+        yield "You start to moan\n"
 
     def directory(self):
         raise NotImplementedError()
 
     def yawn(self):
-        raise NotImplementedError()
+        self.__silly_sound("yawns")
 
     def wizlist(self):
         raise NotImplementedError()
@@ -1020,14 +1023,17 @@ class Actor:
         else:
             self.broadcast("** SYSTEM : {}\n\007\007".format(message))
 
+    @not_dumb_action
     def purr(self):
-        raise NotImplementedError()
+        self.__silly_sound("starts purring")
+        yield "MMMMEMEEEEEEEOOOOOOOWWWWWWW!!\n"
 
     def cuddle(self):
         raise NotImplementedError()
 
     def sulk(self):
-        raise NotImplementedError()
+        self.__silly_visual("sulks")
+        yield "You sulk....\n"
 
     def roll(self, item):
         # Parse

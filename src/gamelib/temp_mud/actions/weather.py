@@ -98,6 +98,42 @@ class Pose(Action):
         return parser.user.pose()
 
 
+class SetValue(Action):
+    # 60
+    commands = "set",
+    wizard_only = "Sorry, wizards only\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        name = parser.require_next("set what\n")
+        item = Item.fobna(name)
+        if item is None:
+            player = Player.fpbn(name)
+            value = parser.require_next("To what value ?\n")
+            return parser.user.set_player_strength(player, int(value))
+
+        value = parser.require_next("Set to what value ?\n")
+        if value == "bit":
+            bit_id = int(parser.require_next("Which bit ?\n"))
+            value = next(parser)
+            return parser.user.set_item_bit(item, bit_id, value)
+        elif value == "byte":
+            byte_id = int(parser.require_next("Which byte ?\n"))
+            value = next(parser)
+            return parser.user.set_item_byte(item, byte_id, value)
+        else:
+            return parser.user.set_item_state(item, int(value))
+
+
+class Pray(Action):
+    # 61
+    commands = "pray",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.pray()
+
+
 class __WeatherAction(Action):
     weather_id = None
     wizard_only = "What ?\n"
@@ -137,73 +173,49 @@ class Blizzard(__WeatherAction):
     weather_id = WEATHER_BLIZZARD
 
 
-class SetValue(Action):
-    # 60
-    commands = "set",
-    wizard_only = "Sorry, wizards only\n"
+class Groan(Action):
+    # 141
+    commands = "goan",
 
     @classmethod
     def action(cls, command, parser):
-        name = parser.require_next("set what\n")
-        item = Item.fobna(name)
-        if item is None:
-            player = Player.fpbn(name)
-            value = parser.require_next("To what value ?\n")
-            return parser.user.set_player_strength(player, int(value))
-
-        value = parser.require_next("Set to what value ?\n")
-        if value == "bit":
-            bit_id = int(parser.require_next("Which bit ?\n"))
-            value = next(parser)
-            return parser.user.set_item_bit(item, bit_id, value)
-        elif value == "byte":
-            byte_id = int(parser.require_next("Which byte ?\n"))
-            value = next(parser)
-            return parser.user.set_item_byte(item, byte_id, value)
-        else:
-            return parser.user.set_item_state(item, int(value))
+        return parser.user.groan()
 
 
-class Pray(Silly):
-    # 61
-    commands = "pray",
-    visual = "falls down and grovels in the dirt"
-    result = "Ok\n"
-
-
-class Groan(Silly):
-    # 141
-    commands = "goan",
-    sound = "groans loudly"
-    result = "You groan\n"
-
-
-class Moan(Silly):
+class Moan(Action):
     # 142
     commands = "moan",
-    sound = "starts making moaning noises"
-    result = "You start to moan\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.moan()
 
 
-class Yawn(Silly):
+class Yawn(Action):
     # 144
     commands = "yawn",
-    sound = "yawns"
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.yawn()
 
 
-class Purr(Silly):
+class Purr(Action):
     # 165
     commands = "purr",
-    not_dumb = True
-    sound = "starts purring"
-    result = "MMMMEMEEEEEEEOOOOOOOWWWWWWW!!\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.purr()
 
 
-class Sulk(Silly):
+class Sulk(Action):
     # 167
     commands = "sulk",
-    visual = "sulks"
-    result = "You sulk....\n"
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.sulk()
 
 
 class SetPFlags(Action):
