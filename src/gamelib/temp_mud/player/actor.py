@@ -73,6 +73,14 @@ class Actor:
         raise NotImplementedError()
 
     @property
+    def debug_mode(self):
+        raise NotImplementedError()
+
+    @debug_mode.setter
+    def debug_mode(self, value):
+        raise NotImplementedError()
+
+    @property
     def __euid(self):
         raise NotImplementedError()
 
@@ -86,6 +94,10 @@ class Actor:
 
     @property
     def in_dark(self):
+        raise NotImplementedError()
+
+    @property
+    def is_debugger(self):
         raise NotImplementedError()
 
     @property
@@ -955,8 +967,11 @@ class Actor:
     def patch(self):
         raise NotImplementedError()
 
-    def debugmode(self):
-        raise NotImplementedError()
+    def switch_debug(self):
+        if not self.is_debugger:
+            raise CommandError
+
+        self.debug_mode = not self.debug_mode
 
     # 181 - 189
     def pflags(self):

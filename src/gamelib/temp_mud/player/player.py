@@ -119,6 +119,10 @@ class Player(BasePlayer):
     def is_editor(self):
         return not self.__test_flag(3)
 
+    @property
+    def is_debugger(self):
+        return not self.__test_flag(4)
+
     # Support
     @property
     def helper(self):

@@ -134,6 +134,10 @@ class BasePlayer:
     def is_editor(self):
         raise NotImplementedError()
 
+    @property
+    def is_debugger(self):
+        raise NotImplementedError()
+
     def check_kicked(self):
         raise NotImplementedError()
 

@@ -273,11 +273,6 @@ class Parser:
 
     # Unknown
     # For Actions
-    def switch_debug(self):
-        if not self.user.test_flag(4):
-            return
-        self.__debug_mode = not self.__debug_mode
-
     def start_game(self):
         self.mode = self.MODE_GAME
         self.user.show_players = True

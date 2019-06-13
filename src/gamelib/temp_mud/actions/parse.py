@@ -447,7 +447,7 @@ class DebugMode(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.switch_debug()
+        parser.user.switch_debug()
 
 
 class SetMessage(Action):
