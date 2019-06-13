@@ -1,8 +1,6 @@
-from ..errors import CommandError, CrapupError, ServiceError
+from ..errors import CommandError
 from ..item import Item
 from ..player.player import Player
-from ..syslog import syslog
-from ..world import World
 from .action import Action, ActionList
 
 
@@ -119,7 +117,6 @@ class Reset(Action):
     # 14
     full_match = True
     commands = "reset",
-    wizard_only = "What ?\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -129,7 +126,6 @@ class Reset(Action):
 class Lightning(Action):
     # 15
     commands = "zap",
-    wizard_only = "Your spell fails.....\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -205,7 +201,6 @@ class Score(Action):
 class Exorcise(Action):
     # 23
     commands = "exorcise",
-    wizard_only = "No chance....\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -271,7 +266,6 @@ class Grope(Action):
 class Tss(Action):
     # 151
     commands = "tss",
-    god_only = "I don't know that verb\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -290,7 +284,6 @@ class RmEdit(Action):
 class USystem(Action):
     # 156
     commands = "honeyboard",
-    wizard_only = "You'll have to leave the game first!\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -300,7 +293,6 @@ class USystem(Action):
 class INumber(Action):
     # 157
     commands = "inumber",
-    god_only = "Huh ?\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -311,7 +303,6 @@ class INumber(Action):
 class Update(Action):
     # 158
     commands = "update",
-    wizard_only = "Hmmm... you can't do that one\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -321,7 +312,6 @@ class Update(Action):
 class Become(Action):
     # 159
     commands = "become",
-    wizard_only = "Become what ?\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -349,7 +339,6 @@ class Converse(Action):
 class Shell(Action):
     # 163
     commands = "shell",
-    god_only = "There is nothing here you can shell\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -359,7 +348,6 @@ class Shell(Action):
 class Raw(Action):
     # 164
     commands = "raw",
-    god_only = "I don't know that verb\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -398,7 +386,6 @@ class Brief(Action):
 class Debug(Action):
     # 171
     commands = "debug",
-    god_only = "I don't know that verb\n"
 
     @classmethod
     def action(cls, command, parser):
@@ -450,14 +437,7 @@ class DebugMode(Action):
         parser.user.switch_debug()
 
 
-class SetMessage(Action):
-    @classmethod
-    def validate(cls, command, parser):
-        if not parser.user.is_god and parser.user.name != "Lorry":
-            raise CommandError("No way !\n")
-
-
-class SetIn(SetMessage):
+class SetIn(Action):
     # 183
     commands = "setin",
 
@@ -466,7 +446,7 @@ class SetIn(SetMessage):
         parser.user.set_in(parser.full())
 
 
-class SetOut(SetMessage):
+class SetOut(Action):
     # 184
     commands = "setout",
 
@@ -475,7 +455,7 @@ class SetOut(SetMessage):
         parser.user.set_out(parser.full())
 
 
-class SetMin(SetMessage):
+class SetMin(Action):
     # 185
     commands = "setmin",
 
@@ -484,7 +464,7 @@ class SetMin(SetMessage):
         parser.user.set_magic_in(parser.full())
 
 
-class SetMout(SetMessage):
+class SetMout(Action):
     # 186
     commands = "setmout",
 
