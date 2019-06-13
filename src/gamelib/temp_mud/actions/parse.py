@@ -294,7 +294,7 @@ class INumber(Action):
     @classmethod
     def action(cls, command, parser):
         item = Item.fobn(parser.require_next("What...\n"))
-        yield "Item Number is {}\n".format(item)
+        return parser.player.inumber(item)
 
 
 class Update(Action):

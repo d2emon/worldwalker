@@ -692,8 +692,8 @@ class Actor:
     def honeyboard(self):
         raise NotImplementedError("You'll have to leave the game first!\n")
 
-    def inumber(self):
-        raise NotImplementedError()
+    def inumber(self, item):
+        raise NotImplementedError("Huh ?\n")
 
     def update(self):
         raise NotImplementedError()
@@ -844,6 +844,9 @@ class Wizard(Actor):
         World.load()
         self.send_wizard("\001s{name}\001{name} has returned to AberMud\n\001".format(name=self.name))
 
+    def inumber(self, item):
+        raise NotImplementedError("Huh ?\n")
+
 
 class God(Wizard):
     @property
@@ -862,3 +865,6 @@ class God(Wizard):
         if not self.__is_valid_uid:
             raise CommandError("Not permitted on this ID\n")
         World.tss(command)
+
+    def inumber(self, item):
+        yield "Item Number is {}\n".format(item)
