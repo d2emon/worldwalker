@@ -525,32 +525,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def shout(self, text):
-        self.Disease.dumb.check()
-        self.send_message(
-            self,
-            -10104 if self.is_wizard else -10002,
-            self.location_id,
-            text,
-        )
-        yield "Ok!"
-
-    def say(self, text):
-        self.Disease.dumb.check()
-        self.send_message(
-            self,
-            -10003,
-            self.location_id,
-            text,
-        )
-        yield "You say '{}'\n".format(text)
-
-    def tell(self, player, text):
-        self.Disease.dumb.check()
-        if player is None:
-            raise CommandError("No one with that name is playing\n")
-        self.send_message(player, -10004, self.location_id, text)
-
     def show_score(self):
         if self.level == 1:
             yield "Your strength is {}\n".format(self.strength)

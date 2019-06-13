@@ -26,7 +26,7 @@ class Actor:
         raise NotImplementedError()
 
     @has_farted.setter
-    def has_farted(self):
+    def has_farted(self, value):
         raise NotImplementedError()
 
     @property
@@ -109,6 +109,15 @@ class Actor:
     # Messages
     def broadcast(self, *args):
         raise NotImplementedError()
+
+    def communicate(self, code, message, target=None):
+        target = target or self
+        self.send_message(
+            target,
+            code,
+            self.location_id,
+            message,
+        )
 
     def send_global(self, message):
         self.send_message(
@@ -269,14 +278,21 @@ class Actor:
             raise CommandError("That isn't here\n")
         item.play(self)
 
-    def shout(self):
-        raise NotImplementedError()
+    def shout(self, message):
+        self.Disease.dumb.check()
+        self.communicate(-10104 if self.is_wizard else message_codes.SHOUT, message)
+        yield "Ok!"
 
-    def say(self):
-        raise NotImplementedError()
+    def say(self, message):
+        self.Disease.dumb.check()
+        self.communicate(message_codes.SAY, message)
+        yield "You say '{}'\n".format(message)
 
-    def tell(self):
-        raise NotImplementedError()
+    def tell(self, target, message):
+        self.Disease.dumb.check()
+        if target is None:
+            raise CommandError("No one with that name is playing\n")
+        self.communicate(message_codes.TELL, message, target)
 
     # 21 - 30
     def save(self):

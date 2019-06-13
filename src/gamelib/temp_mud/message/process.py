@@ -97,7 +97,7 @@ def __code_10001(user, message):
 
 # -10002
 @__public
-def __code_10002(user, message):
+def __shout(user, message):
     if user.__location_id == message.channel_id or user.is_wizard:
         yield "\001P{}\001\001d shouts '{}'\n\001".format(message.user_from, message.message)
     else:
@@ -107,13 +107,13 @@ def __code_10002(user, message):
 # -10003
 @__public
 @__local
-def __code_10003(user, message):
+def __say(user, message):
     yield "\001P{}\001\001d says '{}'\n\001".format(message.user_from, message.message)
 
 
 # -10004
 @__public
-def __code_10004(user, message):
+def __tell(user, message):
     yield "\001P{}\001\001d tells you '{}'\n\001".format(message.user_from, message.message)
 
 
@@ -156,9 +156,9 @@ MESSAGE_HANDLERS = {
     message_codes.VISIBLE: __set_visible,
     message_codes.GLOBAL: __global_message,
     message_codes.MSG_10001: __code_10001,
-    message_codes.MSG_10002: __code_10002,
-    message_codes.MSG_10003: __code_10003,
-    message_codes.MSG_10004: __code_10004,
+    message_codes.SHOUT: __shout,
+    message_codes.SAY: __say,
+    message_codes.TELL: __tell,
     message_codes.MSG_10010: __code_10010,
     message_codes.MSG_10011: __code_10011,
     message_codes.MSG_10020: __code_10020,
