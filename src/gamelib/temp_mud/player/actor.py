@@ -938,11 +938,13 @@ class Actor:
 
         return self.go(direction_id)
 
-    def bug(self):
-        raise NotImplementedError()
+    def bug(self, message):
+        # Parse
+        syslog("Bug by {} : {}".format(self.name, message))
 
-    def typo(self):
-        raise NotImplementedError()
+    def typo(self, message):
+        # Parse
+        syslog("Typo by {} in {} : {}".format(self.name, self.location_id, message))
 
     def pn(self):
         raise NotImplementedError()

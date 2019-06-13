@@ -429,7 +429,7 @@ class Bug(Action):
 
     @classmethod
     def action(cls, command, parser):
-        syslog("Bug by {} : {}".format(parser.user.name, parser.full()))
+        return parser.user.bug(parser.full())
 
 
 class Typo(Action):
@@ -438,7 +438,7 @@ class Typo(Action):
 
     @classmethod
     def action(cls, command, parser):
-        syslog("Typo by {} in {} : {}".format(parser.user.name, parser.user.location_id, parser.full()))
+        return parser.user.typo(parser.full())
 
 
 class DebugMode(Action):
