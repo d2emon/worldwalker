@@ -323,8 +323,7 @@ class SysStat(Action):
 
     @classmethod
     def action(cls, command, parser):
-        if parser.user.level < 10000000:
-            raise CommandError("What do you think this is a DEC 10 ?\n")
+        parser.user.sys_stat()
 
 
 class Converse(Action):
@@ -333,8 +332,7 @@ class Converse(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.conversation_mode = parser.CONVERSATION_SAY
-        yield "Type '**' on a line of its own to exit converse mode\n"
+        parser.user.converse()
 
 
 class Shell(Action):
@@ -344,8 +342,7 @@ class Shell(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.conversation_mode = parser.CONVERSATION_TSS
-        yield "Type ** on its own on a new line to exit shell\n"
+        parser.user.shell()
 
 
 class Raw(Action):

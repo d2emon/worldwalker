@@ -3,6 +3,7 @@ from ..errors import CommandError, CrapupError, LooseError, ServiceError
 from ..item import Item, Door
 from ..location import Location
 from ..message import message_codes
+from ..parser import Parser
 from ..syslog import syslog
 from ..world import World
 from .mobile import MOBILES
@@ -32,6 +33,14 @@ class Actor:
 
     @property
     def Disease(self):
+        raise NotImplementedError()
+
+    @property
+    def conversation_mode(self):
+        raise NotImplementedError()
+
+    @conversation_mode.setter
+    def conversation_mode(self, value):
         raise NotImplementedError()
 
     @property
@@ -709,18 +718,20 @@ class Actor:
     def become(self, name):
         raise NotImplementedError("Become what ?\n")
 
-    def systat(self):
-        raise NotImplementedError()
+    def sys_stat(self):
+        if self.level < 10000000:
+            raise NotImplementedError("What do you think this is a DEC 10 ?\n")
 
     # 161 - 170
     def converse(self):
-        raise NotImplementedError()
+        self.conversation_mode = Parser.CONVERSATION_SAY
+        yield "Type '**' on a line of its own to exit converse mode\n"
 
     def snoop(self):
         raise NotImplementedError()
 
     def shell(self):
-        raise NotImplementedError()
+        raise NotImplementedError("There is nothing here you can shell\n")
 
     def raw(self):
         raise NotImplementedError()
@@ -880,6 +891,9 @@ class Wizard(Actor):
         except ServiceError:
             raise CommandError("Eek! someone's just run off with mud!!!!\n")
 
+    def shell(self):
+        raise NotImplementedError("There is nothing here you can shell\n")
+
 
 class God(Wizard):
     @property
@@ -901,3 +915,7 @@ class God(Wizard):
 
     def item_number(self, item):
         yield "Item Number is {}\n".format(item)
+
+    def shell(self):
+        self.conversation_mode = Parser.CONVERSATION_TSS
+        yield "Type ** on its own on a new line to exit shell\n"
