@@ -23,6 +23,7 @@ class Zone:
         location_id = self.first + offset - 1
         return location_id if location_id <= self.last else 0
 
+    # Zones
     @classmethod
     def find(cls, channel_id):
         location_id = -channel_id
@@ -30,6 +31,7 @@ class Zone:
             return DEFAULT_ZONE
         return next((zone for zone in ZONES if zone.first < location_id < zone.last), DEFAULT_ZONE)
 
+    # Unknown
     @classmethod
     def by_name(cls, name):
         return next((zone for zone in ZONES if zone.name.lower() == name), None)

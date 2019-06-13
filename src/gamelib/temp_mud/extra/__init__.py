@@ -118,7 +118,7 @@ else
     if(Item(a).carry_flag!=0)bprintf("\nHeld By     :%s",Player(Item(a).location).name);
     else
        {bprintf("\nPosition    :");
-       showname(Item(a).location);
+       yield Item(a).location.get_name(user)
 }
        }
     bprintf("\nState       :%d",state(a));
@@ -250,7 +250,7 @@ else
  bprintf("Strength  : %d\n",Player(b).strength);
  bprintf("Sex       : %s\n",(Player(b).sex == Player.SEX_MALE)?"MALE":"FEMALE");
  bprintf("Location  : ");
- showname(Player(b).location);
+ yield Player(b).location.get_name(user)
  }
  wizlist()
  {
@@ -270,7 +270,6 @@ else
  extern char wordbuf[];
  char st[80],rn[80],rv[80];
  long ex_bk[7];
- extern long ex_dat[];
  long a;
  long x;
  long y;
@@ -279,7 +278,7 @@ else
  if(my_lev<10){bprintf("Huh\n");return;}
  while(a<7)
  {
- ex_bk[a]=ex_dat[a];
+ ex_bk[a]=user.location.exits[a];
  a++;
  }
  if(brkword()== -1)
@@ -294,7 +293,7 @@ else
  return;
  }
  strcpy(rv,wordbuf);
- x=roomnum(rn,rv);
+ x = Location.find(user, rn, rv);
  if(x==0)
  {
  bprintf("Where is that ?\n");
@@ -306,7 +305,7 @@ else
  closeworld();
  unit=openroom(user.location_id,"r");
 if(unit==NULL){user.location_id=y;bprintf("No such room\n");return;}
- lodex(unit);
+user.location.load_exits(unit)
  fclose(unit);
  openworld();
  gamecom(st);
@@ -314,7 +313,7 @@ if(unit==NULL){user.location_id=y;bprintf("No such room\n");return;}
  if(user.location_id==x)
  {
  a=0;
- while(a<7) {ex_dat[a]=ex_bk[a];a++;}
+ while(a<7) {user.location.exits[a]=ex_bk[a];a++;}
  }
  user.__location_id=y;
  }
@@ -439,7 +438,11 @@ return;
  b=0;
  while(b++<7) getstr(unit,x);
  bprintf("%-36s",x);
-if(my_lev>9){bprintf(" | ");showname(loc);;}
+if(my_lev>9){
+    bprintf(" | ");
+   yield loc.get_name(user)
+
+    }
 else bprintf("\n");
  fclose(unit);
  }

@@ -150,7 +150,7 @@ willwork:bprintf("You cast the summoning......\n");
        }
     strcpy(n1,wordbuf);
     if(brkword()== -1) strcpy(wordbuf,"");
-    a=roomnum(n1,wordbuf);
+    a=Location.find(user, n1, wordbuf);
     if((a>=0)||((b=openroom(a,"r"))==0))
        {
        bprintf("Unknown Room\n");

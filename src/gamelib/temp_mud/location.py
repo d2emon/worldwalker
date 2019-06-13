@@ -14,6 +14,7 @@ class Location:
 
     def __init__(self, location_id):
         self.location_id = location_id
+        # Zones
         self.exits = [0] * 7
         # Weather
         self.weather = Weather()
@@ -54,6 +55,7 @@ class Location:
     def items(self):
         return [item for item in ITEMS if item.location == self.location_id]
 
+    # Zones
     @property
     def name(self):
         return str(self.zone) + self.in_zone
@@ -90,6 +92,22 @@ class Location:
 
     def load(self, mode):
         return fopen(self.__filename, mode)
+
+    # Zones
+    @classmethod
+    def find(cls, user, name, offset=1):
+        zone = Zone.by_name(name)
+        if zone is None:
+            return 0
+
+        user.set_wd_there(name, offset)
+
+        if not offset:
+            offset = 1
+        else:
+            offset = int(offset)
+
+        return cls(-zone.location_id(offset))
 
     # Unknown
     def lisobs(self, *args):

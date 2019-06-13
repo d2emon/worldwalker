@@ -127,7 +127,7 @@ return ;
     a=0 ;
     while( a<numobs )
        {
-       c=findzone( Item( a ).location, b ) ;
+       c=Zone.find( Item( a ).location, b ) ;
        sprintf( d, "%s%d", b, c ) ;
        if( Item( a ).carry_flag ) strcpy( d, "CARRIED" ) ;
        if( Item( a ).carry_flag==3 ) strcpy( d, "IN ITEM" ) ;
