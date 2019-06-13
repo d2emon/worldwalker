@@ -525,19 +525,6 @@ class User(BasePlayer, Actor):
 
     # For actions
     # Parse
-    def show_score(self):
-        if self.level == 1:
-            yield "Your strength is {}\n".format(self.strength)
-            return
-
-        yield "Your strength is {}(from {}),Your score is {}\nThis ranks you as %s ".format(
-            self.strength,
-            50 + 8 * self.level,
-            self.score,
-            self.name,
-        )
-        yield disle3(self.level, self.sex)
-
     def exorcise(self, player):
         if player is None:
             raise CommandError("They aren't playing\n")

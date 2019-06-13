@@ -38,6 +38,10 @@ class Actor:
         raise NotImplementedError()
 
     @property
+    def level(self):
+        raise NotImplementedError()
+
+    @property
     def location_id(self):
         raise NotImplementedError()
 
@@ -49,6 +53,10 @@ class Actor:
 
     @property
     def name(self):
+        raise NotImplementedError()
+
+    @property
+    def strength(self):
         raise NotImplementedError()
 
     @property
@@ -69,7 +77,18 @@ class Actor:
     def out_ms(self):
         raise NotImplementedError()
 
+    @property
+    def sex(self):
+        raise NotImplementedError()
+
+    @property
+    def score(self):
+        raise NotImplementedError()
+
     def die(self, *args):
+        raise NotImplementedError()
+
+    def disle3(self, *args):
         raise NotImplementedError()
 
     def dumpitems(self, *args):
@@ -87,10 +106,10 @@ class Actor:
     def remove(self, *args):
         raise NotImplementedError()
 
-    def send_message(self, *args):
+    def save_player(self, *args):
         raise NotImplementedError()
 
-    def save_player(self, *args):
+    def send_message(self, *args):
         raise NotImplementedError()
 
     @property
@@ -298,8 +317,18 @@ class Actor:
     def save(self):
         raise NotImplementedError()
 
-    def score(self):
-        raise NotImplementedError()
+    def show_score(self):
+        if self.level == 1:
+            yield "Your strength is {}\n".format(self.strength)
+            return
+
+        yield "Your strength is {}(from {}),Your score is {}\nThis ranks you as %s ".format(
+            self.strength,
+            50 + 8 * self.level,
+            self.score,
+            self.name,
+        )
+        yield self.disle3(self.level, self.sex)
 
     def exorcise(self):
         raise NotImplementedError()
