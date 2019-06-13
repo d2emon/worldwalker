@@ -860,8 +860,10 @@ class Actor:
     def sulk(self):
         raise NotImplementedError()
 
-    def roll(self):
-        raise NotImplementedError()
+    def roll(self, item):
+        if item is None:
+            raise CommandError()
+        item.roll(self)
 
     def credits(self):
         raise NotImplementedError()

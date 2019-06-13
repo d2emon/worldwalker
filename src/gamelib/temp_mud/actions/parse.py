@@ -363,12 +363,7 @@ class Roll(Action):
     def action(cls, command, parser):
         # item = get_item(parser)
         item = parser.ohereandget()
-        if item is None:
-            return
-        if item.item_id in [122, 123]:
-            parser.gamecom("push pillar")
-        else:
-            raise CommandError("You can't roll that\n")
+        parser.user.roll(item)
 
 
 class Credits(Action):

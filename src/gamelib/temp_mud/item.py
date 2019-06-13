@@ -145,6 +145,9 @@ class Item:
     def play(self, actor):
         pass
 
+    def roll(self, actor):
+        raise CommandError("You can't roll that\n")
+
     # Support
     def create(self):
         self.clear_bit(0)
@@ -220,6 +223,15 @@ class Item32(Item):
 class Item75(Item):
     def eat(self, actor):
         yield "very refreshing\n"
+
+
+class Item122(Item):
+    def roll(self, actor):
+        actor.push("pillar")
+
+
+class Item123(Item122):
+    pass
 
 
 class Item175(Item):
