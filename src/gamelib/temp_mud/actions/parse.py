@@ -463,7 +463,7 @@ class SetIn(SetMessage):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.in_ms = parser.full()
+        parser.user.set_in(parser.full())
 
 
 class SetOut(SetMessage):
@@ -472,7 +472,7 @@ class SetOut(SetMessage):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.out_ms = parser.full()
+        parser.user.set_out(parser.full())
 
 
 class SetMin(SetMessage):
@@ -481,7 +481,7 @@ class SetMin(SetMessage):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.min_ms = parser.full()
+        parser.user.set_magic_in(parser.full())
 
 
 class SetMout(SetMessage):
@@ -490,7 +490,7 @@ class SetMout(SetMessage):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.mout_ms = parser.full()
+        parser.user.set_magic_out(parser.full())
 
 
 class Dig(Action):

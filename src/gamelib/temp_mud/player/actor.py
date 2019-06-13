@@ -47,6 +47,14 @@ def god_action(message):
     return wrapper
 
 
+def message_action(f):
+    def wrapped(self, *args):
+        if not self.can_modify_messages:
+            raise NotImplementedError("No way !\n")
+        return f(self, *args)
+    return wrapped
+
+
 class Actor:
     @property
     def Blood(self):
@@ -63,6 +71,10 @@ class Actor:
     @brief.setter
     def brief(self, value):
         raise NotImplementedError()
+
+    @property
+    def can_modify_messages(self):
+        return self.is_god or self.name == "Lorry"
 
     @property
     def conversation_mode(self):
@@ -105,6 +117,10 @@ class Actor:
         raise NotImplementedError()
 
     @property
+    def is_god(self):
+        raise NotImplementedError()
+
+    @property
     def is_wizard(self):
         raise NotImplementedError()
 
@@ -144,8 +160,32 @@ class Actor:
     def in_ms(self):
         raise NotImplementedError()
 
+    @in_ms.setter
+    def in_ms(self, value):
+        raise NotImplementedError()
+
     @property
     def out_ms(self):
+        raise NotImplementedError()
+
+    @out_ms.setter
+    def out_ms(self, value):
+        raise NotImplementedError()
+
+    @property
+    def min_ms(self):
+        raise NotImplementedError()
+
+    @min_ms.setter
+    def min_ms(self, value):
+        raise NotImplementedError()
+
+    @property
+    def mout_ms(self):
+        raise NotImplementedError()
+
+    @mout_ms.setter
+    def mout_ms(self, value):
         raise NotImplementedError()
 
     @property
@@ -980,17 +1020,21 @@ class Actor:
     def frobnicate(self):
         raise NotImplementedError()
 
-    def setin(self):
-        raise NotImplementedError()
+    @message_action
+    def set_in(self, message):
+        self.in_ms = message
 
-    def setout(self):
-        raise NotImplementedError()
+    @message_action
+    def set_out(self, message):
+        self.out_ms = message
 
-    def setmin(self):
-        raise NotImplementedError()
+    @message_action
+    def set_magic_in(self, message):
+        self.min_ms = message
 
-    def setmout(self):
-        raise NotImplementedError()
+    @message_action
+    def set_magic_out(self, message):
+        self.mout_ms = message
 
     def emote(self):
         raise NotImplementedError()
