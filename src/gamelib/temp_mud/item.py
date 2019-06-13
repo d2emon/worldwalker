@@ -77,7 +77,7 @@ class Item:
 
     @property
     def is_destroyed(self):
-        return self.test_bit(0)
+        return self.__test_bit(0)
 
     # Unknown
     @property
@@ -90,23 +90,23 @@ class Item:
 
     @property
     def is_closable(self):
-        return self.test_bit(2)
+        return self.__test_bit(2)
 
     @property
     def is_edible(self):
-        return self.test_bit(6)
+        return self.__test_bit(6)
 
     @property
     def is_light(self):
         if self.item_id == 32:
             return True
-        if self.test_bit(13):
+        if self.__test_bit(13):
             return True
         return False
 
     @property
     def is_container(self):
-        return self.test_bit(14)
+        return self.__test_bit(14)
 
     @property
     def is_closed(self):
@@ -159,25 +159,25 @@ class Item:
 
     # Support
     def create(self):
-        self.clear_bit(0)
+        self.__clear_bit(0)
 
-    def set_bit(self, bit_id):
-        self.__data[2] = bit_set(bit_id)
+    def __set_bit(self, bit_id):
+        self.__data[2][bit_id] = True
 
-    def clear_bit(self, bit_id):
-        self.__data[2] = bit_clear(bit_id)
+    def __clear_bit(self, bit_id):
+        self.__data[2][bit_id] = False
 
-    def test_bit(self, bit_id):
-        return bit_fetch(self.__data[2], bit_id)
+    def __test_bit(self, bit_id):
+        return self.__data[2][bit_id]
 
-    def set_byte(self, byte_id, value):
-        self.__data[2] = byte_put(byte_id, value)
+    def __set_byte(self, byte_id, value):
+        self.__data[2][byte_id] = value
 
-    def get_byte(self, byte_id):
-        return byte_fetch(self.__data[2], byte_id)
+    def __get_byte(self, byte_id):
+        return self.__data[2][byte_id]
 
     def test_mask(self, mask):
-        return all(self.test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
+        return all(self.__test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
 
     # Events
     def on_give(self, actor):
