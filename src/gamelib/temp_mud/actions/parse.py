@@ -10,10 +10,17 @@ class Direction(Action):
     direction_id = None
 
     @classmethod
-    def action(cls, command, parser):
+    def validate(cls, command, parser):
         if cls.direction_id is None:
-            raise CommandError("Thats not a valid direction\n")
+            raise CommandError("That's not a valid direction\n")
+
+    @classmethod
+    def action(cls, command, parser):
         return parser.user.go(cls.direction_id)
+
+    @classmethod
+    def flee(cls, parser):
+        return parser.user.flee(cls.direction_id)
 
 
 class ExitsList(ActionList):
@@ -35,11 +42,15 @@ class Go(Action):
     exits = ExitsList()
 
     @classmethod
-    def action(cls, command, parser):
+    def get_direction(cls, parser):
         direction = parser.require_next("GO where ?\n")
         if direction == "rope":
-            direction = "up"
-        return cls.exits.check(direction).execute(command, parser)
+            return "up"
+        return cls.exits.check(direction)
+
+    @classmethod
+    def action(cls, command, parser):
+        return cls.get_direction(parser).execute(command, parser)
 
 
 class GoNorth(Direction):
@@ -400,18 +411,16 @@ class MapWorld(Action):
 
     @classmethod
     def action(cls, command, parser):
-        yield "Your adventurers automatic monster detecting radar, and long range\n"
-        yield "mapping kit, is, sadly, out of order.\n"
+        return parser.user.map_world()
 
 
-class Flee(Action):
+class Flee(Go):
     # 174
     commands = "flee",
 
     @classmethod
     def action(cls, command, parser):
-        yield from parser.user.flee()
-        return Go.execute(command, parser)
+        return cls.get_direction(parser).flee(command, parser)
 
 
 class Bug(Action):

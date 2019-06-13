@@ -61,30 +61,3 @@ class User:
 
             if cls.in_fight:
                 cls.in_fight -= 1
-
-    # Unknown
-    # For actions
-    def flee(self):
-        if not self.Blood.in_fight:
-            return
-
-        if Item(32).iscarrby(self):
-            raise CommandError("The sword won't let you!!!!\n")
-
-        self.send_message(
-            self,
-            Message.GLOBAL,
-            self.location_id,
-            "\001c{}\001 drops everything in a frantic attempt to escape\n".format(self.name),
-        )
-        self.send_message(
-            self,
-            Message.FLEE,
-            self.location_id,
-            "",
-        )
-
-        self.NewUaf.score -= self.NewUaf.score / 33  # loose 3%
-        yield from self.update()
-        self.Blood.in_fight = None
-        self.on_flee_event()

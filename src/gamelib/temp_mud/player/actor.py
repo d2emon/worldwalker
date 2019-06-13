@@ -148,6 +148,10 @@ class Actor:
     def score(self):
         raise NotImplementedError()
 
+    @score.setter
+    def score(self, value):
+        raise NotImplementedError()
+
     @property
     def __uid(self):
         raise NotImplementedError()
@@ -177,6 +181,9 @@ class Actor:
     def loose(self, *args):
         raise NotImplementedError()
 
+    def on_flee(self, *args):
+        raise NotImplementedError()
+
     def on_look(self, *args):
         raise NotImplementedError()
 
@@ -196,6 +203,9 @@ class Actor:
         raise NotImplementedError()
 
     def send_message(self, *args):
+        raise NotImplementedError()
+
+    def update(self, *args):
         raise NotImplementedError()
 
     @property
@@ -244,6 +254,14 @@ class Actor:
         self.send_message(
             target,
             message_codes.EXORCISE,
+            self.location_id,
+            None,
+        )
+
+    def send_flee(self):
+        self.send_message(
+            self,
+            message_codes.FLEE,
             self.location_id,
             None,
         )
@@ -890,16 +908,35 @@ class Actor:
     # 171 - 180
     @god_action("I don't know that verb\n")
     def debug(self):
+        # Parse
         return self.debug2()
 
     def jump(self):
         raise NotImplementedError()
 
-    def map(self):
-        raise NotImplementedError()
+    def map_world(self):
+        # Parse
+        yield "Your adventurers automatic monster detecting radar, and long range\n"
+        yield "mapping kit, is, sadly, out of order.\n"
 
-    def flee(self):
-        raise NotImplementedError()
+    def flee(self, direction_id):
+        # Parse
+        if not self.Blood.in_fight:
+            return self.go(direction_id)
+
+        if Item(32).iscarrby(self):
+            raise CommandError("The sword won't let you!!!!\n")
+
+        self.send_global("\001c{}\001 drops everything in a frantic attempt to escape\n".format(self.name))
+        self.send_flee()
+
+        self.score -= self.score / 33  # loose 3%
+        yield from self.update()
+
+        self.Blood.in_fight = None
+        self.on_flee()
+
+        return self.go(direction_id)
 
     def bug(self):
         raise NotImplementedError()

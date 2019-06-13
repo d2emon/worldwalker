@@ -133,6 +133,9 @@ class Item:
     def iswornby(self, *args):
         raise NotImplementedError()
 
+    def iscarrby(self, *args):
+        raise NotImplementedError()
+
     def eat(self, actor):
         if not self.is_edible:
             raise CommandError("That's sure not the latest in health food....\n")
