@@ -372,7 +372,7 @@ class Credits(Action):
 
     @classmethod
     def action(cls, command, parser):
-        yield "\001f{}\001".format(CREDITS)
+        parser.user.credits()
 
 
 class Brief(Action):

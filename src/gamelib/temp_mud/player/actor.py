@@ -12,6 +12,7 @@ from .player import Player
 
 EXE = None
 EXE2 = None
+CREDITS = None
 
 
 def execl(*args):
@@ -53,6 +54,14 @@ class Actor:
 
     @property
     def Disease(self):
+        raise NotImplementedError()
+
+    @property
+    def brief(self):
+        raise NotImplementedError()
+
+    @brief.setter
+    def brief(self, value):
         raise NotImplementedError()
 
     @property
@@ -846,6 +855,7 @@ class Actor:
 
     @god_action("I don't know that verb\n")
     def raw(self, message):
+        # Parse
         if self.level == 10033 and message[0] == "!":
             self.broadcast(message[1:])
         else:
@@ -861,15 +871,18 @@ class Actor:
         raise NotImplementedError()
 
     def roll(self, item):
+        # Parse
         if item is None:
             raise CommandError()
         item.roll(self)
 
     def credits(self):
-        raise NotImplementedError()
+        # Parse
+        yield "\001f{}\001".format(CREDITS)
 
-    def brief(self):
-        raise NotImplementedError()
+    def switch_brief(self):
+        # Parse
+        self.brief = not self.brief
 
     # 171 - 180
     def debug(self):

@@ -410,9 +410,6 @@ class User(BasePlayer, Actor):
         )
         self.location_id = location
 
-    def switch_brief(self):
-        self.__brief = not self.__brief
-
     def update(self):
         """
         Routine to correct me in user file
