@@ -264,7 +264,7 @@ class Tss(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.player.tss(parser.full())
+        return parser.user.tss(parser.full())
 
 
 class RmEdit(Action):
@@ -273,7 +273,7 @@ class RmEdit(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.player.remote_editor()
+        return parser.user.remote_editor()
 
 
 class USystem(Action):
@@ -283,7 +283,7 @@ class USystem(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.player.honeyboard()
+        return parser.user.honeyboard()
 
 
 class INumber(Action):
@@ -294,7 +294,7 @@ class INumber(Action):
     @classmethod
     def action(cls, command, parser):
         item = Item.fobn(parser.require_next("What...\n"))
-        return parser.player.inumber(item)
+        return parser.user.inumber(item)
 
 
 class Update(Action):
@@ -304,19 +304,7 @@ class Update(Action):
 
     @classmethod
     def action(cls, command, parser):
-        parser.user.loose()
-        parser.user.send_message(
-            parser.user,
-            message_codes.MSG_WIZARD,
-            0,
-            "[ {} has updated ]\n".format(parser.user.name),
-        )
-        World.save()
-
-        try:
-            execl(EXE, "   --{----- ABERMUD -----}--   ", parser.user.name)  # GOTOSS eek!
-        except ServiceError:
-            yield "Eeek! someones pinched the executable!\n"
+        parser.user.update_system()
 
 
 class Become(Action):

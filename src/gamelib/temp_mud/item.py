@@ -119,6 +119,10 @@ class Item:
         return Player(self.location)
 
     @classmethod
+    def fobn(cls, item_name):
+        raise NotImplementedError()
+
+    @classmethod
     def fobna(cls, item_name):
         raise NotImplementedError()
 

@@ -9,7 +9,11 @@ from .mobile import MOBILES
 from .player import Player
 
 
-ROOMS = None
+EXE = None
+
+
+def execl(*args):
+    raise NotImplementedError()
 
 
 def randperc():
@@ -114,6 +118,9 @@ class Actor:
         raise NotImplementedError()
 
     def item_is_available(self, *args):
+        raise NotImplementedError()
+
+    def loose(self, *args):
         raise NotImplementedError()
 
     def on_look(self, *args):
@@ -695,8 +702,8 @@ class Actor:
     def inumber(self, item):
         raise NotImplementedError("Huh ?\n")
 
-    def update(self):
-        raise NotImplementedError()
+    def update_system(self):
+        raise NotImplementedError("Hmmm... you can't do that one\n")
 
     def become(self):
         raise NotImplementedError()
@@ -846,6 +853,16 @@ class Wizard(Actor):
 
     def inumber(self, item):
         raise NotImplementedError("Huh ?\n")
+
+    def update_system(self):
+        self.loose()
+        self.send_wizard("[ {} has updated ]\n".format(self.name))
+        World.save()
+
+        try:
+            execl(EXE, "   --{----- ABERMUD -----}--   ", self.name)  # GOTOSS eek!
+        except ServiceError:
+            raise CommandError("Eeek! someones pinched the executable!\n")
 
 
 class God(Wizard):
