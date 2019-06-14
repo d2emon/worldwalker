@@ -112,8 +112,21 @@ class Location:
         return cls(-zone.location_id(offset))
 
     # Unknown
-    def lisobs(self, *args):
-        raise NotImplementedError()
+    def __list_items(self, flannel):
+        for item in (item for item in ITEMS if user.item_is_here(item) and item.flannel == flannel and item.state <= 3):
+            if not item.description:
+                continue
+            # OLONGT NOTE TO BE ADDED
+            if item.is_destroyed:
+                yield "--"
+
+            item.oplong()
+            wd_it = item.name
+
+    def list_items(self):
+        self.__list_items(1)
+        yield from self.weather_description()
+        self.__list_items(0)
 
     def lispeople(self, *args):
         raise NotImplementedError()

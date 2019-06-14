@@ -541,7 +541,7 @@ class Actor:
         World.load()
 
         if not self.Disease.blind:
-            self.location.lisobs()
+            yield from self.location.list_items()
             if self.show_players:
                 self.location.lispeople()
         yield "\n"

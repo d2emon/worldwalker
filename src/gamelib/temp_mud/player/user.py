@@ -225,9 +225,6 @@ class User(BasePlayer, Actor):
     def dumpstuff(self, *args):
         raise NotImplementedError()
 
-    def lisobs(self, *args):
-        raise NotImplementedError()
-
     def lispeople(self, *args):
         raise NotImplementedError()
 

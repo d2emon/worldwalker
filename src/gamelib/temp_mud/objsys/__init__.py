@@ -1,32 +1,4 @@
 """
- lisobs()
-    {
-    lojal2(1);
-    yield from user.location.weather_description()
-    lojal2(0);
-    }
-
- lojal2(n)
-    {
-    extern char wd_it[];
-    long a;
-    a=0;
-    while(a<NOBS)
-       {
-       if((ishere(a))&&(Item(a).flannel==n))
-          {
-              if(state(a)>3) continue;
-              if(!!strlen(Item(a).description()))) /*OLONGT NOTE TO BE ADDED */
-		{
-			if(Item(a).is_destroyed) bprintf("--");
- 
-				oplong(a);
-		          strcpy(wd_it,Item(a).name);
-		}
-          }
-       a++;
-       }
-    }
  dumpitems()
     {
     dumpstuff(user,user.location_id);
