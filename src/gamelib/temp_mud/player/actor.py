@@ -1,13 +1,13 @@
 from ..direction import DIRECTIONS
 from ..errors import CommandError, CrapupError, LooseError, ServiceError
-from ..item import Item, Door, ITEMS
+from ..item.item import Item, Door, Shield89, Shield113, Shield114, ITEMS
 from ..location import Location
 from ..message import message_codes
 from ..parser import Parser
 from ..syslog import syslog
 from ..weather import Weather
 from ..world import World
-from ..zones import Zone
+from ..zone import ZONES
 from .mobile import MOBILES
 from .player import Player
 
@@ -282,12 +282,16 @@ class Actor:
 
     @property
     def has_shield(self):
-        shields = Item(113), Item(114), Item(89)
+        shields = Shield113(), Shield114(), Shield89()
         return any(item.iswornby(self) for item in shields)
 
     @property
     def in_fight(self):
         return self.Blood.in_fight > 0
+
+    @property
+    def items(self):
+        return [item for item in ITEMS if item.is_carried_by(self)]
 
     @property
     def location(self):
@@ -639,7 +643,7 @@ class Actor:
 
         if not self.is_wizard and target.location_id != self.location_id:
             raise CommandError("They are not here\n")
-        if not item.iscarrby(self):
+        if not item.is_carried_by(self):
             raise CommandError("You are not carrying that\n")
         if target.overweight:
             raise CommandError("They can't carry that\n")
@@ -1169,8 +1173,7 @@ class Actor:
         if not self.Blood.in_fight:
             return self.go(direction_id)
 
-        if Item(32).iscarrby(self):
-            raise CommandError("The sword won't let you!!!!\n")
+        yield from map(lambda item: item.on_owner_flee(self, direction_id), self.items)
 
         self.send_global("\001c{}\001 drops everything in a frantic attempt to escape\n".format(self.name))
         self.send_flee()

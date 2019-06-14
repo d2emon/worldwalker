@@ -148,10 +148,11 @@ class Item:
 
         :param location:
         :param mode:
+        :param destroyed:
         :return:
         """
         if mode == cls.CARRIED:
-            return [item for item in cls.items() if item.iscarrby(location)]
+            return [item for item in cls.items() if item.is_carried_by(location, destroyed)]
         elif mode == cls.IN_CONTAINER:
             return [item for item in cls.items() if item.is_contained_in(location, destroyed)]
         else:
@@ -296,6 +297,9 @@ class Item:
     def on_dig_here(self, actor):
         return None
 
+    def on_owner_flee(self, owner):
+        return None
+
     def on_take(self, actor, container):
         return self
 
@@ -346,13 +350,16 @@ class Item11(Item):
         actor.teleport(-1076)
 
 
-class Item32(Item):
+class MagicSword(Item):
     def __init__(self):
         super().__init__(32)
 
     def on_give(self, actor):
         if not actor.is_wizard:
             raise CommandError("It doesn't wish to be given away.....\n")
+
+    def on_owner_flee(self, owner):
+        raise CommandError("The sword won't let you!!!!\n")
 
     def on_take(self, actor, container):
         if self.state == 1 and actor.helper is None:
@@ -367,9 +374,29 @@ class Item75(Item):
         yield "very refreshing\n"
 
 
-class Item112(Item):
-    def __init__(self, item_id=112):
-        super().__init__(item_id)
+class Shield89(Item):
+    def __init__(self):
+        super().__init__(89)
+
+
+class Item101(Item):
+    def __init__(self):
+        super().__init__(101)
+
+
+class Item102(Item):
+    def __init__(self):
+        super().__init__(102)
+
+
+class Item103(Item):
+    def __init__(self):
+        super().__init__(103)
+
+
+class Shields(Item):
+    def __init__(self):
+        super().__init__(112)
 
     def on_take(self, actor, container):
         if container is None:
@@ -383,22 +410,20 @@ class Item112(Item):
             raise CommandError("The shields are all to firmly secured to the walls\n")
 
 
-class Item113(Item112):
+class Shield(Item):
+    def on_take(self, actor, container):
+        self.__clear_bit(0)
+        return self
+
+
+class Shield113(Shield):
     def __init__(self):
         super().__init__(113)
 
-    def on_take(self, actor, container):
-        self.__clear_bit(0)
-        return self
 
-
-class Item114(Item112):
+class Shield114(Shield):
     def __init__(self):
         super().__init__(114)
-
-    def on_take(self, actor, container):
-        self.__clear_bit(0)
-        return self
 
 
 class Item122(Item):
@@ -453,11 +478,15 @@ class Item186(Item):
 
 ITEMS = [
     Item11(),
-    Item32(),
+    MagicSword,  # 32
     Item75(),
-    Item112(),
-    Item113(),
-    Item114(),
+    Shield89(),
+    Item101(),
+    Item102(),
+    Item103(),
+    Shields(),  # 112
+    Shield113(),
+    Shield114(),
     Item122(),
     Item123(),
     Item175(),
