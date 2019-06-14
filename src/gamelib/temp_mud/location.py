@@ -128,8 +128,27 @@ class Location:
         yield self.weather_description()
         yield from self.__list_items(0)
 
-    def lispeople(self, *args):
-        raise NotImplementedError()
+    def list_people(self):
+        for player in PLAYERS:
+            if player.player_id == user.player_id:
+                continue
+            if not player.exists:
+                continue
+            if player.location_id != self.location_id:
+                continue
+            if not seeplayer(player):
+                continue
+
+            yield "{} ".format(player.name)
+            if user.debug_mode:
+                yield "{{{}}}".format(player.player_id)
+            yield player.level_name
+            if player.sex == player.SEX_FEMALE:
+                wd_her = player.name
+            else:
+                wd_him = player.name
+            yield " is here carrying\n"
+            yield from player.list_items()
 
     def load_exits(self, file):
         self.exits = [file.scanf() for _ in range(6)]
