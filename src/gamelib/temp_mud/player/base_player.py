@@ -131,28 +131,7 @@ class BasePlayer:
         return [item for item in ITEMS if item.is_carried_by(self)]
 
     @property
-    def can_be_exorcised(self):
-        raise NotImplementedError()
-
-    @property
-    def can_set_flags(self):
-        raise NotImplementedError()
-
-    @property
-    def is_editor(self):
-        raise NotImplementedError()
-
-    @property
-    def is_debugger(self):
-        raise NotImplementedError()
-
-    def check_kicked(self):
-        raise NotImplementedError()
-
-    def die(self):
-        self.strength = -1
-
-    def disl4(self, level, sex):
+    def level_name(self):
         levels = {
             1: ["The Novice"],
             2: ["The Adventurer", "The Adventuress"],
@@ -191,13 +170,35 @@ class BasePlayer:
             -30: ["The Sorceror"],
             -31: ["the Acolyte"],
         }
-        if level == 19 and self.has_farted:
+        if self.level == 19 and self.has_farted:
             return "Raspberry Blower Of Old London Town"
 
-        level_name = levels.get(level, ["The Cardboard Box"])
+        level_name = levels.get(self.level, ["The Cardboard Box"])
         if len(level_name) > 1:
-            return level_name[sex]
+            return level_name[self.sex]
         return level_name[0]
+
+    @property
+    def can_be_exorcised(self):
+        raise NotImplementedError()
+
+    @property
+    def can_set_flags(self):
+        raise NotImplementedError()
+
+    @property
+    def is_editor(self):
+        raise NotImplementedError()
+
+    @property
+    def is_debugger(self):
+        raise NotImplementedError()
+
+    def check_kicked(self):
+        raise NotImplementedError()
+
+    def die(self):
+        self.strength = -1
 
     def dump_items(self):
         self.dump_to(self.location_id)
@@ -241,7 +242,7 @@ class BasePlayer:
         self.helping = None
 
     def timeout_death(self):
-        self.dumpstuff(self.location_id)
+        self.dump_items()
         self.remove()
 
     def woundmn(self, *args):

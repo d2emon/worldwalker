@@ -138,6 +138,10 @@ class Actor:
         raise NotImplementedError()
 
     @property
+    def level_name(self):
+        raise NotImplementedError()
+
+    @property
     def location_id(self):
         raise NotImplementedError()
 
@@ -229,9 +233,6 @@ class Actor:
         raise NotImplementedError()
 
     def die(self, *args):
-        raise NotImplementedError()
-
-    def disl4(self, level, sex):
         raise NotImplementedError()
 
     def dump_items(self, *args):
@@ -643,7 +644,7 @@ class Actor:
             self.score,
             self.name,
         )
-        yield self.disl4(self.level, self.sex)
+        yield self.level_name
         yield "\n"
 
     @wizard_action("No chance....\n")

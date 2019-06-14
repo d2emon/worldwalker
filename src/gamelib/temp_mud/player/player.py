@@ -185,7 +185,7 @@ class Player(BasePlayer):
         if self.visible:
             yield "("
         yield "{} ".format(self.name)
-        yield from self.disl4(self.level, self.sex)
+        yield self.level_name
         if self.visible:
             yield ")"
         if self.is_faded:
