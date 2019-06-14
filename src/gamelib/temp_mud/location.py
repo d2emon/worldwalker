@@ -124,9 +124,9 @@ class Location:
             wd_it = item.name
 
     def list_items(self):
-        self.__list_items(1)
-        yield from self.weather_description()
-        self.__list_items(0)
+        yield from self.__list_items(1)
+        yield self.weather_description()
+        yield from self.__list_items(0)
 
     def lispeople(self, *args):
         raise NotImplementedError()
