@@ -265,6 +265,11 @@ class Item:
     def roll(self, actor):
         raise CommandError("You can't roll that\n")
 
+    def oplong(self, debug=False):
+        if debug:
+            return "{{{}}} {}".format(self.item_id, self.description)
+        return self.description
+
     # Support
     def create(self):
         self.__clear_bit(0)

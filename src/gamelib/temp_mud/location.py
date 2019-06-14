@@ -120,7 +120,7 @@ class Location:
             if item.is_destroyed:
                 yield "--"
 
-            item.oplong()
+            yield item.oplong() + "\n"
             wd_it = item.name
 
     def list_items(self):
