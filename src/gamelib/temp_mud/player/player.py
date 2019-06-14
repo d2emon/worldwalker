@@ -176,5 +176,21 @@ class Player(BasePlayer):
         return next((player.player_id for player in cls.players() if not player.exists), None)
 
     # Unknown
-    def dumpstuff(self, location):
+    def disl4(self, level, sex):
         raise NotImplementedError()
+
+    def dispuser(self, viewer):
+        if self.is_dead:
+            # On  Non game mode
+            return
+        if self.visible > viewer.level:
+            return
+        if self.visible:
+            yield "("
+        yield "{} ".format(self.name)
+        yield from self.disl4(self.level, self.sex)
+        if self.visible:
+            yield ")"
+        if self.is_faded:
+            yield " [Absent From Reality]"
+        yield "\n"

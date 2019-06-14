@@ -231,7 +231,7 @@ class Actor:
     def die(self, *args):
         raise NotImplementedError()
 
-    def disle3(self, *args):
+    def disl4(self, level, sex):
         raise NotImplementedError()
 
     def dump_items(self, *args):
@@ -564,7 +564,19 @@ class Actor:
         yield from self.list_items()
 
     def who(self):
-        raise NotImplementedError()
+        if self.is_wizard:
+            yield "Players\n"
+            players = PLAYERS
+        else:
+            players = PLAYERS[:16]
+
+        for player in players:
+            if player.player_id == 16:
+                yield "----------\nMobiles\n"
+            if player.exists:
+                yield player.dispuser()
+
+        yield "\n"
 
     @wizard_action("What ?\n")
     def reset_world(self):
@@ -631,7 +643,8 @@ class Actor:
             self.score,
             self.name,
         )
-        yield self.disle3(self.level, self.sex)
+        yield self.disl4(self.level, self.sex)
+        yield "\n"
 
     @wizard_action("No chance....\n")
     def exorcise(self, target):

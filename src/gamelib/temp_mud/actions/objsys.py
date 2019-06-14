@@ -40,3 +40,12 @@ class Inventory(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.inventory()
+
+
+class Who(Action):
+    # 13
+    commands = "who",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.who()

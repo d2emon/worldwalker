@@ -1,44 +1,4 @@
 """
- whocom()
-    {
-    long a;
-    extern long my_lev;
-    long bas;
-    a=0;
-    bas=16;
-    if(my_lev>9)
-       {
-      bprintf("Players\n");
-       bas=48;
-       }
-    while(a<bas)
-       {
-       if(a==16)bprintf("----------\nMobiles\n");
-       if(not Player(a).exists) goto npas;
-       dispuser(a);
-       npas:a++;
-       }
-   bprintf("\n");
-    }
-
- dispuser(ubase)
-    {
-extern long my_lev;
-    if(Player(ubase).is_dead) return; /* On  Non game mode */
-    if(Player(ubase).visible >my_lev) return;
-if(Player(ubase).visible) bprintf("(");
-   bprintf("%s ",Player(ubase).name);
-    disl4(Player(ubase).level, Player(ubase).sex);
-if(Player(ubase).visible) bprintf(")");
-if(Player(ubase).is_faded) bprintf(" [Absent From Reality]");
-bprintf("\n");
-    }
-
- disle3(n,s)
-    {
-    disl4(n,s);
-   bprintf("\n");
-    }
  disl4(n,s)
     {
     switch(n)
