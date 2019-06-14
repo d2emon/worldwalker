@@ -1,14 +1,4 @@
 """
-usercom()
-{
-extern long my_lev;
-long a;
-a=my_lev;
-my_lev=0;
-whocom();
-my_lev=a;
-}
- 
 oplong(x)
 {
 extern long debug_mode;

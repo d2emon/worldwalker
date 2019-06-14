@@ -267,9 +267,7 @@ case 152:
           squeezecom();
           break;
 case 153:
-       case 155:
-          usercom();
-          break;
+case 155:
 case 156:
 case 157:
 case 158:

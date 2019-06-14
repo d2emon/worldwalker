@@ -564,8 +564,12 @@ class Actor:
         yield "You are carrying\n"
         yield from self.list_items()
 
-    def who(self):
-        if self.is_wizard:
+    def who(self, users=False):
+        # 13 + 155
+        if not self.is_wizard:
+            users = True
+
+        if not users:
             yield "Players\n"
             players = PLAYERS
         else:
@@ -1075,8 +1079,7 @@ class Actor:
     def squeeze(self):
         raise NotImplementedError()
 
-    def users(self):
-        raise NotImplementedError()
+    # 155 -> 13
 
     @wizard_action("You'll have to leave the game first!\n")
     def honeyboard(self):

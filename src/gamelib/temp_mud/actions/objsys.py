@@ -49,3 +49,12 @@ class Who(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.who()
+
+
+class Users(Action):
+    # 155
+    commands = "users",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.who(users=True)
