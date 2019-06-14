@@ -152,6 +152,10 @@ class Actor:
         raise NotImplementedError()
 
     @property
+    def player_id(self):
+        raise NotImplementedError()
+
+    @property
     def strength(self):
         raise NotImplementedError()
 
@@ -304,6 +308,34 @@ class Actor:
 
         self.check_kicked()
         yield from self.read_messages()
+
+    def list_items(self):
+        yield from self.list_items_at(self.player_id, 1)
+
+    def list_items_at(self, location, mode):
+        """
+        Carried Loc !
+
+        :param location:
+        :param mode:
+        :return:
+        """
+        items = Item.items_at(location, mode)
+        if len(items) <= 0:
+            yield "Nothing\n"
+            return
+
+        for item in items:
+            text = item.name
+            if self.debug_mode:
+                text = "{}{}".format(text, item.item_id)
+            if item.is_destroyed:
+                text = "({})".format(text)
+            if item.iswornby(location):
+                text += "<worn> "
+            text += " "
+            yield text
+        yield "\n"
 
     def __silly_sound(self, message):
         self.silly("\001P{user.name}\001\001d " + message + "\n\001")
@@ -495,7 +527,8 @@ class Actor:
         yield from item.aobjsat(3)
 
     def inventory(self):
-        raise NotImplementedError()
+        yield "You are carrying\n"
+        yield from self.list_items()
 
     def who(self):
         raise NotImplementedError()

@@ -1,9 +1,29 @@
-from .errors import CommandError
-from .player import Player
-from .world import World
+from gamelib.temp_mud.errors import CommandError
+from gamelib.temp_mud.player import Player
+from gamelib.temp_mud.world import World
 
 
 """
+Object structure
+
+Name,
+Long Text 1
+Long Text 2
+Long Text 3
+Long Text 4
+statusmax
+Value
+flags (0=Normal 1+flannel)
+
+
+Objinfo
+
+Loc
+Status
+Stamina
+Flag 1=carr 0=here
+
+
 Objects held in format
 
 [Short Text]
@@ -18,6 +38,9 @@ Stam:state:loc:flag
 
 
 class Item:
+    __OBMUL = 8
+    __NOBS = 196
+
     CARRY_0 = 0
     CARRIED = 1
     WEARING = 2
@@ -119,16 +142,86 @@ class Item:
         return Player(self.location)
 
     @classmethod
-    def fobn(cls, item_name):
-        raise NotImplementedError()
+    def items_at(cls, location, mode, destroyed=False):
+        """
+        Carried Loc !
+
+        :param location:
+        :param mode:
+        :return:
+        """
+        if mode == cls.CARRIED:
+            return [item for item in cls.items() if item.iscarrby(location)]
+        elif mode == cls.IN_CONTAINER:
+            return [item for item in cls.items() if item.is_contained_in(location, destroyed)]
+        else:
+            return []
+
+    @classmethod
+    def __find(cls, item_name, mode, location):
+        item_name = item_name.lower()
+        if item_name == "red":
+            # word = next(parser)
+            return 4
+        if item_name == "blue":
+            # word = next(parser)
+            return 5
+        if item_name == "green":
+            # word = next(parser)
+            return 6
+
+        items = [item for item in cls.items() if item.name.lower == item_name]
+        # wd_it = item_name
+        if mode == 1:
+            # Patch for shields
+            # if item.item_id == 112 and cls(113).iscarrby(user):
+            #     return 113
+            # if item.item_id == 112 and cls(114).iscarrby(user):
+            #     return 114
+            # if user.item_is_available(item):
+            #     return item
+            items = []
+        elif mode == 2:
+            # if item.iscarrby(user):
+            #     return item
+            items = []
+        elif mode == 3:
+            items = [item for item in items if item.iscarrby(location)]
+        elif mode == 4:
+            # if user.is_here(item):
+            #     return item
+            items = []
+        elif mode == 5:
+            items = [item for item in items if item.is_contained_in(location)]
+
+        if len(items) <= 0:
+            return None
+        return items[0]
 
     @classmethod
     def fobna(cls, item_name):
-        raise NotImplementedError()
+        return cls.__find(item_name, 1, None)
+
+    @classmethod
+    def fobnc(cls, item_name):
+        return cls.__find(item_name, 2, None)
 
     @classmethod
     def fobncb(cls, item_name, owner):
-        raise NotImplementedError()
+        return cls.__find(item_name, 3, owner)
+
+    @classmethod
+    def fobnh(cls, item_name):
+        return cls.__find(item_name, 4, None)
+
+    @classmethod
+    def fobnin(cls, item_name, location):
+        return cls.__find(item_name, 5, location)
+
+    @classmethod
+    def fobn(cls, item_name):
+        item = cls.fobna(item_name)
+        return None if item is None else cls.__find(item_name, 0, None)
 
     def iswornby(self, *args):
         raise NotImplementedError()
@@ -136,11 +229,18 @@ class Item:
     def iscarrby(self, *args):
         raise NotImplementedError()
 
-    def iscontin(self, *args):
-        raise NotImplementedError()
+    def is_contained_in(self, container, destroyed=False):
+        if self.carry_flag != 3:
+            return False
+        if self.location != container.item_id:
+            return False
+        # if is_wizard
+        if not destroyed and self.is_destroyed:
+            return False
+        return True
 
-    def contain(self):
-        return [item for item in self.items() if item.iscontin(self)]
+    def contain(self, destroyed=False):
+        return [item for item in self.items() if item.is_contained_in(self, destroyed)]
 
     def eat(self, actor):
         if not self.is_edible:

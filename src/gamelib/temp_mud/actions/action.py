@@ -58,9 +58,7 @@ case 8:
           break;
 
 case 11:
-       case 12:
-          inventory();
-          break;
+case 12:
        case 13:
           whocom();
           break;
