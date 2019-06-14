@@ -496,7 +496,16 @@ class Actor:
         self.location.on_take_item(self, item)
 
     def drop(self, item):
-        raise NotImplementedError()
+        if item is None:
+            raise CommandError("You are not carrying that.\n")
+
+        yield from item.on_drop(self)
+
+        item.set_location(self.location_id, 0)
+        yield "OK..\n"
+        self.send_global("\001D{}\001\001c drops the {}.\n\n\001".format(self.name, item.name))
+
+        yield from self.location.on_drop(self, item)
 
     # 11 - 20
     def look(self, long=False):

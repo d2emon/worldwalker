@@ -288,13 +288,16 @@ class Item:
         return all(self.__test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
 
     # Events
-    def on_give(self, actor):
-        return None
-
     def on_dig(self, actor):
         return None
 
     def on_dig_here(self, actor):
+        return None
+
+    def on_drop(self, actor):
+        return None
+
+    def on_give(self, actor):
         return None
 
     def on_owner_flee(self, owner):
@@ -353,6 +356,10 @@ class Item11(Item):
 class MagicSword(Item):
     def __init__(self):
         super().__init__(32)
+
+    def on_drop(self, actor):
+        if not actor.is_wizard:
+            raise CommandError("You can't let go of it!\n")
 
     def on_give(self, actor):
         if not actor.is_wizard:

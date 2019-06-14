@@ -51,9 +51,7 @@ from gamelib.temp_mud.world import World
 case 1:
 case 8:
 case 9:
-       case 10:
-          dropitem();
-          break;
+case 10:
 
 case 11:
 case 12:

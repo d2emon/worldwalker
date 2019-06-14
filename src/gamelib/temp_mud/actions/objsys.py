@@ -19,7 +19,18 @@ class Take(Action):
                 raise CommandError("You can't take things from that - it's not here\n")
             item = Item.fobnin(item_name, container)
 
-        parser.user.take(item, container)
+        return parser.user.take(item, container)
+
+
+class Drop(Action):
+    # 10
+    commands = "drop",
+
+    @classmethod
+    def action(cls, command, parser):
+        item_name = parser.require_next("Drop what ?\n")
+        item = Item.fobnc(item_name)
+        return parser.user.drop(item)
 
 
 class Inventory(Action):

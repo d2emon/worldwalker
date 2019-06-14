@@ -1,40 +1,4 @@
 """
- dropitem()
-    {
-    extern char wordbuf[],globme[];
-    extern long my_sco;
-    long a,b,bf[32];
-    extern long my_lev;
-    if(brkword()==-1)
-       {
-      bprintf("Drop what ?\n");
-       return;
-       }
-    a=fobnc(wordbuf);
-    if(a==-1)
-       {
-      bprintf("You are not carrying that.\n");
-       return;
-       }
-
-if((my_lev<10)&&(a==32))
-{
-bprintf("You can't let go of it!\n");
-return;
-}
-    Item(a).set_location(user.location_id,0);
-   bprintf("OK..\n");
-    sprintf(bf,"\001D%s\001\001c drops the %s.\n\n\001",globme,wordbuf);
-    user.send_message(globme,globme,-10000,user.location_id,bf);
-    if((user.location_id!=-183)&&(user.location_id!=-5))return;
-   sprintf(bf,"The %s disappears into the bottomless pit.\n",wordbuf);
-   bprintf("It disappears down into the bottomless pit.....\n");
-    user.send_message(globme,globme,-10000,user.location_id,bf);
-    my_sco+=(tscale()*Item(a).base_value)/5;
-        yield from user.update()
-Item(a).set_location(-6,0);
-    }
-
  lisobs()
     {
     lojal2(1);

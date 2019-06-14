@@ -1,5 +1,5 @@
 from .action import ActionList
-from .objsys import Take, Inventory
+from .objsys import Take, Drop, Inventory
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Look, Reset, Lightning, Eat, Play, \
     Shout, Say, Tell, Score, Exorcise, Give, Steal, Grope, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, \
     Converse, Shell, Raw, Roll, Credits, Brief, Debug, MapWorld, Flee, Bug, Typo, DebugMode, SetIn, SetOut, SetMin, \
@@ -22,7 +22,7 @@ class VerbsList(ActionList):
             GoDown,
             QuitWorld,
             Take,
-            # 10
+            Drop,
 
             Look,
             Inventory,
