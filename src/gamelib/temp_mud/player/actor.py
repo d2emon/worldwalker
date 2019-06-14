@@ -468,8 +468,28 @@ class Actor:
         self.save_player()
         raise CrapupError("Goodbye")
 
-    def take(self):
-        raise NotImplementedError()
+    def take(self, item, container=None):
+        if item is None:
+            raise CommandError("That is not here.\n")
+
+        item = item.on_take(self, container)
+
+        if item.flannel == 1:
+            raise CommandError("You can't take that!\n")
+
+        if self.dragget():
+            return
+
+        if self.overweight:
+            raise CommandError("You can't carry any more\n")
+
+        item.set_location(self, 1)
+        yield "Ok...\n"
+
+        self.send_global("\001D{}\001\001c takes the {}\n\001".format(self.name, item.name))
+
+        item.on_taken(self)
+        self.location.on_take_item(self, item)
 
     def drop(self, item):
         raise NotImplementedError()

@@ -289,6 +289,13 @@ class Item:
     def on_dig_here(self, actor):
         return None
 
+    def on_take(self, actor, container):
+        return self
+
+    def on_taken(self, actor):
+        if self.__test_bit(12):
+            self.state = 0
+
 
 class Door(Item):
     def __init__(self, door_id):
@@ -340,6 +347,10 @@ class Item32(Item):
         if not actor.is_wizard:
             raise CommandError("It doesn't wish to be given away.....\n")
 
+    def on_take(self, actor, container):
+        if self.state == 1 and actor.helper is None:
+            raise CommandError("Its too well embedded to shift alone.\n")
+
 
 class Item75(Item):
     def __init__(self):
@@ -347,6 +358,40 @@ class Item75(Item):
 
     def eat(self, actor):
         yield "very refreshing\n"
+
+
+class Item112(Item):
+    def __init__(self, item_id=112):
+        super().__init__(item_id)
+
+    def on_take(self, actor, container):
+        if container is None:
+            return self
+
+        if Item(113).is_destroyed:
+            return Item113().on_take(actor, container)
+        elif Item(114).is_destroyed:
+            return Item114().on_take(actor, container)
+        else:
+            raise CommandError("The shields are all to firmly secured to the walls\n")
+
+
+class Item113(Item112):
+    def __init__(self):
+        super().__init__(113)
+
+    def on_take(self, actor, container):
+        self.__clear_bit(0)
+        return self
+
+
+class Item114(Item112):
+    def __init__(self):
+        super().__init__(114)
+
+    def on_take(self, actor, container):
+        self.__clear_bit(0)
+        return self
 
 
 class Item122(Item):
@@ -403,6 +448,9 @@ ITEMS = [
     Item11(),
     Item32(),
     Item75(),
+    Item112(),
+    Item113(),
+    Item114(),
     Item122(),
     Item123(),
     Item175(),
