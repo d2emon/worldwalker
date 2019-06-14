@@ -1,23 +1,4 @@
 """
- ishere(item)
-    {
-    long a;
-extern long my_lev;
-    if((my_lev<10)&&(Item(item).is_destroyed))return(0);
-    if(Item(item).carry_flag==1) return(0);
-    if(Item(item).location!=user.location_id) return(0);
-    return(1);
-    }
-
- iscarrby(item,user)
-    {
-extern long my_lev;
-    if((my_lev<10)&&(Item(item).is_destroyed))return(0);
-    if((Item(item).carry_flag!=1)&&(Item(item).carry_flag!=2)) return(0);
-    if(Item(item).location!=user) return(0);
-    return(1);
-    }
-
  dropitem()
     {
     extern char wordbuf[],globme[];
@@ -53,6 +34,7 @@ return;
         yield from user.update()
 Item(a).set_location(-6,0);
     }
+
  lisobs()
     {
     lojal2(1);

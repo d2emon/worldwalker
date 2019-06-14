@@ -162,7 +162,7 @@ class User(BasePlayer, Actor):
 
     @property
     def __available_items(self):
-        return [item for item in Item.items() if item.is_carried_by(self) or item.is_here(self)]
+        return [item for item in Item.items() if self.item_is_available(item)]
 
     @property
     def overweight(self):
@@ -177,7 +177,7 @@ class User(BasePlayer, Actor):
         if not self.__location.is_dark:
             return False
         for item in (item for item in Item.items() if item.is_light):
-            if self.is_here(item):
+            if self.item_is_here(item):
                 return False
             if item.owner is not None and item.owner.location_id == self.location_id:
                 return False
@@ -206,8 +206,12 @@ class User(BasePlayer, Actor):
     def initme(self, *args):
         raise NotImplementedError()
 
-    def is_here(self, *args):
-        raise NotImplementedError()
+    def item_is_here(self, item):
+        if not self.is_wizard and item.is_destroyed:
+            return False
+        if item.carry_flag == item.CARRIED:
+            return False
+        return item.location == self.location_id
 
     def delpers(self, *args):
         raise NotImplementedError()
@@ -235,9 +239,7 @@ class User(BasePlayer, Actor):
 
     # Support
     def item_is_available(self, item):
-        if self.is_here(item):
-            return True
-        return item.is_carried_by(self)
+        return self.item_is_here(item) or item.is_carried_by(self)
 
     # Tk
     def add(self):

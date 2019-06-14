@@ -186,7 +186,7 @@ class Item:
             #     return item
             items = []
         elif mode == 3:
-            items = [item for item in items if item.iscarrby(location)]
+            items = [item for item in items if item.is_carried_by(location)]
         elif mode == 4:
             # if user.is_here(item):
             #     return item
@@ -226,16 +226,23 @@ class Item:
     def iswornby(self, *args):
         raise NotImplementedError()
 
-    def iscarrby(self, *args):
-        raise NotImplementedError()
-
-    def is_contained_in(self, container, destroyed=False):
-        if self.carry_flag != 3:
-            return False
-        if self.location != container.item_id:
-            return False
+    def is_carried_by(self, owner, destroyed=False):
         # if is_wizard
         if not destroyed and self.is_destroyed:
+            return False
+        if self.carry_flag not in [self.CARRIED, self.WEARING]:
+            return False
+        if self.location != owner.location_id:
+            return False
+        return True
+
+    def is_contained_in(self, container, destroyed=False):
+        # if is_wizard
+        if not destroyed and self.is_destroyed:
+            return False
+        if self.carry_flag != self.IN_CONTAINER:
+            return False
+        if self.location != container.item_id:
             return False
         return True
 
