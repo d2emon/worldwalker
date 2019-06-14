@@ -1,32 +1,4 @@
 """
-fpbn(name)
-char *name;
-{
-long s;
-extern char wd_them[],wd_him[],wd_her[],wd_it[];
-s=fpbns(name);
-if(s==-1) return(s);
-if(!seeplayer(s)) return(-1);
-return(s);
-}
-
- fpbns(name)
- char *name;
-    {
-    char *n1[40],n2[40];
-    long a;
-    a=0;
-    while(a<48)
-       {
-       strcpy(n1,name);strcpy(n2,Player(a).name);
-       lowercase(n1);lowercase(n2);
-if((!!strlen(n2))&&(!strcmp(n1,n2))) return(a);
-       if(strncmp(n2,"the ",4)==0)
-       if((!!strlen(n2))&&(!strcmp(n1,n2+4)))return(a);
-       a++;
-       }
-    return(-1);
-    }
  lispeople()
     {
     extern long debug_mode;

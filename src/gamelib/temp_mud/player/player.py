@@ -139,11 +139,25 @@ class Player(BasePlayer):
     # Unknown
     @classmethod
     def fpbn(cls, player_name, not_found_error=None):
-        raise NotImplementedError()
+        player = cls.fpbns(player_name)
+        if player is None:
+            return player
+        if not seeplayer(player):
+            return None
+        return player
 
     @classmethod
-    def fpbns(cls, *args):
-        raise NotImplementedError()
+    def fpbns(cls, player_name):
+        n1 = player_name.lower()
+        for player in cls.players():
+            if player.is_dead:
+                continue
+            n2 = player.name.lower()
+            if not player.is_dead and n2 == n1:
+                return player
+            if n2[:4] == "the " and n2[4:] == n1:
+                return player
+        return None
 
     # Support
     # Flags
