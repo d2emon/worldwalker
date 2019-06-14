@@ -152,6 +152,53 @@ class BasePlayer:
     def die(self):
         self.strength = -1
 
+    def disl4(self, level, sex):
+        levels = {
+            1: ["The Novice"],
+            2: ["The Adventurer", "The Adventuress"],
+            3: ["The Hero", "The Heroine"],
+            4: ["The Champion"],
+            5: ["The Conjurer", "The Conjuress"],
+            6: ["The Magician"],
+            7: ["The Enchanter", "The Enchantress"],
+            8: ["The Sorceror", "The Sorceress"],
+            9: ["The Warlock"],
+            10: ["The Apprentice Wizard", "The Apprentice Witch"],
+            11: ["The 370"],
+            12: ["The Hilbert-Space"],
+            # 13:
+            14: ["The Completely Normal Naughty Spud"],
+            15: ["The Wimbledon Weirdo"],
+            16: ["The DangerMouse"],
+            17: ["The Charred Wizard", "The Charred Witch"],
+            18: ["The Cuddly Toy"],
+            19: ["Of The Opera"],
+            20: ["The 50Hz E.R.C.S"],
+            21: ["who couldn't decide what to call himself"],
+            22: ["The Summoner"],
+            10000: ["The 159 IQ Mega-Creator"],
+            10001: ["The Arch-Wizard", "The Arch-Witch"],
+            10002: ["The Wet Kipper"],
+            10003: ["The Thingummy"],
+            10033: ["The Arch-Wizard", "The Arch-Witch"],
+            68000: ["The Wanderer"],
+            -2: ["\010"],
+            -10: ["The Heavy-Fan Dwarf"],
+            -11: ["The Broke Dwarf"],
+            -12: ["The Radioactive Dwarf"],
+            -13: ["The Upper Class Dwarven Smith"],
+            -14: ["The Singing Dwarf"],
+            -30: ["The Sorceror"],
+            -31: ["the Acolyte"],
+        }
+        if level == 19 and self.has_farted:
+            return "Raspberry Blower Of Old London Town"
+
+        level_name = levels.get(level, ["The Cardboard Box"])
+        if len(level_name) > 1:
+            return level_name[sex]
+        return level_name[0]
+
     def dump_items(self):
         self.dump_to(self.location_id)
 
@@ -161,7 +208,7 @@ class BasePlayer:
     def exorcised(self):
         if not self.can_be_exorcised:
             raise CommandError("You can't exorcise them, they dont want to be exorcised\n")
-        self.dumpstuff(self.location_id)
+        self.dump_items()
         self.remove()
 
     def fade(self):

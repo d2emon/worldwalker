@@ -176,9 +176,6 @@ class Player(BasePlayer):
         return next((player.player_id for player in cls.players() if not player.exists), None)
 
     # Unknown
-    def disl4(self, level, sex):
-        raise NotImplementedError()
-
     def dispuser(self, viewer):
         if self.is_dead:
             # On  Non game mode
