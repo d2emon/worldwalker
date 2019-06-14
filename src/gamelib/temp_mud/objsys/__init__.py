@@ -1,27 +1,4 @@
 """
- dumpitems()
-    {
-    dumpstuff(user,user.location_id);
-    }
-
- dumpstuff(n,loc)
-    {
-    long b;
-    b=0;
-    while(b<NOBS)
-       {
-       if(iscarrby(b,n))
-
-          {
-          Item(b).set_location(loc,0);
-          }
-       b++;
-       }
-    }
-
-long ublock[16*49];
-
-
  whocom()
     {
     long a;

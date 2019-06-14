@@ -8,10 +8,10 @@ class World:
 
     objects = []
     objinfo = []
-    item_ids = len(objects)
+    item_ids = len(objects)  # 196
 
     ublock = []
-    player_ids = len(ublock)
+    player_ids = len(ublock)  # 49
 
     first_message = 0
     last_message = 0

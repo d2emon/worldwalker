@@ -234,7 +234,7 @@ class Actor:
     def disle3(self, *args):
         raise NotImplementedError()
 
-    def dumpitems(self, *args):
+    def dump_items(self, *args):
         raise NotImplementedError()
 
     def fade(self, *args):
@@ -462,7 +462,7 @@ class Actor:
         World.load()
         self.send_global("{} has left the game\n".format(self.name))
         self.send_wizard("[ Quitting Game : {} ]\n".format(self.name))
-        self.dumpitems()
+        self.dump_items()
         self.die()
         self.remove()
         World.save()

@@ -219,12 +219,6 @@ class User(BasePlayer, Actor):
     def disle3(self, *args):
         raise NotImplementedError()
 
-    def dumpitems(self, *args):
-        raise NotImplementedError()
-
-    def dumpstuff(self, *args):
-        raise NotImplementedError()
-
     def lispeople(self, *args):
         raise NotImplementedError()
 
@@ -309,7 +303,7 @@ class User(BasePlayer, Actor):
         self.__in_setup = False
 
         World.load()
-        self.dumpitems()
+        self.dump_items()
         if self.visible < 10000:
             self.send_message(
                 self,
@@ -400,7 +394,7 @@ class User(BasePlayer, Actor):
             self.location_id,
             "\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name),
         )
-        self.dumpitems()
+        self.dump_items()
         self.send_message(
             self,
             message_codes.GLOBAL,

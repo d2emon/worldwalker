@@ -127,6 +127,10 @@ class BasePlayer:
         raise NotImplementedError()
 
     @property
+    def items(self):
+        return [item for item in ITEMS if item.is_carried_by(self)]
+
+    @property
     def can_be_exorcised(self):
         raise NotImplementedError()
 
@@ -148,8 +152,11 @@ class BasePlayer:
     def die(self):
         self.strength = -1
 
-    def dumpstuff(self, *args):
-        raise NotImplementedError()
+    def dump_items(self):
+        self.dump_to(self.location_id)
+
+    def dump_to(self, location_id):
+        map(lambda item: item.set_location(location_id, 0), self.items)
 
     def exorcised(self):
         if not self.can_be_exorcised:

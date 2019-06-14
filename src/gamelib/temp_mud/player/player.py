@@ -16,7 +16,7 @@ class Player(BasePlayer):
 
     @classmethod
     def players(cls):
-        return (Player(player_id) for player_id in range(World.player_ids))
+        return (Player(player_id) for player_id in range(World.player_ids))  # 49
 
     @property
     def __data(self):
