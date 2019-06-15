@@ -149,7 +149,7 @@ class Item:
         destroyed=False,
         available=None,  # 1
         owner=None,  # 2, 3
-        here=False,  # 4
+        location=None,  # 4
         container=None,  # 5
     ):
         if item_name is None:
@@ -180,10 +180,8 @@ class Item:
             items = [item for item in items]
         elif owner is not None:
             items = [item for item in items if item.is_carried_by(owner)]
-        elif here:
-            # if user.is_here(item):
-            #     return item
-            items = [item for item in items]
+        elif location is not None:
+            items = [item for item in items if item.is_in_locaton(location)]
         elif container is not None:
             items = [item for item in items if item.is_contained_in(container)]
 
@@ -242,7 +240,7 @@ class Item:
         mode_0=False,  # 0
         available=False,  # 1
         owner=None,  # 2, 3
-        here=False,  # 4
+        location=None,  # 4
         container=None,  # 5
     ):
         item = next(
@@ -251,7 +249,7 @@ class Item:
                 destroyed=destroyed,
                 available=available,
                 owner=owner,
-                here=here,
+                location=location,
                 container=container,
             ),
             None
@@ -278,17 +276,18 @@ class Item:
         # if is_wizard
         if self.carry_flag not in [self.CARRIED, self.WEARING]:
             return False
-        if self.location != owner.location_id:
-            return False
-        return True
+        return self.location == owner.location_id
 
     def is_contained_in(self, container):
         # if is_wizard
         if self.carry_flag != self.IN_CONTAINER:
             return False
-        if self.location != container.item_id:
+        return self.location == container.item_id
+
+    def is_in_locaton(self, location):
+        if self.carry_flag == self.CARRIED:
             return False
-        return True
+        return self.location == location.location_id
 
     def contain(self, destroyed=False):
         items = [item for item in self.items() if item.is_contained_in(self)]

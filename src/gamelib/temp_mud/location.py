@@ -112,8 +112,12 @@ class Location:
         return cls(-zone.location_id(offset))
 
     # Unknown
+    @property
+    def __items(self):
+        return [item for item in ITEMS if item.is_in_location(self)]
+
     def __list_items(self, flannel):
-        for item in (item for item in ITEMS if user.item_is_here(item) and item.flannel == flannel and item.state <= 3):
+        for item in (item for item in self.items if item.flannel == flannel and item.state <= 3):
             if not item.description:
                 continue
             # OLONGT NOTE TO BE ADDED

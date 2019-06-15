@@ -206,13 +206,13 @@ class User(BasePlayer, Actor):
     def initme(self, *args):
         raise NotImplementedError()
 
+    # ObjSys
     def item_is_here(self, item):
         if not self.is_wizard and item.is_destroyed:
             return False
-        if item.carry_flag == item.CARRIED:
-            return False
-        return item.location == self.location_id
+        return item.is_in_location(self.location)
 
+    # Unknown
     def delpers(self, *args):
         raise NotImplementedError()
 

@@ -449,6 +449,7 @@ class Actor:
         raise CrapupError("Goodbye")
 
     def take(self, item, container=None):
+        # ObjSys
         if item is None:
             raise CommandError("That is not here.\n")
 
