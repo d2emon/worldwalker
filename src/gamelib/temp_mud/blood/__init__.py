@@ -37,7 +37,11 @@ void weapcom()
        bprintf("Which weapon do you wish to select though\n");
        return;
        }
-    a=fobnc(wordbuf);
+    a = Item.find(
+	    wordbuf,
+	    owner=parser.use,
+	    destroyed=parser.user.is_wizard,
+	)
     if(a== -1)
        {
        bprintf("Whats one of those ?\n");
@@ -153,9 +157,14 @@ void hitplayer(victim,wpn)
 		bprintf("Who do you think you are , Moog ?\n");
 		return;
 	}
-	if(fobna(wordbuf)!= -1)
+	item = Item.find(
+	    wordbuf,
+	    available=True,
+	    destroyed=parser.user.is_wizard,
+	)
+	if item is not None:
        {
-	       breakitem(fobna(wordbuf));
+	       breakitem(item);
 	       return;
        }
     if((a=fpbn(wordbuf))== -1)
@@ -188,7 +197,11 @@ void hitplayer(victim,wpn)
 	       }
 	    else
 	       goto xwisc;
-	    x=fobnc(wordbuf);
+        x = Item.find(
+            wordbuf,
+            owner=parser.user,
+            destroyed=parser.user.is_wizard,
+        )
 	    if(x== -1)
 	       {
 		       bprintf("with what ?\n");

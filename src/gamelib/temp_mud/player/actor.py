@@ -315,32 +315,7 @@ class Actor:
         yield from self.read_messages()
 
     def list_items(self):
-        yield from self.list_items_at(self.player_id, 1)
-
-    def list_items_at(self, location, mode):
-        """
-        Carried Loc !
-
-        :param location:
-        :param mode:
-        :return:
-        """
-        items = Item.items_at(location, mode)
-        if len(items) <= 0:
-            yield "Nothing\n"
-            return
-
-        for item in items:
-            text = item.name
-            if self.debug_mode:
-                text = "{}{}".format(text, item.item_id)
-            if item.is_destroyed:
-                text = "({})".format(text)
-            if item.iswornby(location):
-                text += "<worn> "
-            text += " "
-            yield text
-        yield "\n"
+        yield from Item.list_items_at(self, Item.CARRIED, self.debug, self.is_wizard)
 
     def __silly_sound(self, message):
         self.silly("\001P{user.name}\001\001d " + message + "\n\001")
@@ -560,7 +535,7 @@ class Actor:
         if item.is_closed:
             raise CommandError("It's closed!\n")
         yield "The {} contains:\n".format(item.name)
-        yield from item.aobjsat(3)
+        yield from Item.list_items_at(self, Item.IN_CONTAINER, self.debug, self.is_wizard)
 
     def inventory(self):
         yield "You are carrying\n"
@@ -1095,7 +1070,7 @@ class Actor:
     @god_action("Huh ?\n")
     def item_number(self, item):
         # Parse
-        yield "Item Number is {}\n".format(item)
+        yield "Item Number is {}\n".format(item.item_id)
 
     @wizard_action("Hmmm... you can't do that one\n")
     def update_system(self):
@@ -1296,7 +1271,8 @@ class Actor:
         # Parse
         if container is None:
             raise CommandError()
-        for item in container.contain():
+
+        for item in container.contain(destroyed=self.is_wizard):
             item.set_location(self.location_id, item.CARRIED)
             yield "You empty the {} from the {}\n".format(item.name, container.name)
             self.drop(item)

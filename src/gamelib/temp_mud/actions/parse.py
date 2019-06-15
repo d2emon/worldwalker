@@ -109,7 +109,11 @@ class Look(Action):
         elif word == "at":
             return examcom()
         elif word != "in" and word != "into":
-            item = Item.fobna(parser.require_next("In what ?\n"))
+            item = Item.find(
+                parser.require_next("In what ?\n"),
+                available=True,
+                destroyed=parser.user.is_wizard,
+            )
             return parser.user.look_in(item)
 
 
@@ -147,7 +151,11 @@ class Eat(Action):
         if item_name == "from":
             item_name = next(parser)
 
-        item = Item.fobna(item_name)
+        item = Item.find(
+            item_name,
+            available=True,
+            destroyed=parser.user.is_wizard,
+        )
         return parser.user.eat(item)
 
 
@@ -157,7 +165,11 @@ class Play(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.fobna(parser.require_next("Play what ?\n"))
+        item = Item.find(
+            parser.require_next("Play what ?\n"),
+            available=True,
+            destroyed=parser.user.is_wizard,
+        )
         return parser.user.play(item)
 
 
@@ -217,7 +229,11 @@ class Give(Action):
         word = parser.require_next("Give what to who ?\n")
         player = Player.fpbn(word)
         if player is None:
-            item = Item.fobna(word)
+            item = Item.find(
+                word,
+                available=True,
+                destroyed=parser.user.is_wizard,
+            )
 
             player_name = parser.require_next("But to who ?\n")
             if player_name == "to":
@@ -227,7 +243,12 @@ class Give(Action):
             if player is None:
                 raise CommandError("I don't know who {} is\n".format(player_name))
         else:
-            item = Item.fobna(parser.require_next("Give them what ?\n"))
+            item = Item.find(
+                parser.require_next("Give them what ?\n"),
+                available=True,
+                destroyed=parser.user.is_wizard,
+            )
+
         return parser.user.give(item, player)
 
 
@@ -244,7 +265,11 @@ class Steal(Action):
             player_name = parser.require_next("From who ?\n")
         player = Player.fpbn(player_name)
 
-        item = Item.fobncb(item_name, player)
+        item = Item.find(
+            item_name,
+            owner=player,
+            destroyed=parser.user.is_wizard,
+        )
         return parser.user.steal(item, player)
 
 
@@ -296,7 +321,7 @@ class INumber(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.fobn(parser.require_next("What...\n"))
+        item = Item.find(parser.require_next("What...\n"), a=False, destroyed=parser.user.is_wizard)
         return parser.user.item_number(item)
 
 

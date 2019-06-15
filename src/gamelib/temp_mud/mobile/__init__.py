@@ -94,7 +94,11 @@ return ;
           return ;
           }
        }
-    c=fobna( wordbuf ) ;
+    c = Item.find(
+	    wordbuf,
+	    available=True,
+	    destroyed=parser.user.is_wizard,
+	)
     if( c== -1 )
        {
        bprintf( "With what ?\n" ) ;

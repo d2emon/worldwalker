@@ -37,7 +37,12 @@ sumcom()
        bprintf("Summon who ?\n");
        return;
        }
-    a=fobn(wordbuf);
+    a = Item.find(
+        wordbuf,
+        available=True,
+        mode_0=True,
+        destroyed=parser.user.is_wizard,
+    )
     if(a!= -1) goto sumob;
     a=fpbn(wordbuf);
     if(a== -1)
@@ -251,7 +256,12 @@ willwork:bprintf("You cast the summoning......\n");
        bprintf("Yes but what ?\n");
        return;
        }
-    a=fobn(wordbuf);
+    a = Item.find(
+        wordbuf,
+        available=True,
+        mode_0=True,
+        destroyed=parser.user.is_wizard
+    )
     if(a== -1)
        {
        bprintf("You can only ressurect objects\n");

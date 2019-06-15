@@ -222,7 +222,12 @@ extern char wordbuf[];
        return(-1);
        }
           World.load()
-    *onm=fobna(wordbuf);
+    *onm = Item.find(
+	    wordbuf,
+	    available=True,
+	    destroyed=parser.user.is_wizard,
+	)
+    
     if(*onm==-1)
        {
        bprintf("There isn't one of those here\n");
@@ -444,7 +449,12 @@ break ;
           return;
           }
        }
-    c=fobna(wordbuf);
+    c = Item.find(
+	    wordbuf,
+	    available=True,
+	    destroyed=parser.user.is_wizard,
+	)
+    
     if(c== -1)
        {
        bprintf("There isn't one of those here.\n");
@@ -626,7 +636,11 @@ break ;
        bprintf("Push what ?\n");
        return;
        }
-    nbutt:    x=fobna(wordbuf);
+    nbutt:    x = Item.find(
+	    wordbuf,
+	    available=True,
+	    destroyed=parser.user.is_wizard,
+	)
     if(x== -1)
        {
        bprintf("That is not here\n");

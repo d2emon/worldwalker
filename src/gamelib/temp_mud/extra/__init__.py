@@ -82,7 +82,11 @@ if(brkword()!= -1)
        bprintf("Value what ?\n");
        return;
        }
-    b=fobna(wordbuf);
+    b = Item.find(
+	    wordbuf,
+	    available=True,
+	    destroyed=parser.user.is_wizard,
+	)
     if(b== -1)
        {
        bprintf("There isn't one of those here.\n");
@@ -105,7 +109,12 @@ if(brkword()!= -1)
        bprintf("Sorry, this is a wizard command buster...\n");
        return;
        }
-    a=fobn(wordbuf);
+    a = Item.find(
+        wordbuf,
+        available=True,
+        mode_0=True,
+        destroyed=parser.user.is_wizard,
+    )
     if(a== -1)
        {
        statplyr();
@@ -139,7 +148,11 @@ else
        bprintf("Examine what ?\n");
        return;
        }
-    a=fobna(wordbuf);
+	a = Item.find(
+	    wordbuf,
+	    available=True,
+	    destroyed=parser.user.is_wizard,
+	)
     if(a== -1)
        {
        bprintf("You see nothing special at all\n");

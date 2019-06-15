@@ -220,7 +220,12 @@ saveme()
           }
        a++;
        }
-    if(fobn(name)!=-1)
+    if(Item.find(
+        name,
+        available=True,
+        mode_0=True,
+        destroyed=parser.user.is_wizard,
+    ) != -1)
        {
       bprintf("I can't call you that , It would be confused with an object\n");
        return(0);

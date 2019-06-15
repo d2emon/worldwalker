@@ -141,25 +141,20 @@ class Item:
             return None
         return Player(self.location)
 
+    # ObjSys
     @classmethod
-    def items_at(cls, location, mode, destroyed=False):
-        """
-        Carried Loc !
+    def __find(
+        cls,
+        item_name,
+        destroyed=False,
+        available=None,  # 1
+        owner=None,  # 2, 3
+        here=False,  # 4
+        container=None,  # 5
+    ):
+        if item_name is None:
+            return None
 
-        :param location:
-        :param mode:
-        :param destroyed:
-        :return:
-        """
-        if mode == cls.CARRIED:
-            return [item for item in cls.items() if item.is_carried_by(location, destroyed)]
-        elif mode == cls.IN_CONTAINER:
-            return [item for item in cls.items() if item.is_contained_in(location, destroyed)]
-        else:
-            return []
-
-    @classmethod
-    def __find(cls, item_name, mode, location):
         item_name = item_name.lower()
         if item_name == "red":
             # word = next(parser)
@@ -173,7 +168,8 @@ class Item:
 
         items = [item for item in cls.items() if item.name.lower == item_name]
         # wd_it = item_name
-        if mode == 1:
+
+        if available:
             # Patch for shields
             # if item.item_id == 112 and cls(113).iscarrby(user):
             #     return 113
@@ -181,66 +177,113 @@ class Item:
             #     return 114
             # if user.item_is_available(item):
             #     return item
-            items = []
-        elif mode == 2:
-            # if item.iscarrby(user):
-            #     return item
-            items = []
-        elif mode == 3:
-            items = [item for item in items if item.is_carried_by(location)]
-        elif mode == 4:
+            items = [item for item in items]
+        elif owner is not None:
+            items = [item for item in items if item.is_carried_by(owner)]
+        elif here:
             # if user.is_here(item):
             #     return item
+            items = [item for item in items]
+        elif container is not None:
+            items = [item for item in items if item.is_contained_in(container)]
+
+        if not destroyed:
+            return [item for item in items if not item.is_destroyed]
+
+        return items
+
+    @classmethod
+    def __find_at(cls, location, carry_flag, destroyed=False):
+        """
+        Carried Loc !
+
+        :param location:
+        :param carry_flag:
+        :param destroyed:
+        :return:
+        """
+        if carry_flag == cls.CARRIED:
+            items = [item for item in cls.items() if item.is_carried_by(location)]
+        elif carry_flag == cls.IN_CONTAINER:
+            items = [item for item in cls.items() if item.is_contained_in(location)]
+        else:
             items = []
-        elif mode == 5:
-            items = [item for item in items if item.is_contained_in(location)]
 
+        return [item for item in items if destroyed or not item.is_destroyed]
+
+    @classmethod
+    def list_items_at(cls, location, carry_flag, debug=False, destroyed=False):
+        """
+        Carried Loc !
+        """
+        items = [item for item in cls.__find_at(location, carry_flag, destroyed)]
         if len(items) <= 0:
+            yield "Nothing\n"
+            return
+
+        for item in items:
+            text = item.name
+            if debug:
+                text = "{}{}".format(text, item.item_id)
+            if item.is_destroyed:
+                text = "({})".format(text)
+            if item.iswornby(location):
+                text += "<worn> "
+            text += " "
+            yield text
+        yield "\n"
+
+    # Unknown
+    @classmethod
+    def find(
+        cls,
+        name,
+        destroyed=False,
+        mode_0=False,  # 0
+        available=False,  # 1
+        owner=None,  # 2, 3
+        here=False,  # 4
+        container=None,  # 5
+    ):
+        item = next(
+            cls.__find(
+                name,
+                destroyed=destroyed,
+                available=available,
+                owner=owner,
+                here=here,
+                container=container,
+            ),
+            None
+        )
+        if not mode_0:
+            return item
+
+        if item is None:
             return None
-        return items[0]
+        name = item.name
 
-    @classmethod
-    def fobna(cls, item_name):
-        return cls.__find(item_name, 1, None)
-
-    @classmethod
-    def fobnc(cls, item_name):
-        return cls.__find(item_name, 2, None)
-
-    @classmethod
-    def fobncb(cls, item_name, owner):
-        return cls.__find(item_name, 3, owner)
-
-    @classmethod
-    def fobnh(cls, item_name):
-        return cls.__find(item_name, 4, None)
-
-    @classmethod
-    def fobnin(cls, item_name, location):
-        return cls.__find(item_name, 5, location)
-
-    @classmethod
-    def fobn(cls, item_name):
-        item = cls.fobna(item_name)
-        return None if item is None else cls.__find(item_name, 0, None)
+        return next(
+            cls.__find(
+                name,
+                destroyed=destroyed,
+            ),
+            None
+        )
 
     def iswornby(self, *args):
         raise NotImplementedError()
 
-    def is_carried_by(self, owner, destroyed=False):
+    def is_carried_by(self, owner):
         # if is_wizard
-        if not destroyed and self.is_destroyed:
-            return False
         if self.carry_flag not in [self.CARRIED, self.WEARING]:
             return False
         if self.location != owner.location_id:
             return False
         return True
 
-    def is_contained_in(self, container, destroyed=False):
+    def is_contained_in(self, container):
         # if is_wizard
-        if not destroyed and self.is_destroyed:
-            return False
         if self.carry_flag != self.IN_CONTAINER:
             return False
         if self.location != container.item_id:
@@ -248,7 +291,8 @@ class Item:
         return True
 
     def contain(self, destroyed=False):
-        return [item for item in self.items() if item.is_contained_in(self, destroyed)]
+        items = [item for item in self.items() if item.is_contained_in(self)]
+        return [item for item in items if destroyed or not item.is_destroyed]
 
     def eat(self, actor):
         if not self.is_edible:
