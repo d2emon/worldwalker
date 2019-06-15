@@ -532,6 +532,8 @@ class Actor:
 
         if self.in_dark:
             yield "It is dark\n"
+            World.load()
+            self.on_look()
             return
 
         yield self.location.short

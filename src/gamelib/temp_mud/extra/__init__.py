@@ -47,7 +47,7 @@ if(brkword()!= -1)
 	bprintf("OK...\n");
 	return;
     }
-    closeworld();
+          World.save()
     bprintf("\001f%s\001",HELP1);
     if(my_lev>9)
        {
@@ -69,7 +69,7 @@ if(brkword()!= -1)
 
  levcom()
     {
-    closeworld();
+          World.save()
     bprintf("\001f%s\001",LEVELS);
     }
 
@@ -260,7 +260,7 @@ else
  bprintf("Huh ?\n");
  return;
  }
- closeworld();
+          World.save()
  bprintf("\001f%s\001",WIZLIST);
  }
 
@@ -302,14 +302,14 @@ else
  getreinput(st);
  y=user.location_id;
  user.__location_id=x;
- closeworld();
+          World.save()
  unit=openroom(user.location_id,"r");
 if(unit==NULL){user.location_id=y;bprintf("No such room\n");return;}
 user.location.load_exits(unit)
  fclose(unit);
- openworld();
+          World.load()
  gamecom(st);
- openworld();
+          World.load()
  if(user.location_id==x)
  {
  a=0;
@@ -371,7 +371,7 @@ wherecom()
  cha=10*my_lev;
 if((iscarrby(111,user))||(iscarrby(121,user))||(iscarrby(163,user)))
    cha=100;
- closeworld();
+          World.save()
  if(rnd>cha)
  {
  bprintf("Your spell fails...\n");

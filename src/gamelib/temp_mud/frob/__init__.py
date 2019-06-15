@@ -39,7 +39,7 @@ frobnicate()
 	getkbd(bf3,8);
 	keysetup();
 	sprintf(ary,"%s.%s.%s.",bf1,bf2,bf3);
-	openworld();
+          World.load()
 	user.send_message(Player(x).name,Player(x).name,-599,0,ary);
 	bprintf("Ok....\n");
 }

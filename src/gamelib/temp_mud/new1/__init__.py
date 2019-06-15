@@ -221,7 +221,7 @@ extern char wordbuf[];
        bprintf("Tell me more ?\n");
        return(-1);
        }
-    openworld();
+          World.load()
     *onm=fobna(wordbuf);
     if(*onm==-1)
        {
@@ -1017,7 +1017,7 @@ break ;
        bprintf("Who ?\n");
        return(-1);
        }
-    b=openworld();
+          b = World.load()
     if(!strcmp(wordbuf,"at")) goto a0; /* STARE AT etc */
     a=fpbn(wordbuf);
     if(a== -1)
@@ -1345,11 +1345,11 @@ long  ail_deaf=0;
     my_str-=n;
     me_cal=1;
     if(my_str>=0) return;
-    closeworld();
+          World.save()
     syslog("%s slain magically",globme);
     delpers(globme);
     zapped=1;
-    openworld();
+          World.load()
     dumpitems();
     user.loose();
     sprintf(ms,"%s has just died\n",globme);

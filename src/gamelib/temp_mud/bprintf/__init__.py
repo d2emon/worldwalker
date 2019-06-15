@@ -238,7 +238,7 @@ void pbfr()
     FILE *fln;
     long mu;
     block_alarm();
-    closeworld();
+          World.save()
     if(strlen(sysbuf)) pr_due=1;
     if((strlen(sysbuf))&&(pr_qcr)) putchar('\n');
     pr_qcr=0;

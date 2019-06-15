@@ -118,12 +118,12 @@ sig_occur()
 	extern char globme[];
 	if(sig_active==0) return;
 	sig_aloff();
-	openworld();
+          World.load()
 	interrupt=1;
 	parser.read_messages(*parser.user.read_messages());
 	interrupt=0;
 	on_timing();
-	closeworld();
+          World.save()
 	key_reprint();
 	sig_alon();
 }

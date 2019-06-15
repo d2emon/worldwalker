@@ -486,5 +486,7 @@ class User(BasePlayer, Actor):
 
         if reset_after_read:
             self.reset_position()
+
+        World.save()
         if unique:
             self.__force_read = False

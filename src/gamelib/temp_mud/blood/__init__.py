@@ -231,9 +231,9 @@ void  bloodrcv(array,isme)
           syslog("%s slain by %s",globme,Player(array[0]).name);
           dumpitems();
           user.loose()
-          closeworld();
+          World.save()
           delpers(globme);
-          openworld();
+          World.load()
           sprintf(ms,"\001p%s\001 has just died.\n",globme);
           user.send_message(globme,globme,-10000,user.location_id,ms);
           sprintf(ms,"[ \001p%s\001 has been slain by \001p%s\001 ]\n",globme,Player(array[0]).name);
