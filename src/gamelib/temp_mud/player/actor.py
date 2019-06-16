@@ -262,9 +262,6 @@ class Actor:
     def reset_position(self, *args):
         raise NotImplementedError()
 
-    def save_player(self, *args):
-        raise NotImplementedError()
-
     def save_position(self, *args):
         raise NotImplementedError()
 
@@ -445,7 +442,7 @@ class Actor:
 
         self.location_id = 0
         self.show_players = False
-        self.save_player()
+        self.save()
         raise CrapupError("Goodbye")
 
     def take(self, item, container=None):
@@ -612,7 +609,15 @@ class Actor:
 
     # 21 - 30
     def save(self):
-        raise NotImplementedError()
+        if self.zapped:
+            return
+        # self.name = user.name
+        # self.score = user.score
+        # self.strength = user.strength
+        # self.sex = user.sex
+        # self.level = user.level
+        yield "\nSaving {}\n".format(self.name)
+        super().save()
 
     def show_score(self):
         # Parse
@@ -620,7 +625,7 @@ class Actor:
             yield "Your strength is {}\n".format(self.strength)
             return
 
-        yield "Your strength is {}(from {}),Your score is {}\nThis ranks you as %s ".format(
+        yield "Your strength is {}(from {}),Your score is {}\nThis ranks you as {} ".format(
             self.strength,
             50 + 8 * self.level,
             self.score,

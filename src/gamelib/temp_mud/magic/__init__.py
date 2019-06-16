@@ -6,11 +6,9 @@ def randperc(*args):
 #include <stdio.h>
 #include "files.h"
 
-extern long my_lev;
 extern char globme[];
 extern char wordbuf[];
 extern FILE *openroom();
-extern FILE *openuaf();
 
 randperc()
 {
@@ -25,8 +23,6 @@ sumcom()
     {
     long a,b;
     extern char wordbuf[];
-    extern long my_lev;
-    extern long my_str;
     extern char globme[];
     char seg[128];
     char mes[128];
@@ -50,19 +46,19 @@ sumcom()
        bprintf("I dont know who that is\n");
        return;
        }
-    if(my_str<10)
+    if(user.strength<10)
        {
        bprintf("You are too weak\n");
        return;
        }
-    if(my_lev<10)my_str-=2;
-    c=my_lev*2;
-    if(my_lev>9) c=101;
-if(Item(111).is_carried_by(user)) c+=my_lev;
-if(Item(121).is_carried_by(user)) c+=my_lev;
-if(Item(163).is_carried_by(user)) c+=my_lev;
+    if(not user.is_wizard) user.strength -= 2;
+    c=user.level*2;
+    if(user.is_wizard) c=101;
+if(Item(111).is_carried_by(user)) c+=user.level;
+if(Item(121).is_carried_by(user)) c+=user.level;
+if(Item(163).is_carried_by(user)) c+=user.level;
     d=randperc();
-    if(my_lev>9) goto willwork;
+    if(user.is_wizard) goto willwork;
     if((iswornby(90,a))||(c<d))
        {
        bprintf("The spell fails....\n");
@@ -96,7 +92,7 @@ willwork:bprintf("You cast the summoning......\n");
     Player(a).location = user.location_id;
     return;
     sumob:;
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("You can only summon people\n");
        return;
@@ -112,9 +108,8 @@ willwork:bprintf("You cast the summoning......\n");
 
  delcom()
     {
-    extern long my_lev;
     extern char wordbuf[];
-    if(my_lev<11)
+    if(not user.is_wizard)
        {
        bprintf("What ?\n");
        return;
@@ -135,7 +130,6 @@ willwork:bprintf("You cast the summoning......\n");
 
  goloccom()
     {
-    extern long my_lev;
     extern char globme[];
     char n1[128];
     char bf[128];
@@ -143,7 +137,7 @@ willwork:bprintf("You cast the summoning......\n");
     extern char wordbuf[];
     long a;
     FILE *b;
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("huh ?\n");
        return;
@@ -174,10 +168,9 @@ willwork:bprintf("You cast the summoning......\n");
 
  wizcom()
     {
-    extern long my_lev;
     extern char globme[],wordbuf[];
     char bf[128];
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("Such advanced conversation is beyond you\n");
        return;
@@ -191,10 +184,9 @@ willwork:bprintf("You cast the summoning......\n");
  viscom()
     {
     long f;
-    extern long my_lev;
     extern char globme[];
     long ar[4];
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("You can't just do that sort of thing at will you know.\n");
        return;
@@ -214,19 +206,18 @@ willwork:bprintf("You cast the summoning......\n");
 
  inviscom()
     {
-    extern long my_lev;
     extern char globme[];
     extern char wordbuf[];
     long f,x;
     long ar[4];
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("You can't just turn invisible like that!\n");
        return;
        }
     x=10;
-    if(my_lev>9999) x=10000;
-    if((my_lev==10033)&&(brkword()!=-1)) x=numarg(wordbuf);
+    if(user.is_god) x=10000;
+    if((user.level==10033)&&(brkword()!=-1)) x=numarg(wordbuf);
     if(user.visible==x)
        {
        bprintf("You are already invisible\n");
@@ -242,11 +233,10 @@ willwork:bprintf("You cast the summoning......\n");
 
  ressurcom()
     {
-    extern long my_lev;
     long bf[32];
     long a,b;
     extern char wordbuf[];
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("Huh ?\n");
        return;

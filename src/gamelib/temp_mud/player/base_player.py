@@ -99,7 +99,7 @@ class BasePlayer:
         return self.level + 5
 
     @property
-    def dead(self):
+    def is_dead(self):
         return self.strength < 0
 
     @property
@@ -130,6 +130,33 @@ class BasePlayer:
     def items(self):
         return [item for item in ITEMS if item.is_carried_by(self)]
 
+    # Parse
+    def level_of(self, score):
+        score = score / 2  # Scaling factor
+        if self.level > 10:
+            return self.level
+        elif score < 500:
+            return 1
+        elif score < 1000:
+            return 2
+        elif score < 3000:
+            return 3
+        elif score < 6000:
+            return 4
+        elif score < 10000:
+            return 5
+        elif score < 20000:
+            return 6
+        elif score < 32000:
+            return 7
+        elif score < 44000:
+            return 8
+        elif score < 70000:
+            return 9
+        else:
+            return 10
+
+    # ObjSys
     @property
     def level_name(self):
         levels = {

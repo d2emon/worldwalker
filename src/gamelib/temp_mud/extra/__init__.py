@@ -1,11 +1,9 @@
 """
 #include <stdio.h>
 #include "files.h"
-extern FILE * openuaf();
 extern FILE * openroom();
 extern char globme[];
 extern char wordbuf[];
-extern long my_lev;
 long getnarg();
 
 
@@ -14,7 +12,6 @@ helpcom()
     {
 extern char wordbuf[];
 extern char globme[];
-extern long my_lev;
 long a;
 char b[128];
 if(brkword()!= -1)
@@ -49,7 +46,7 @@ if(brkword()!= -1)
     }
           World.save()
     bprintf("\001f%s\001",HELP1);
-    if(my_lev>9)
+    if(user.is_wizard)
        {
        bprintf("Hit <Return> For More....\n");
        pbfr();
@@ -57,7 +54,7 @@ if(brkword()!= -1)
        bprintf("\001f%s\001",HELP2);
        }
     bprintf("\n");
-    if(my_lev>9999)
+    if(user.is_god)
        {
        bprintf("Hit <Return> For More....\n");
        pbfr();
@@ -98,13 +95,12 @@ if(brkword()!= -1)
  stacom()
     {
     long a,b;
-    extern long my_lev;
     if(brkword()== -1)
        {
        bprintf("STATS what ?\n");
        return;
        }
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("Sorry, this is a wizard command buster...\n");
        return;
@@ -267,8 +263,7 @@ else
  }
  wizlist()
  {
- extern long my_lev;
- if(my_lev<10)
+ if(not user.is_wizard)
  {
  bprintf("Huh ?\n");
  return;
@@ -279,7 +274,6 @@ else
 
  incom()
  {
- extern long my_levh;
  extern char wordbuf[];
  char st[80],rn[80],rv[80];
  long ex_bk[7];
@@ -288,7 +282,7 @@ else
  long y;
  FILE *unit;
  a=0;
- if(my_lev<10){bprintf("Huh\n");return;}
+ if(not user.is_wizard){bprintf("Huh\n");return;}
  while(a<7)
  {
  ex_bk[a]=user.location.exits[a];
@@ -339,7 +333,6 @@ user.location.load_exits(unit)
  {
  long a,b;
  extern long jumtb[];
- extern long my_lev;
  char ms[128];
  extern char globme[];
  a=0;
@@ -351,7 +344,7 @@ user.location.load_exits(unit)
  }
  if(b==0){bprintf("Wheeeeee....\n");
  return;}
- if((my_lev<10)&&((!Item(1).is_carried_by(user))||(state(1)==0)))
+ if((not user.is_wizard)&&((!Item(1).is_carried_by(user))||(state(1)==0)))
  {
  	user.__location_id=b;
  bprintf("Wheeeeeeeeeeeeeeeee  <<<<SPLAT>>>>\n");
@@ -369,19 +362,18 @@ long jumtb[]={-643,-633,-1050,-662,-1082,-1053,0,0};
 
 wherecom()
  {
- extern long my_lev,my_str;
  extern char wordbuf[];
  extern char globme[];
  long cha,rnd;
  extern long numobs;
- if(my_str<10)
+ if(user.strength<10)
  {
  bprintf("You are too weak\n");
  return;
  }
- if(my_lev<10) my_str-=2;
+ if(not user.is_wizard) user.strength -= 2;
  rnd=randperc();
- cha=10*my_lev;
+ cha=10*user.level;
 if((Item(111).is_carried_by(user))||(Item(121).is_carried_by(user))||(Item(163).is_carried_by(user)))
    cha=100;
           World.save()
@@ -402,9 +394,9 @@ if((Item(111).is_carried_by(user))||(Item(121).is_carried_by(user))||(Item(163).
  if(!strcmp(Item(cha).name,wordbuf))
     {
     rnd=1;
-if(my_lev>9999) bprintf("[%3d]",cha);
+if(user.is_god) bprintf("[%3d]",cha);
     bprintf("%16s - ",Item(cha).name);
-    if((my_lev<10)&&(Item(cha).is_destroyed)) bprintf("Nowhere\n");
+    if((not user.is_wizard)&&(Item(cha).is_destroyed)) bprintf("Nowhere\n");
     else
        desrm(Item(cha).location, Item(cha).carry_flag);
     }
@@ -423,12 +415,11 @@ if(my_lev>9999) bprintf("[%3d]",cha);
 
  desrm(loc,cf)
  {
- extern long my_lev;
  FILE *a;
  FILE *unit;
  long b;
  long x[32];
- if((my_lev<10)&&(cf==0)&&(loc>-5))
+ if((not user.is_wizard)&&(cf==0)&&(loc>-5))
  {
  bprintf("Somewhere.....\n");
  return;
@@ -451,7 +442,7 @@ return;
  b=0;
  while(b++<7) getstr(unit,x);
  bprintf("%-36s",x);
-if(my_lev>9){
+if(user.is_wizard){
     bprintf(" | ");
    yield loc.get_name(user)
 
@@ -464,7 +455,7 @@ else bprintf("\n");
 
 edit_world()
 {
-	extern long my_lev,numobs;
+	extern long numobs;
 	extern char wordbuf[];
 	extern long ublock[];
 	extern long objinfo[];

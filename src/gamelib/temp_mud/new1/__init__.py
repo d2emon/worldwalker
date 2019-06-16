@@ -101,7 +101,7 @@ def mhitplayer(enemy):
     if enemy.player_id < 0 or enemy.player_id > 47:
         return
     roll = randperc()
-    to_hit = 3 * (15 - NewUaf.my_lev) + 20
+    to_hit = 3 * (15 - NewUaf.level) + 20
     if Item(89).is_worn_by(user) or Item(113).is_worn_by(user) or Item(114).is_worn_by(user):
         to_hit -= 10
     if roll < to_hit:
@@ -182,7 +182,6 @@ typedef struct player_res PLAYER;
 
 #include <stdio.h>
 
-extern FILE * openuaf();
 extern FILE * openroom();
 extern char globme[];
 extern char wordbuf[];
@@ -418,7 +417,6 @@ break ;
  
  blowcom()
     {
-    extern long my_sco;
     long a,b;
     b=ohereandget(&a);
     if(b== -1) return;
@@ -429,7 +427,6 @@ break ;
  putcom()
     {
     long a,b;
-    extern long my_sco;
     char ar[128];
     extern char wordbuf[];
     long c;
@@ -472,7 +469,7 @@ break ;
           return;
           }
        bprintf("The candle fixes firmly into the candlestick\n");
-       my_sco+=50;
+       user.score+=50;
        destroy(a);
        Item(10).set_byte(1,a);
        Item(10).set_bit(9);
@@ -793,28 +790,26 @@ break ;
     {
     long a,b;
     extern char globme[];
-    extern long my_lev;
     extern long fighting,in_fight;
-    extern long my_sco;
     long ar[8];
     b=vichfb(&a);
     if(b== -1) return;
-    sprintf(ar,"%d",my_lev*2);
+    sprintf(ar,"%d",user.level * 2);
     user.send_message(Player(a).name,globme,-10106,user.location_id,ar);
-    if(Player(a).strength - 2*my_lev<0)    
+    if(Player(a).strength - 2 * user.level <0)    
 	{
 	bprintf("Your last spell did the trick\n");
 	if(not Player(a).is_dead)
 	{
 	/* Bonus ? */
-		if(a<16) my_sco+=(Player(a).level*Player(a).level*100);
-		else my_sco+=10*damof(a);
+		if(a<16) user.score+=(Player(a).level*Player(a).level*100);
+		else user.score+=10*damof(a);
 	}
 	Player(a).die() /* MARK ALREADY DEAD */
 	in_fight=0;
 	fighting= -1;
     }
-    if(a>15) woundmn(a,2*my_lev);
+    if(a>15) woundmn(a,2 * user.level);
 }
  
  changecom()
@@ -844,8 +839,6 @@ break ;
     long a,b;
     extern long fighting,in_fight;    
     extern char globme[];
-    extern long my_lev;
-    extern long my_sco;
     long ar[2];
     b=vichfb(&a);
     if(b== -1) return;
@@ -854,32 +847,30 @@ break ;
        bprintf("Seems rather dangerous to me....\n");
        return;
        }
-    sprintf(ar,"%d",2*my_lev);
-    if(Player(a).strength - (a==Player.find("yeti")?6:2)*my_lev<0)
+    sprintf(ar,"%d",2 * user.level);
+    if(Player(a).strength - (a==Player.find("yeti")?6:2) * user.level<0)
 	{
 	bprintf("Your last spell did the trick\n");
 	if(not Player(a).is_dead)
 	{
 	/* Bonus ? */
-		if(a<16) my_sco+=(Player(a).level*Player(a).level*100);
-		else my_sco+=10*damof(a);
+		if(a<16) user.score+=(Player(a).level*Player(a).level*100);
+		else user.score+=10*damof(a);
 	}
 	Player(a).die() /* MARK ALREADY DEAD */
 	in_fight=0;
 	fighting= -1;
     }    
     user.send_message(Player(a).name,globme,-10109,user.location_id,ar);
-    if(a==Player.find("yeti")) {woundmn(a,6*my_lev);return;}
-    if(a>15) woundmn(a,2*my_lev);
+    if(a==Player.find("yeti")) {woundmn(a,6 * user.level);return;}
+    if(a>15) woundmn(a,2 * user.level);
     }
  
  shockcom()
     {
     long a,b;
     extern char globme[];
-    extern long my_lev;
     extern long fighting,in_fight;    
-    extern long my_sco;
     long ar[2];
     b=vichfb(&a);
     if(b== -1) return;
@@ -888,22 +879,22 @@ break ;
        bprintf("You are supposed to be killing other people not yourself\n");
        return;
        }
-       if(Player(a).strength - 2*my_lev<0)
+       if(Player(a).strength - 2 * user.level<0)
 	{
 	bprintf("Your last spell did the trick\n");
 	if(not Player(a).is_dead)
 	{
 	/* Bonus ? */
-		if(a<16) my_sco+=(Player(a).level*Player(a).level*100);
-		else my_sco+=10*damof(a);
+		if(a<16) user.score+=(Player(a).level*Player(a).level*100);
+		else user.score+=10*damof(a);
 	}
 	Player(a).die() /* MARK ALREADY DEAD */
 	in_fight=0;
 	fighting= -1;
     }       
-    sprintf(ar,"%d",my_lev*2);
+    sprintf(ar,"%d",user.level * 2);
     user.send_message(Player(a).name,globme,-10110,user.location_id,ar);
-    if(a>15) woundmn(a,2*my_lev);
+    if(a>15) woundmn(a,2 * user.level);
     }
  
  starecom()
@@ -1061,21 +1052,20 @@ long *x;
 long *x;
     {
     long a;
-    extern long my_str,my_lev;
     long b,i;
     a=vicbase(x);
     if(a== -1) return(-1);
-    if(my_str<10)
+    if(user.strength<10)
        {
        bprintf("You are too weak to cast magic\n");
        return(-1);
        }
-    if(my_lev<10) my_str-=2;
+    if(not user.is_wizard) user.strength-=2;
 i=5;
 if(Item(111).is_carried_by(user)) i++;
 if(Item(121).is_carried_by(user)) i++;
 if(Item(163).is_carried_by(user)) i++;
-    if((my_lev<10)&&(randperc()>i*my_lev))
+    if((not user.is_wizard)&&(randperc()>i * user.level))
        {
        bprintf("You fumble the magic\n");
        if(f1==1){*x=user;bprintf("The spell reflects back\n");}
@@ -1088,7 +1078,7 @@ if(Item(163).is_carried_by(user)) i++;
  
     else
        {
-       if(my_lev<10)bprintf("The spell succeeds!!\n");
+       if(not user.is_wizard)bprintf("The spell succeeds!!\n");
        return(a);
        }
     }
@@ -1139,9 +1129,8 @@ long  ail_deaf=0;
  new1rcv(isme,chan,to,from,code,text)
  char *to,*from,*text;
     {
-    extern long my_lev,ail_dumb,ail_crip;
+    extern long ail_dumb,ail_crip;
     extern long ail_deaf,ail_blind;
-    extern long my_sex;
     extern char globme[];
     switch(code)
        {
@@ -1156,7 +1145,7 @@ long  ail_deaf=0;
        case -10101:
           if(isme==1)
              {
-             if(my_lev<10)
+             if(not user.is_wizard)
                 {
                 bprintf("You have been magically crippled\n");
                 ail_crip=1;
@@ -1169,7 +1158,7 @@ long  ail_deaf=0;
        case -10102:
           if(isme==1)
              {
-             if(my_lev<10)
+             if(not user.is_wizard)
                 {
                 bprintf("You have been struck magically dumb\n");
                 ail_dumb=1;
@@ -1182,7 +1171,7 @@ long  ail_deaf=0;
        case -10103:
           if(isme==1)
              {
-             if(my_lev<10)
+             if(not user.is_wizard)
                 {
                 bprintf("\001p%s\001 has forced you to %s\n",from,text);
                 addforce(text);
@@ -1199,7 +1188,7 @@ long  ail_deaf=0;
        case -10105:
           if(isme==1)
              {
-             if(my_lev<10)
+             if(not user.is_wizard)
                 {
                 bprintf("You have been struck magically blind\n");
                 ail_blind=1;
@@ -1228,9 +1217,9 @@ long  ail_deaf=0;
           if(isme==1)
              {
              bprintf("Your sex has been magically changed!\n");
-             my_sex=1-my_sex;
+             user.sex = 1 - user.sex
              bprintf("You are now ");
-             if(my_sex)bprintf("Female\n");
+             if(user.sex)bprintf("Female\n");
              else
                 bprintf("Male\n");
         yield from user.update()
@@ -1263,12 +1252,12 @@ long  ail_deaf=0;
           if(isme==1)bprintf("%s\n",text);
           break;
        case -10113:
-          if(my_lev>9)bprintf("%s",text);
+          if(user.is_wizard)bprintf("%s",text);
           break;
        case -10120:
           if(isme==1)
              {
-             if(my_lev>9)
+             if(user.is_wizard)
                 {
                 bprintf("\001p%s\001 tried to deafen you\n",from);
                 break;
@@ -1349,18 +1338,17 @@ long  ail_deaf=0;
  
  wounded(n)
     {
-    extern long my_str,my_lev;
     extern long me_cal;
     extern long zapped;
     extern char globme[];
     char ms[128];
-    if(my_lev>9) return;
-    my_str-=n;
+    if(user.is_wizard) return;
+    user.strength -= n;
     me_cal=1;
-    if(my_str>=0) return;
+    if(not user.is_dead) return;
           World.save()
     syslog("%s slain magically",globme);
-    delpers(globme);
+    user.remove()
     zapped=1;
           World.load()
     parser.user.dump_items()
@@ -1397,13 +1385,12 @@ long  ail_deaf=0;
  
  mhitplayer(mon,mn)
     {
-    extern long my_lev;
     long a,b,x[4];
     extern char globme[];
     if(Player(mon).location !=user.location_id) return;
     if((mon<0)||(mon>47)) return;
     a=randperc();
-    b=3*(15-my_lev)+20;
+    b=3*(15 - user.level) + 20;
 if((iswornby(89,user))||(iswornby(113,user))||(iswornby(114,user)))
        b-=10;
     if(a<b)

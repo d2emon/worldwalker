@@ -310,7 +310,7 @@ void snoopcom()
     {
     FILE *fx;
     long x;
-    if(my_lev<10)
+    if(not user.is_wizard)
        {
        bprintf("Ho hum, the weather is nice isn't it\n");
        return;
@@ -331,7 +331,7 @@ void snoopcom()
        bprintf("Who is that ?\n");
        return;
        }
-    if(((my_lev<10000)&&(Player(x).is_wizard))||(Player(x).test_flag(6)))
+    if(((not user.is_god)&&(Player(x).is_wizard))||(Player(x).test_flag(6)))
        {
        bprintf("Your magical vision is obscured\n");
        snoopt= -1;

@@ -1,7 +1,7 @@
 from .actions.action import Action, Special
 from .actions.tk import StartGame
 from .errors import ServiceError, CrapupError, CommandError
-from .user import User
+from .player.user import User
 from .world import World
 
 
@@ -30,6 +30,7 @@ class Screen:
         self.user = User(username)
         self.buffer = Buffer()
         self.parser = Parser(self.user)
+        self.user.get_new_user = self.get_new_user
 
         try:
             World.load()
@@ -62,10 +63,6 @@ class Screen:
         # sig_aloff()
         return self.__key_buffer
 
-    def set_progname(self, *args):
-        raise NotImplementedError()
-
-    # Tk
     def get_command(self):
         self.bottom()
 
@@ -88,12 +85,34 @@ class Screen:
         if self.parser.parse(work) is None:
             return self.get_command()
 
+    def get_new_user(self):
+        self.buffer.add("Creating character....\n")
+        self.buffer.add("\n")
+        self.buffer.add("Sex (M/F) : ")
+        self.buffer.show()
+
+        # Keys.setback()
+        sex = {
+            'm': User.SEX_MALE,
+            'f': User.SEX_FEMALE,
+        }.get(input()[:2].lower())
+        # Keys.setup()
+
+        if sex is None:
+            self.buffer.add("M or F")
+            return self.get_new_user()
+
+        return {'sex': sex}
+
     def main(self):
         self.buffer.show()
         self.get_command()
         self.buffer.add(*self.user.read_messages(unique=True))
         World.save()
         self.buffer.show()
+
+    def set_progname(self, *args):
+        raise NotImplementedError()
 
 
 class Parser:

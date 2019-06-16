@@ -2,11 +2,10 @@
 frobnicate()
 {
 	extern char wordbuf[];
-	extern long my_lev;
 	int x;
 	char ary[128];
 	char bf1[8],bf2[8],bf3[8];
-	if(my_lev<10000)
+	if(not user.is_god)
 	{
 		bprintf("No way buster.\n");
 		return;
@@ -17,12 +16,12 @@ frobnicate()
 		return;
 	}
 	x=parser.user.find(wordbuf);
-	if((x>15)&&(my_lev!=10033))
+	if((x>15)&&(user.level!=10033))
 	{
 		bprintf("Can't frob mobiles old bean.\n");
 		return;
 	}
-	if((Player(x).is_god)&&(my_lev!=10033))
+	if((Player(x).is_god)&&(user.level!=10033))
 	{
 		bprintf("You can't frobnicate %s!!!!\n",Player(x).name);
 		return;

@@ -54,8 +54,7 @@ return ;
  
  crashcom(  )
     {
-    extern long my_lev ;
-    if( my_lev<10 )
+    if( not user.is_wizard )
        {
        bprintf( "Hmmm....\n" ) ;
        bprintf( "I expect it will sometime\n" ) ;
@@ -121,9 +120,8 @@ return ;
     char b[ 40 ] ;
     char d[ 40 ] ;
     long c ;
-    extern long my_lev ;
     extern long numobs ;
-    if( my_lev<10 )
+    if( not user.is_wizard )
        {
        bprintf( "That's a wiz command\n" ) ;
        return ;
@@ -145,7 +143,6 @@ return ;
  
  sys_reset(  )
     {
-    extern long my_lev ;
     char xx[ 128 ] ;
     FILE *fl ;
     long t, u ;
@@ -164,10 +161,10 @@ return ;
        bprintf( "Sorry at least an hour must pass between resets\n" ) ;
        return ;
        }
-errk:t=my_lev ;
-    my_lev=10 ;
+errk:t=user.level ;
+    user.level=10 ;
     rescom(  ) ;
-    my_lev=t ;
+    user.level=t ;
     }
  
  
@@ -175,7 +172,6 @@ errk:t=my_lev ;
     {
     char bf[ 128 ] ;
     long ct ;
-    extern long my_lev;
     extern long in_fight;
     if(in_fight) return;
     ct=0 ;
@@ -188,7 +184,7 @@ errk:t=my_lev ;
        ct++ ;
        }
     return ;
-    hitrune:if( randperc(  )<9*my_lev ) return ;
+    hitrune:if( randperc(  )<9*user.level ) return ;
     if( Player.find( Player( ct ).name )== -1 ) return ;
     bprintf( "The runesword twists in your hands lashing out savagely\n" ) ;
     hitplayer(ct,32);
@@ -197,7 +193,6 @@ errk:t=my_lev ;
 
  pepdrop(  )
     {
-    extern long my_sco ;
     long a, b ;
     extern char globme[];
     user.send_message( " ", " ", -10000, user.location_id, "You start sneezing ATISCCHHOOOOOO!!!!\n" ) ;
@@ -208,7 +203,7 @@ errk:t=my_lev ;
        {
        /* Fried dragon */
        strcpy( Player( 32 ).name, "" ) ; /* No dragon */
-       my_sco+=100 ;
+       user.score+=100 ;
         yield from user.update()
        return ;
        }
@@ -223,10 +218,9 @@ errk:t=my_lev ;
  
  dragget(  )
     {
-    extern long my_lev ;
     long a, b ;
 long l ;
-if( my_lev>9 ) return( 0 ) ;
+if( user.is_wizard ) return( 0 ) ;
 l=Player.find( "dragon" ) ;
 if( l== -1 ) return( 0 ) ;
     if( Player( l ).location!=user.location_id ) return( 0 ) ;

@@ -10,6 +10,7 @@ from ..world import World
 from .actor import Actor
 from .base_player import BasePlayer
 from .player import Player
+from .user_data import UserData
 
 
 GWIZ = None
@@ -19,13 +20,16 @@ def randperc():
     raise NotImplementedError()
 
 
-class User(BasePlayer, Actor):
+class User(UserData, BasePlayer, Actor):
     def __init__(self, name):
+        super().__init__()
+
         self.player_id = 0
         self.__name = name
         self.__data = None
 
         self.before_message = lambda message: None
+        self.get_new_player = lambda: {}
 
         self.__in_setup = False
         self.__position = -1
@@ -69,14 +73,6 @@ class User(BasePlayer, Actor):
         self.add()
 
     @property
-    def name(self):
-        return self.__name
-
-    @name.setter
-    def name(self, value):
-        self.__name = value
-
-    @property
     def location_id(self):
         return self.__location_id
 
@@ -96,14 +92,6 @@ class User(BasePlayer, Actor):
         self.__position = value
 
     @property
-    def strength(self):
-        raise NotImplementedError()
-
-    @strength.setter
-    def strength(self, value):
-        raise NotImplementedError()
-
-    @property
     def visible(self):
         raise NotImplementedError()
 
@@ -116,14 +104,6 @@ class User(BasePlayer, Actor):
         raise NotImplementedError()
 
     @property
-    def level(self):
-        raise NotImplementedError()
-
-    @level.setter
-    def level(self, value):
-        raise NotImplementedError()
-
-    @property
     def weapon(self):
         raise NotImplementedError()
 
@@ -133,14 +113,6 @@ class User(BasePlayer, Actor):
 
     @property
     def helping(self):
-        raise NotImplementedError()
-
-    @property
-    def sex(self):
-        raise NotImplementedError()
-
-    @sex.setter
-    def sex(self, value):
         raise NotImplementedError()
 
     @property
@@ -203,21 +175,11 @@ class User(BasePlayer, Actor):
     def chksnp(self, *args):
         raise NotImplementedError()
 
-    def initme(self, *args):
-        raise NotImplementedError()
-
     # ObjSys
     def item_is_here(self, item):
         if not self.is_wizard and item.is_destroyed:
             return False
         return item.is_in_location(self.location)
-
-    # Unknown
-    def delpers(self, *args):
-        raise NotImplementedError()
-
-    def disle3(self, *args):
-        raise NotImplementedError()
 
     # ObjSys
     def find(self, player_name, not_found_error=None):
@@ -229,13 +191,7 @@ class User(BasePlayer, Actor):
         return player
 
     # Unknown
-    def lispeople(self, *args):
-        raise NotImplementedError()
-
     def on_look(self, *args):
-        raise NotImplementedError()
-
-    def save(self, *args):
         raise NotImplementedError()
 
     # Support
@@ -294,7 +250,7 @@ class User(BasePlayer, Actor):
 
         yield " you between\nthe eyes\n"
         self.zapped = True
-        self.delpers()
+        self.delete()
         self.send_message(
             self,
             message_codes.GLOBAL,
@@ -321,11 +277,10 @@ class User(BasePlayer, Actor):
                 0,
                 "{} has departed from AberMUDII\n".format(self.name)
             )
-        self.remove()
+        self.delete()
         World.save()
 
-        if not self.zapped:
-            self.save()
+        self.save()
         self.chksnp()
 
     # Parse
@@ -373,11 +328,13 @@ class User(BasePlayer, Actor):
 
     def start(self):
         location_id = self.start_location_id()
-        self.initme()
+        UserData.load(self)
 
         World.load()
         self.visible = 0 if not self.is_god else 10000
-        super().start()
+
+        if self.load() is None:
+            self.create(**self.get_new_player())
 
         self.send_message(
             self,

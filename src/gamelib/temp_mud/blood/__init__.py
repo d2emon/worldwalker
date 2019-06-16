@@ -1,6 +1,24 @@
 class Blood:
     fighting = None
-    in_fight = None
+    in_fight = 0
+
+    @classmethod
+    def stop_fight(cls):
+        cls.in_fight = 0
+        cls.fighting = None
+
+    @classmethod
+    def get_enemy(cls):
+        return Player(cls.fighting)
+
+    # Parse
+    @classmethod
+    def check_fight(cls):
+        if cls.fighting is not None and cls.get_enemy().exists:
+            cls.stop_fight()
+
+        if cls.in_fight:
+            cls.in_fight -= 1
 
 
 """
@@ -63,7 +81,6 @@ void hitplayer(victim,wpn)
  long victim,wpn;
     {
     long a,b,c,d;
-    extern long my_lev,my_str;
     extern long wpnheld;
     long z;
     long x[4];
@@ -96,7 +113,7 @@ void hitplayer(victim,wpn)
 	fighting=victim;
 	in_fight=300;
 	res=randperc();
-	cth=40+3*my_lev;
+	cth=40+3*user.level;
 	if((iswornby(89,victim))||(iswornby(113,victim))||(iswornby(114,victim)))
         cth-=10;
 	if(cth<0) cth=0;
@@ -115,8 +132,10 @@ void hitplayer(victim,wpn)
 			if(not Player(victim).is_dead)
 			{
 /* Bonus ? */
-				if(victim<16) my_sco+=(Player(victim).level*Player(victim).level*100);
-				else my_sco+=10*damof(victim);
+				if(victim<16)
+				    user.score+=(Player(victim).level*Player(victim).level*100);
+				else
+				    user.score +=10*damof(victim);
 			}
 			Player(victim).die(); /* MARK ALREADY DEAD */
 			in_fight=0;
@@ -127,7 +146,7 @@ void hitplayer(victim,wpn)
           	{
           	woundmn(victim,ddn);
           	}
-       my_sco+=ddn*2;
+       user.score+=ddn*2;
         yield from user.update()
        return;
        }
@@ -232,20 +251,20 @@ void  bloodrcv(array,isme)
        bprintf("You are wounded by \001p%s\001",Player(array[0]).name);
        if(array[2]>-1)bprintf(" with the %s", Item(array[2]).name);
        bprintf("\n");
-       if(my_lev<10){my_str-=array[1];
+       if(not user.is_wizard){user.strength-=array[1];
     if(array[0]==16) {
-    	    my_sco-=100*array[1];
+    	    user.score-=100*array[1];
 	    bprintf("You feel weaker, as the wraiths icy touch seems to drain your very life force\n");
-	    if(my_sco<0) my_str= -1;
+	    if(user.score<0) user.strength= -1;
 	    }
     }
-    if(my_str<0)
+    if(user.is_dead)
     {
           syslog("%s slain by %s",globme,Player(array[0]).name);
           parser.user.dump_items()
           user.loose()
           World.save()
-          delpers(globme);
+          user.remove()
           World.load()
           sprintf(ms,"\001p%s\001 has just died.\n",globme);
           user.send_message(globme,globme,-10000,user.location_id,ms);
