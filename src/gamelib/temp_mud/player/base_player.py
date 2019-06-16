@@ -201,10 +201,7 @@ class BasePlayer:
         self.strength = -1
 
     def dump_items(self):
-        self.dump_to(self.location_id)
-
-    def dump_to(self, location_id):
-        map(lambda item: item.set_location(location_id, 0), self.items)
+        map(lambda item: item.set_location(self.location_id, 0), self.items)
 
     def exorcised(self):
         if not self.can_be_exorcised:

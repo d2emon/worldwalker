@@ -11,21 +11,21 @@ on_timing()
 onlook(  )
     {
 long a ;
-chkfight( fpbns( "shazareth" ) ) ;
-if( !iscarrby( 45, user ) )chkfight( fpbns( "wraith" ) ) ;
-chkfight( fpbns( "bomber" ) ) ;
-chkfight( fpbns( "owin" ) ) ;
-chkfight( fpbns( "glowin" ) ) ;
-chkfight( fpbns( "smythe" ) ) ;
-chkfight( fpbns( "dio" ) ) ;
-if( !iscarrby( 45, user ) ) chkfight( fpbns( "zombie" ) ) ;
-chkfight( fpbns( "rat" ) ) ;
-chkfight( fpbns( "ghoul" ) ) ;
-chkfight( fpbns( "ogre" ) ) ;
-chkfight( fpbns( "riatha" ) ) ;
-chkfight( fpbns( "yeti" ) ) ;
-chkfight( fpbns( "guardian"));
-if( iscarrby( 32, user ) ) dorune(  ) ;
+chkfight( Player.find( "shazareth" ) ) ;
+if( !Item(45).is_carried_by(user) )chkfight( Player.find( "wraith" ) ) ;
+chkfight( Player.find( "bomber" ) ) ;
+chkfight( Player.find( "owin" ) ) ;
+chkfight( Player.find( "glowin" ) ) ;
+chkfight( Player.find( "smythe" ) ) ;
+chkfight( Player.find( "dio" ) ) ;
+if( !Item(45).is_carried_by(user) ) chkfight( Player.find( "zombie" ) ) ;
+chkfight( Player.find( "rat" ) ) ;
+chkfight( Player.find( "ghoul" ) ) ;
+chkfight( Player.find( "ogre" ) ) ;
+chkfight( Player.find( "riatha" ) ) ;
+chkfight( Player.find( "yeti" ) ) ;
+chkfight( Player.find( "guardian"));
+if( Item(32).is_carried_by(user) ) dorune(  ) ;
 if(user.helping is not None) helpchkr();
     }
  
@@ -37,7 +37,7 @@ if(user.helping is not None) helpchkr();
     if( Player( x ).location!=user.location_id ) return ;
     if( user.visible ) return ; /* Im invis */
     if(randperc()>40) return;
-if( ( x==fpbns( "yeti" ) )&&( user.has_any([
+if( ( x==Player.find( "yeti" ) )&&( user.has_any([
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
@@ -189,7 +189,7 @@ errk:t=my_lev ;
        }
     return ;
     hitrune:if( randperc(  )<9*my_lev ) return ;
-    if( fpbns( Player( ct ).name )== -1 ) return ;
+    if( Player.find( Player( ct ).name )== -1 ) return ;
     bprintf( "The runesword twists in your hands lashing out savagely\n" ) ;
     hitplayer(ct,32);
     }
@@ -204,7 +204,7 @@ errk:t=my_lev ;
     if( ( not Player( 32 ).exists )||( Player( 32 ).location!=user.location_id ) )
     return ;
     /* Ok dragon and pepper time */
-    if( ( iscarrby( 89, user ) )&&( Item( 89 ).carry_flag==2 ) )
+    if( ( Item(89).is_carried_by(user) )&&( Item(89).carry_flag==2 ) )
        {
        /* Fried dragon */
        strcpy( Player( 32 ).name, "" ) ; /* No dragon */
@@ -227,7 +227,7 @@ errk:t=my_lev ;
     long a, b ;
 long l ;
 if( my_lev>9 ) return( 0 ) ;
-l=fpbns( "dragon" ) ;
+l=Player.find( "dragon" ) ;
 if( l== -1 ) return( 0 ) ;
     if( Player( l ).location!=user.location_id ) return( 0 ) ;
     return( 1 ) ;

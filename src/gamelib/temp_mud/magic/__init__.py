@@ -44,7 +44,7 @@ sumcom()
         destroyed=parser.user.is_wizard,
     )
     if(a!= -1) goto sumob;
-    a=fpbn(wordbuf);
+    a=parser.user.find(wordbuf);
     if(a== -1)
        {
        bprintf("I dont know who that is\n");
@@ -58,9 +58,9 @@ sumcom()
     if(my_lev<10)my_str-=2;
     c=my_lev*2;
     if(my_lev>9) c=101;
-if(iscarrby(111,user)) c+=my_lev;
-if(iscarrby(121,user)) c+=my_lev;
-if(iscarrby(163,user)) c+=my_lev;
+if(Item(111).is_carried_by(user)) c+=my_lev;
+if(Item(121).is_carried_by(user)) c+=my_lev;
+if(Item(163).is_carried_by(user)) c+=my_lev;
     d=randperc();
     if(my_lev>9) goto willwork;
     if((iswornby(90,a))||(c<d))
@@ -68,7 +68,7 @@ if(iscarrby(163,user)) c+=my_lev;
        bprintf("The spell fails....\n");
        return;
        }
-    if((a==fpbn("wraith"))||((iscarrby(32,a))||(iscarrby(159,a))||iscarrby(174,a)))
+    if((a==parser.user.find("wraith"))||((Item(32).is_carried_by(a))||(Item(159).is_carried_by(a))||Item(174).is_carried_by(a)))
        {
        bprintf("Something stops your summoning from succeeding\n");
        return;
@@ -90,7 +90,7 @@ willwork:bprintf("You cast the summoning......\n");
        return;
        }
     if((a==17)||(a==23)) return;
-    dumpstuff(a,Player(a).location);
+    a.dump_items()
     sprintf(seg,"\001s%s\001%s has arrived\n\001",Player(a).name,Player(a).name);
     user.send_message("","",-10000,user.location_id,seg);
     Player(a).location = user.location_id;

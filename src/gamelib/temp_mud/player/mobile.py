@@ -53,7 +53,7 @@ class Figure(Mobile):
     def on_actor_enter(self, actor, direction_id, location_id):
         # super().on_actor_enter(actor, direction_id, location_id)
 
-        figure = Player.fpbns("figure")
+        figure = Player.find("figure")
         if figure is None:
             return
         if actor == figure:

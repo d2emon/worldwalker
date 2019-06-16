@@ -92,7 +92,7 @@ int pndeaf(str,ct,file)
     char z[257];
     long a;
     ct=tocontinue(str,ct,x,23);
-    a=fpbns(x);
+    a=Player.find(x);
     if(!seeplayer(a))
        {
        ct=tocontinue(str,ct,z,256);
@@ -109,7 +109,7 @@ int pndeaf(str,ct,file)
     {
     char x[24];
     ct=tocontinue(str,ct,x,24);
-    if(!seeplayer(fpbns(x)))
+    if(!seeplayer(Player.find(x)))
     fprintf(file,"Someone");
     else
       fprintf(file,"%s",x);
@@ -171,7 +171,7 @@ int ppndeaf(str,ct,file)
     long a;
     ct=tocontinue(str,ct,x,24);
     if(ail_deaf) return(ct);
-    a=fpbns(x);
+    a=Player.find(x);
     if(seeplayer(a)) fprintf(file,"%s",x);
     else
       fprintf(file,"Someone");
@@ -187,7 +187,7 @@ FILE *file;
     long a;
     ct=tocontinue(str,ct,x,24);
     if(ail_blind) return(ct);
-    a=fpbns(x);
+    a=Player.find(x);
     if(seeplayer(a)) fprintf(file,"%s",x);
     else
        fprintf(file,"Someone");
@@ -325,7 +325,7 @@ void snoopcom()
        {
        return;
        }
-    x=fpbn(wordbuf);
+    x=parser.user.find(wordbuf);
     if(x==-1)
        {
        bprintf("Who is that ?\n");
@@ -374,7 +374,7 @@ user.send_message(sntn,globme,-400,0,"");
 void setname(x)  /* Assign Him her etc according to who it is */
 long x;
 {
-	if((x>15)&&(x!=fpbns("riatha"))&&(x!=fpbns("shazareth")))
+	if((x>15)&&(x!=Player.find("riatha"))&&(x!=Player.find("shazareth")))
 	{
 		strcpy(wd_it,Player(x).name);
 		return;

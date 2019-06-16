@@ -19,7 +19,7 @@ long a;
 char b[128];
 if(brkword()!= -1)
 {
-	a=fpbn(wordbuf);
+	a=parser.user.find(wordbuf);
 	if(a== -1)
 	{
 		bprintf("Help who ?\n");
@@ -202,7 +202,7 @@ else
        case 8:
           if(state(7)!=0)
              {
-             if((iscarrby(3+state(7),user))&&(Item(3+state(7)).test_bit(13)))
+             if((Item(3 + Item(7).state).is_carried_by(user))&&(Item(3+Item(7).state).test_bit(13)))
                 {
                 bprintf("Everything shimmers and then solidifies into a different view!\n");
                 destroy(8);
@@ -252,7 +252,7 @@ else
  {
  extern char wordbuf[];
  long a,b;
- b=fpbn(wordbuf);
+ b=parser.user.find(wordbuf);
  if(b== -1)
  {
  bprintf("Whats that ?\n");
@@ -351,7 +351,7 @@ user.location.load_exits(unit)
  }
  if(b==0){bprintf("Wheeeeee....\n");
  return;}
- if((my_lev<10)&&((!iscarrby(1,user))||(state(1)==0)))
+ if((my_lev<10)&&((!Item(1).is_carried_by(user))||(state(1)==0)))
  {
  	user.__location_id=b;
  bprintf("Wheeeeeeeeeeeeeeeee  <<<<SPLAT>>>>\n");
@@ -382,7 +382,7 @@ wherecom()
  if(my_lev<10) my_str-=2;
  rnd=randperc();
  cha=10*my_lev;
-if((iscarrby(111,user))||(iscarrby(121,user))||(iscarrby(163,user)))
+if((Item(111).is_carried_by(user))||(Item(121).is_carried_by(user))||(Item(163).is_carried_by(user)))
    cha=100;
           World.save()
  if(rnd>cha)
@@ -410,7 +410,7 @@ if(my_lev>9999) bprintf("[%3d]",cha);
     }
  cha++;
  }
- cha=fpbn(wordbuf);
+ cha=parser.user.find(wordbuf);
  if(cha!= -1)
  {
  rnd++;

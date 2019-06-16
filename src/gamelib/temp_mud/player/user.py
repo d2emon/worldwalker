@@ -157,7 +157,7 @@ class User(BasePlayer, Actor):
 
     # Weather
     @property
-    def __items(self):
+    def items(self):
         return [item for item in Item.items() if not item.is_destroyed and item.is_carried_by(self)]
 
     @property
@@ -168,7 +168,7 @@ class User(BasePlayer, Actor):
     def overweight(self):
         if self.capacity is None:
             return False
-        return len(self.__items) >= self.capacity
+        return len(self.items) >= self.capacity
 
     @property
     def in_dark(self):
@@ -219,6 +219,16 @@ class User(BasePlayer, Actor):
     def disle3(self, *args):
         raise NotImplementedError()
 
+    # ObjSys
+    def find(self, player_name, not_found_error=None):
+        player = Player.find(player_name)
+        if player is None:
+            return player
+        if not self.seeplayer(player):
+            return None
+        return player
+
+    # Unknown
     def lispeople(self, *args):
         raise NotImplementedError()
 
@@ -235,7 +245,7 @@ class User(BasePlayer, Actor):
     # Tk
     def add(self):
         World.load()
-        if Player.fpbn(self.name) is not None:
+        if Player.find(self.name) is not None:
             raise CrapupError("You are already on the system - you may only be on once at a time")
 
         self.player_id = Player.new_player_id()
@@ -417,7 +427,7 @@ class User(BasePlayer, Actor):
             self.level = level
             yield "You are now {} ".format(self.name)
             syslog("{} to level {}".format(self.name, level))
-            self.disle3(level, self.sex)
+            yield self.level_name + "\n"
             self.send_message(
                 self,
                 message_codes.WIZARD,

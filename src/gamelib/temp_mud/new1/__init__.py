@@ -3,7 +3,6 @@ Extensions section 1
 """
 from ..magic import randperc
 from ..newuaf import NewUaf
-from ..objsys import ObjSys, dumpstuff, iscarrby
 from ..parse.messages import Message
 from ..support import Item, Player
 from ..tk import Tk
@@ -78,7 +77,7 @@ def woundmn(enemy, damage):
     if new_strength >= 0:
         return mhitplayer(enemy)
 
-    dumpstuff(enemy, enemy.location)
+    enemy.dump_items()
     Message(
         None,
         None,
@@ -161,7 +160,7 @@ def teletrap(new_channel):
 def on_flee_event():
     for item_id in range(ObjSys.numobs):
         item = Item(item_id)
-        if iscarrby(item_id, user) and not item.is_worn_by(user):
+        if item.is_carried_by(user) and not item.is_worn_by(user):
             item.set_location(user.location, 0)
 
 
@@ -739,13 +738,13 @@ break ;
           if(Item(x).test_bit(4))
              {
              setstate(x,0);
-             oplong(x);
+             yield x.show_description(parser.user.debug_mode)
              return;
              }
           if(Item(x).test_bit(5))
              {
              setstate(x,1-state(x));
-             oplong(x);
+             yield x.show_description(parser.user.debug_mode)
              return;
              }
           bprintf("Nothing happens\n");
@@ -856,7 +855,7 @@ break ;
        return;
        }
     sprintf(ar,"%d",2*my_lev);
-    if(Player(a).strength - (a==fpbns("yeti")?6:2)*my_lev<0)
+    if(Player(a).strength - (a==Player.find("yeti")?6:2)*my_lev<0)
 	{
 	bprintf("Your last spell did the trick\n");
 	if(not Player(a).is_dead)
@@ -870,7 +869,7 @@ break ;
 	fighting= -1;
     }    
     user.send_message(Player(a).name,globme,-10109,user.location_id,ar);
-    if(a==fpbns("yeti")) {woundmn(a,6*my_lev);return;}
+    if(a==Player.find("yeti")) {woundmn(a,6*my_lev);return;}
     if(a>15) woundmn(a,2*my_lev);
     }
  
@@ -1033,7 +1032,7 @@ break ;
        }
           b = World.load()
     if(!strcmp(wordbuf,"at")) goto a0; /* STARE AT etc */
-    a=fpbn(wordbuf);
+    a=parser.user.find(wordbuf);
     if(a== -1)
        {
        bprintf("Who ?\n");
@@ -1073,9 +1072,9 @@ long *x;
        }
     if(my_lev<10) my_str-=2;
 i=5;
-if(iscarrby(111,user)) i++;
-if(iscarrby(121,user)) i++;
-if(iscarrby(163,user)) i++;
+if(Item(111).is_carried_by(user)) i++;
+if(Item(121).is_carried_by(user)) i++;
+if(Item(163).is_carried_by(user)) i++;
     if((my_lev<10)&&(randperc()>i*my_lev))
        {
        bprintf("You fumble the magic\n");
@@ -1364,7 +1363,7 @@ long  ail_deaf=0;
     delpers(globme);
     zapped=1;
           World.load()
-    dumpitems();
+    parser.user.dump_items()
     user.loose();
     sprintf(ms,"%s has just died\n",globme);
     user.send_message(globme,globme,-10000,user.location_id,ms);
@@ -1474,7 +1473,7 @@ PLAYER pinit[48]=
     long a,b;
     b=ohereandget(&a);
     if(b== -1) return(-1);
-    if(!iscarrby(a,user))
+    if(!a.is_carried_by(user))
        {
        bprintf("You are not carrying this\n");
        return;
@@ -1519,7 +1518,7 @@ PLAYER pinit[48]=
  
  iswornby(item,chr)
     {
-    if(!iscarrby(item,chr)) return(0);
+    if(!item.is_carried_by(chr)) return(0);
     if(Item(item).carry_flag!=2) return(0);
     return(1);
     }
@@ -1633,7 +1632,7 @@ on_flee_event()
 	long ct=0;
 	while(ct<numobs)
 	{
-		if((iscarrby(ct,user))&&(!iswornby(ct,user)))
+		if((ct.is_carried_by(user))&&(!iswornby(ct,user)))
 		{
 			Item(ct).set_location(user.location, 0);
 		}

@@ -171,9 +171,9 @@ class Item:
 
         if available:
             # Patch for shields
-            # if item.item_id == 112 and cls(113).iscarrby(user):
+            # if item.item_id == 112 and cls(113).is_carried_by(user):
             #     return 113
-            # if item.item_id == 112 and cls(114).iscarrby(user):
+            # if item.item_id == 112 and cls(114).is_carried_by(user):
             #     return 114
             # if user.item_is_available(item):
             #     return item
@@ -308,7 +308,7 @@ class Item:
     def roll(self, actor):
         raise CommandError("You can't roll that\n")
 
-    def oplong(self, debug=False):
+    def show_description(self, debug=False):
         if debug:
             return "{{{}}} {}".format(self.item_id, self.description)
         return self.description

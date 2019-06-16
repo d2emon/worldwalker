@@ -109,7 +109,7 @@ class SetValue(Action):
             destroyed=parser.user.is_wizard,
         )
         if item is None:
-            player = Player.fpbn(name)
+            player = Player.find(name)
             value = parser.require_next("To what value ?\n")
             return parser.user.set_player_strength(player, int(value))
 
@@ -224,7 +224,7 @@ class SetPFlags(Action):
 
     @classmethod
     def action(cls, parser, user):
-        player = Player.fpbn(parser.require_next("Whose PFlags ?\n"))
+        player = parser.user.find(parser.require_next("Whose PFlags ?\n"))
         flag_id = parser.require_next("Flag number ?\n")
         parser.user.set_player_flags(player, flag_id, next(parser))
 

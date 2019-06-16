@@ -553,11 +553,11 @@ class Actor:
         else:
             players = PLAYERS[:16]
 
-        for player in players:
+        for player in (player for player in players if player.visible <= self.level):
             if player.player_id == 16:
                 yield "----------\nMobiles\n"
             if player.exists:
-                yield player.dispuser()
+                yield player.show(self)
 
         yield "\n"
 

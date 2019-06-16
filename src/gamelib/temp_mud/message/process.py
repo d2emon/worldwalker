@@ -48,7 +48,7 @@ def __stop_snoop(user, message):
 # START_SNOOP
 @__private
 def __start_snoop(user, message):
-    user.snoopd = Player.fpbns(message.user_from)
+    user.snoopd = Player.find(message.user_from)
 
 
 # CHANGE_STATS
@@ -67,7 +67,7 @@ def __too_evil(user, message):
 # -750
 @__private
 def __code_750(user, message):
-    if Player.fpbns(message.user_from) is not None:
+    if Player.find(message.user_from) is not None:
         user.loose()
     World.save()
     print("***HALT\n")
@@ -174,7 +174,7 @@ MESSAGE_HANDLERS = {
 
 # Parse
 def handle(user, message):
-    if message.code == message_codes.FLEE and Player.fpbn(message.user_to) == user.Blood.fighting:
+    if message.code == message_codes.FLEE and Player.find(message.user_to) == user.Blood.fighting:
         user.Blood.stop_fight()
         return
 

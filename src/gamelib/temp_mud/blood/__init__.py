@@ -70,14 +70,14 @@ void hitplayer(victim,wpn)
     long cth,ddn,res;
     if(not Player(victim).exists) return;
     /* Chance to hit stuff */
-    if((!iscarrby(wpn,user))&&(wpn!= -1))
+    if((!wpn.is_carried_by(user))&&(wpn!= -1))
        {
        bprintf("You belatedly realise you dont have the %s,\nand are forced to use your hands instead..\n",Item(wpn).name);
        if(wpnheld==wpn) wpnheld= -1;
        wpn= -1;
        }
     wpnheld=wpn;
-    if((wpn==32)&&(iscarrby(16,victim)))
+    if((wpn==32)&&(Item(16)..is_carried_by(victim)))
     {
         bprintf("The runesword flashes back away from its target, growling in anger!\n");
         return;
@@ -167,7 +167,7 @@ void hitplayer(victim,wpn)
 	       breakitem(item);
 	       return;
        }
-    if((a=fpbn(wordbuf))== -1)
+    if((a=parser.user.find(wordbuf))== -1)
        {
 	       bprintf("You can't do that\n");
 	       return;
@@ -242,7 +242,7 @@ void  bloodrcv(array,isme)
     if(my_str<0)
     {
           syslog("%s slain by %s",globme,Player(array[0]).name);
-          dumpitems();
+          parser.user.dump_items()
           user.loose()
           World.save()
           delpers(globme);

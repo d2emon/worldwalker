@@ -133,7 +133,7 @@ class Lightning(Action):
 
     @classmethod
     def action(cls, command, parser):
-        victim = Player.fpbn(parser.require_next("But who do you wish to blast into pieces....\n"))
+        victim = parser.user.find(parser.require_next("But who do you wish to blast into pieces....\n"))
         return parser.user.lightning(victim)
 
 
@@ -197,7 +197,7 @@ class Tell(Action):
 
     @classmethod
     def action(cls, command, parser):
-        player = Player.fpbn(parser.require_next("Tell who ?\n"))
+        player = parser.user.find(parser.require_next("Tell who ?\n"))
         return parser.user.tell(player, parser.full())
 
 
@@ -216,7 +216,7 @@ class Exorcise(Action):
 
     @classmethod
     def action(cls, command, parser):
-        player = Player.fpbn(parser.require_next("Exorcise who ?\n"))
+        player = parser.user.find(parser.require_next("Exorcise who ?\n"))
         parser.user.exorcise(player)
 
 
@@ -227,7 +227,7 @@ class Give(Action):
     @classmethod
     def action(cls, command, parser):
         word = parser.require_next("Give what to who ?\n")
-        player = Player.fpbn(word)
+        player = parser.user.find(word)
         if player is None:
             item = Item.find(
                 word,
@@ -239,7 +239,7 @@ class Give(Action):
             if player_name == "to":
                 player_name = parser.require_next("But to who ?\n")
 
-            player = Player.fpbn(player_name)
+            player = parser.user.find(player_name)
             if player is None:
                 raise CommandError("I don't know who {} is\n".format(player_name))
         else:
@@ -263,7 +263,7 @@ class Steal(Action):
         player_name = parser.require_next("From who ?\n")
         if player_name == "from":
             player_name = parser.require_next("From who ?\n")
-        player = Player.fpbn(player_name)
+        player = parser.user.find(player_name)
 
         item = Item.find(
             item_name,

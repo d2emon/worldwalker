@@ -16,7 +16,7 @@ frobnicate()
 		bprintf("Frobnicate who ?\n");
 		return;
 	}
-	x=fpbn(wordbuf);
+	x=parser.user.find(wordbuf);
 	if((x>15)&&(my_lev!=10033))
 	{
 		bprintf("Can't frob mobiles old bean.\n");

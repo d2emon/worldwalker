@@ -136,18 +136,9 @@ class Player(BasePlayer):
     def helpers(self):
         return (player for player in self.players() if player.is_helping(self))
 
-    # Unknown
+    # ObjSys
     @classmethod
-    def fpbn(cls, player_name, not_found_error=None):
-        player = cls.fpbns(player_name)
-        if player is None:
-            return player
-        if not seeplayer(player):
-            return None
-        return player
-
-    @classmethod
-    def fpbns(cls, player_name):
+    def find(cls, player_name):
         n1 = player_name.lower()
         for player in cls.players():
             if player.is_dead:
@@ -189,12 +180,10 @@ class Player(BasePlayer):
     def new_player_id(cls):
         return next((player.player_id for player in cls.players() if not player.exists), None)
 
-    # Unknown
-    def dispuser(self, viewer):
+    # ObjSys
+    def show(self):
         if self.is_dead:
             # On  Non game mode
-            return
-        if self.visible > viewer.level:
             return
         if self.visible:
             yield "("
