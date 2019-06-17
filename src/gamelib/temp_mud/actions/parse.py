@@ -1,3 +1,4 @@
+from ..direction import DIRECTIONS
 from ..errors import CommandError
 from ..item import Item
 from ..player.player import Player
@@ -14,7 +15,7 @@ class Direction(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.go(cls.direction_id)
+        return parser.user.go(DIRECTIONS.get(cls.direction_id))
 
     @classmethod
     def flee(cls, parser):

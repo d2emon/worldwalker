@@ -27,10 +27,6 @@ def randperc():
     raise NotImplementedError()
 
 
-def is_door(location_id):
-    return 999 < location_id < 2000
-
-
 def wizard_action(message):
     def wrapper(f):
         def wrapped(self, *args):
@@ -86,18 +82,6 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
-    def can_debug(self):
-        raise NotImplementedError()
-
-    @property
-    def can_edit(self):
-        raise NotImplementedError()
-
-    @property
-    def can_set_flags(self):
-        raise NotImplementedError()
-
-    @property
     def conversation_mode(self):
         raise NotImplementedError()
 
@@ -130,35 +114,11 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
-    def is_god(self):
-        raise NotImplementedError()
-
-    @property
-    def is_wizard(self):
-        raise NotImplementedError()
-
-    @property
-    def level(self):
+    def items(self):
         raise NotImplementedError()
 
     @property
     def level_name(self):
-        raise NotImplementedError()
-
-    @property
-    def location(self):
-        raise NotImplementedError()
-
-    @location.setter
-    def location(self, value):
-        raise NotImplementedError()
-
-    @property
-    def name(self):
-        raise NotImplementedError()
-
-    @property
-    def strength(self):
         raise NotImplementedError()
 
     @property
@@ -208,18 +168,6 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
-    def sex(self):
-        raise NotImplementedError()
-
-    @property
-    def score(self):
-        raise NotImplementedError()
-
-    @score.setter
-    def score(self, value):
-        raise NotImplementedError()
-
-    @property
     def __uid(self):
         raise NotImplementedError()
 
@@ -227,16 +175,10 @@ class Actor(Sender, Reader):
     def __is_valid_uid(self):
         return self.__uid == self.__euid
 
+    def check_kicked(self, *args):
+        raise NotImplementedError()
+
     def debug2(self, *args):
-        raise NotImplementedError()
-
-    def die(self, *args):
-        raise NotImplementedError()
-
-    def dump_items(self, *args):
-        raise NotImplementedError()
-
-    def fade(self, *args):
         raise NotImplementedError()
 
     def item_is_available(self, *args):
@@ -266,29 +208,76 @@ class Actor(Sender, Reader):
     def update(self, *args):
         raise NotImplementedError()
 
-    # Other
+    # Base Player properties
+    @property
+    def can_debug(self):
+        raise NotImplementedError()
+
+    @property
+    def can_edit(self):
+        raise NotImplementedError()
+
     @property
     def can_modify_messages(self):
-        return self.is_god or self.name == "Lorry"
+        raise NotImplementedError()
 
     @property
-    def has_shield(self):
-        shields = Shield113(), Shield114(), Shield89()
-        return any(item.iswornby(self) for item in shields)
+    def can_set_flags(self):
+        raise NotImplementedError()
 
     @property
-    def in_fight(self):
+    def is_god(self):
+        raise NotImplementedError()
+
+    @property
+    def is_wizard(self):
+        raise NotImplementedError()
+
+    @property
+    def level(self):
+        raise NotImplementedError()
+
+    @property
+    def location(self):
+        raise NotImplementedError()
+
+    @location.setter
+    def location(self, value):
+        raise NotImplementedError()
+
+    @property
+    def name(self):
+        raise NotImplementedError()
+
+    @property
+    def strength(self):
+        raise NotImplementedError()
+
+    @property
+    def sex(self):
+        raise NotImplementedError()
+
+    @property
+    def score(self):
+        raise NotImplementedError()
+
+    @score.setter
+    def score(self, value):
+        raise NotImplementedError()
+
+    def die(self, *args):
+        raise NotImplementedError()
+
+    def dump_items(self, *args):
+        raise NotImplementedError()
+
+    def fade(self, *args):
+        raise NotImplementedError()
+
+    # Other
+    @property
+    def is_fighting(self):
         return self.Blood.in_fight > 0
-
-    @property
-    def items(self):
-        return [item for item in ITEMS if item.is_carried_by(self)]
-
-    def check_kicked(self):
-        self.reset_position()
-        World.load()
-        if Player.fpbns(self.name) is None:
-            raise LooseError("You have been kicked off")
 
     def __fade_system(self, actions):
         self.fade()
@@ -301,7 +290,7 @@ class Actor(Sender, Reader):
         yield from self.read_messages()
 
     def list_items(self):
-        yield from Item.list_items_at(self, Item.CARRIED, self.debug, self.is_wizard)
+        return Item.list_items_at(self, Item.CARRIED, self.debug, self.is_wizard)
 
     def __silly_sound(self, message):
         self.send_silly("\001P{user.name}\001\001d " + message + "\n\001")
@@ -310,31 +299,26 @@ class Actor(Sender, Reader):
         self.send_silly("\001s{user.name}\001{user.name} " + message + "\n\001")
 
     # 1 - 10
-    def go(self, direction_id):
+    def go(self, direction):
         # Parse
         # 1 - 7
-        direction = DIRECTIONS.get(direction_id)
         if direction is None:
             raise CommandError("That's not a valid direction\n")
-        if self.in_fight > 0:
+        if self.is_fighting:
             raise CommandError("You can't just stroll out of a fight!\n"
                                "If you wish to leave a fight, you must FLEE in a direction\n")
-        location_id = self.location.exits[direction_id]
-        yield from map(lambda mobile: mobile.on_actor_leave(self, direction_id), MOBILES)
+        yield from map(lambda mobile: mobile.on_actor_leave(self, direction), MOBILES)
         self.Disease.crippled.check()
-        if is_door(location_id):
-            location_id = Door(location_id).go_through(self)
 
-        if location_id >= 0:
-            raise CommandError("You can't go that way\n")
-        location = Location(location_id)
+        location = self.location.go_to(direction, self)
+
         yield from location.on_enter(self)
-        yield from map(lambda mobile: mobile.on_actor_enter(self, direction_id, location), MOBILES)
+        yield from map(lambda mobile: mobile.on_actor_enter(self, direction, location), MOBILES)
 
         self.send_global(
             "\001s{actor.data.name}\001{actor.name} has gone {direction} {message}.\n\001".format(
                 actor=self,
-                direction=direction,
+                direction=direction.title,
                 message=self.out_ms
             ),
         )
@@ -354,7 +338,7 @@ class Actor(Sender, Reader):
 
         yield from self.read_messages()
 
-        if self.in_fight:
+        if self.is_fighting:
             raise CommandError("Not in the middle of a fight!\n")
 
         yield "Ok"
@@ -1110,7 +1094,7 @@ class Actor(Sender, Reader):
 
     def flee(self, direction_id):
         # Parse
-        if not self.Blood.in_fight:
+        if not self.is_fighting:
             return self.go(direction_id)
 
         yield from map(lambda item: item.on_owner_flee(self, direction_id), self.items)

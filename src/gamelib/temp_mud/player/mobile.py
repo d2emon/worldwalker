@@ -14,23 +14,26 @@ class Mobile:
         raise NotImplementedError()
 
     @property
-    def location_id(self):
+    def location(self):
         raise NotImplementedError()
 
     def woundmn(self, *args):
         raise NotImplementedError()
 
-    def on_actor_leave(self, actor, direction_id):
+    def is_here(self, player):
         if not self.exists:
             return
-        if actor.location_id != self.location_id:
+        if player.location is None:
+            return False
+        return player.location.location_id == self.location.location_id
+
+    def on_actor_enter(self, actor, direction, location):
+        if not self.is_here(actor):
             return
         pass
 
-    def on_actor_enter(self, actor, direction_id, location_id):
-        if not self.exists:
-            return
-        if actor.location_id != self.location_id:
+    def on_actor_leave(self, actor, direction):
+        if not self.is_here(actor):
             return
         pass
 
@@ -43,24 +46,24 @@ class Golem(Mobile):
     def __init__(self):
         super().__init__(25)
 
-    def on_actor_leave(self, actor, direction_id):
-        super().on_actor_leave(actor, direction_id)
+    def on_actor_leave(self, actor, direction):
+        if not self.is_here(actor):
+            return
+
         if MagicSword().is_carried_by(actor):
             raise CommandError("\001cThe Golem\001 bars the doorway!\n")
 
 
 class Figure(Mobile):
-    def on_actor_enter(self, actor, direction_id, location_id):
+    def on_actor_enter(self, actor, direction, location):
         # super().on_actor_enter(actor, direction_id, location_id)
 
         figure = Player.find("figure")
-        if figure is None:
+        if not figure.is_here(actor):
             return
         if actor == figure:
             return
-        if actor.location_id != figure.location_id:
-            return
-        if direction_id != 2:
+        if direction.direction_id != 2:
             return
 
         sorcerors = Item101(), Item102(), Item103()

@@ -119,6 +119,7 @@ class User(UserData, BasePlayer, Actor):
     # Weather
     @property
     def items(self):
+        # return [item for item in ITEMS if item.is_carried_by(self)]
         return [item for item in Item.items() if not item.is_destroyed and item.is_carried_by(self)]
 
     @property
@@ -212,6 +213,13 @@ class User(UserData, BasePlayer, Actor):
 
         if self.Blood.in_fight:
             self.Blood.in_fight -= 1
+
+    # Unknown
+    def check_kicked(self):
+        self.reset_position()
+        World.load()
+        if self.find(self.name) is None:
+            raise LooseError("You have been kicked off")
 
     # Support
     def has_any(self, mask):
@@ -373,3 +381,9 @@ class User(UserData, BasePlayer, Actor):
     def broadcast(self, message):
         self.force_read = True
         Broadcast(message).send(self)
+
+    # Other
+    @property
+    def has_shield(self):
+        shields = Shield113(), Shield114(), Shield89()
+        return any(item.iswornby(self) for item in shields)

@@ -123,6 +123,10 @@ class BasePlayer:
 
     # Other
     @property
+    def can_modify_messages(self):
+        return self.is_god or self.name == "Lorry"
+
+    @property
     def capacity(self):
         if not self.is_wizard:
             return None

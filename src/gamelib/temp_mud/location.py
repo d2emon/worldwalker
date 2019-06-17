@@ -4,6 +4,10 @@ from .weather import Weather, Indoors, Climate, ClimateCold, ClimateWarm
 from .zone import Zone
 
 
+def is_door(location_id):
+    return 999 < location_id < 2000
+
+
 class Location:
     directions = [
         "North",
@@ -189,6 +193,17 @@ class Location:
             data.disconnect()
         except FileNotFoundError:
             self.short = "\nYou are on channel {}\n".format(self.location_id)
+
+    # Unknown
+    def go_to(self, direction, user):
+        location_id = self.exits[direction.direction_id]
+        if is_door(location_id):
+            location_id = Door(location_id).go_through(user)
+
+        if location_id >= 0:
+            raise CommandError("You can't go that way\n")
+
+        return Location(location_id)
 
     # Events
     def on_dig_here(self, actor):
