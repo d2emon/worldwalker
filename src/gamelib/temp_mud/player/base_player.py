@@ -8,6 +8,7 @@ class BasePlayer:
     def __str__(self):
         return self.name
 
+    # Player data
     @property
     def name(self):
         raise NotImplementedError()
@@ -17,7 +18,7 @@ class BasePlayer:
         raise NotImplementedError()
 
     @property
-    def location_id(self):
+    def location(self):
         raise NotImplementedError()
 
     @property
@@ -46,13 +47,13 @@ class BasePlayer:
     def visible(self, value):
         raise NotImplementedError()
 
-    @property
-    def flags(self):
-        raise NotImplementedError()
+    # @property
+    # def flags(self):
+    #     raise NotImplementedError()
 
-    @flags.setter
-    def flags(self, value):
-        raise NotImplementedError()
+    # @flags.setter
+    # def flags(self, value):
+    #     raise NotImplementedError()
 
     @property
     def level(self):
@@ -81,6 +82,7 @@ class BasePlayer:
         raise NotImplementedError()
 
     # Flags
+    # 0
     @property
     def sex(self):
         raise NotImplementedError()
@@ -88,6 +90,36 @@ class BasePlayer:
     @sex.setter
     def sex(self, value):
         raise NotImplementedError()
+
+    # 1
+    @property
+    def can_be_exorcised(self):
+        return True
+
+    # 2
+    @property
+    def can_set_flags(self):
+        return False
+
+    # 3
+    @property
+    def can_edit(self):
+        return False
+
+    # 4
+    @property
+    def can_debug(self):
+        return False
+
+    # 5
+    @property
+    def can_patch(self):
+        return False
+
+    # 6
+    @property
+    def can_be_snooped(self):
+        return True
 
     # Other
     @property
@@ -205,22 +237,6 @@ class BasePlayer:
             return level_name[self.sex]
         return level_name[0]
 
-    @property
-    def can_be_exorcised(self):
-        raise NotImplementedError()
-
-    @property
-    def can_set_flags(self):
-        raise NotImplementedError()
-
-    @property
-    def is_editor(self):
-        raise NotImplementedError()
-
-    @property
-    def is_debugger(self):
-        raise NotImplementedError()
-
     def check_kicked(self):
         raise NotImplementedError()
 
@@ -228,7 +244,7 @@ class BasePlayer:
         self.strength = -1
 
     def dump_items(self):
-        map(lambda item: item.set_location(self.location_id, 0), self.items)
+        map(lambda item: item.set_location(self.location, 0), self.items)
 
     def exorcised(self):
         if not self.can_be_exorcised:
@@ -246,7 +262,7 @@ class BasePlayer:
         # DIE
 
     def is_helping(self, player):
-        return self.location_id == player.location_id and self.helping == player.player_id
+        return self.location == player.location and self.helping == player.player_id
 
     def is_timed_out(self, current_position):
         return self.exists and not self.is_faded and self.position < current_position / 2

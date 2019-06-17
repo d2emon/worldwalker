@@ -1,10 +1,7 @@
 from datetime import datetime
-from ..errors import CrapupError, LooseError, CommandError, ServiceError
+from ..errors import CrapupError, LooseError
 from ..item import Item, Door
 from ..location import Location
-from ..message import message_codes
-from ..message.message import Message, Broadcast, Silly
-from ..message.process import handle
 from ..syslog import syslog
 from ..world import World
 from .actor import Actor
@@ -25,16 +22,18 @@ class User(UserData, BasePlayer, Actor):
         super().__init__()
 
         self.player_id = 0
-        self.__name = name
+        self.name = name
         self.__data = None
 
+        # Property fields
+        self.__location = None
+
+        # Events
         self.before_message = lambda message: None
         self.get_new_player = lambda: {}
 
+        # Other fields
         self.__in_setup = False
-        self.__position = -1
-        self.__location_id = 0
-        self.__force_read = False
         self.__position_saved = 0
 
         # Parse
@@ -72,24 +71,17 @@ class User(UserData, BasePlayer, Actor):
         self.reset_position()
         self.add()
 
+    # Player properties
     @property
-    def location_id(self):
-        return self.__location_id
+    def location(self):
+        return self.__location
 
-    @location_id.setter
-    def location_id(self, value):
-        self.__location_id = value
+    @location.setter
+    def location(self, value):
         World.load()
-        self.__player.location = value
+        self.__location = value
+        # self.__data.location = value
         self.look()
-
-    @property
-    def position(self):
-        return self.__position
-
-    @position.setter
-    def position(self, value):
-        self.__position = value
 
     @property
     def visible(self):
@@ -115,13 +107,10 @@ class User(UserData, BasePlayer, Actor):
     def helping(self):
         raise NotImplementedError()
 
+    # Other properties
     @property
     def is_mobile(self):
         raise NotImplementedError()
-
-    @property
-    def __location(self):
-        return Location(self.location_id)
 
     @property
     def __player(self):
@@ -146,12 +135,12 @@ class User(UserData, BasePlayer, Actor):
     def in_dark(self):
         if self.is_wizard:
             return False
-        if not self.__location.is_dark:
+        if not self.location.is_dark:
             return False
         for item in (item for item in Item.items() if item.is_light):
             if self.item_is_here(item):
                 return False
-            if item.owner is not None and item.owner.location_id == self.location_id:
+            if item.owner is not None and item.owner.location.location_id == self.location.location_id:
                 return False
         return True
 
@@ -168,11 +157,14 @@ class User(UserData, BasePlayer, Actor):
 
     # Tk
     @classmethod
-    def start_location_id(cls):
-        return -5 if randperc() > 50 else -183
+    def start_location(cls):
+        return Location(-5 if randperc() > 50 else -183)
 
-    # Unknown
+    # Not Implemented
     def chksnp(self, *args):
+        raise NotImplementedError()
+
+    def on_look(self, *args):
         raise NotImplementedError()
 
     # ObjSys
@@ -181,7 +173,6 @@ class User(UserData, BasePlayer, Actor):
             return False
         return item.is_in_location(self.location)
 
-    # ObjSys
     def find(self, player_name, not_found_error=None):
         player = Player.find(player_name)
         if player is None:
@@ -189,10 +180,6 @@ class User(UserData, BasePlayer, Actor):
         if not self.seeplayer(player):
             return None
         return player
-
-    # Unknown
-    def on_look(self, *args):
-        raise NotImplementedError()
 
     # Support
     def item_is_available(self, item):
@@ -209,7 +196,7 @@ class User(UserData, BasePlayer, Actor):
             raise CrapupError("\nSorry AberMUD is full at the moment\n")
 
         # self.data.name = self.name
-        # self.data.location_id = self.location
+        # self.data.location = self.location.location_id
         # self.data.position = self.position
         self.level = 1
         self.visible = 0
@@ -220,7 +207,7 @@ class User(UserData, BasePlayer, Actor):
 
     def check_fight(self):
         self.Blood.check_fight()
-        if self.Blood.fighting and self.Blood.get_enemy().location != self.location_id:
+        if self.Blood.fighting and self.Blood.get_enemy().location.location_id != self.location.location_id:
             self.Blood.stop_fight()
 
         if self.Blood.in_fight:
@@ -238,10 +225,7 @@ class User(UserData, BasePlayer, Actor):
 
         # You are in the ....
         yield "A massive lightning bolt arcs down out of the sky to strike"
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            self.location_id,
+        self.send_wizard(
             "[ \001p{}\001 has just been zapped by \001p{}\001 and terminated ]\n".format(
                 self.name,
                 wizard.name,
@@ -251,12 +235,7 @@ class User(UserData, BasePlayer, Actor):
         yield " you between\nthe eyes\n"
         self.zapped = True
         self.delete()
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            self.location_id,
-            "\001s{user}\001{user} has just died.\n\001".format(user=self.name),
-        )
+        self.send_global("\001s{user}\001{user} has just died.\n\001".format(user=self.name))
 
         yield "You have been utterly destroyed by {}\n".format(wizard.name)
         raise LooseError("Bye Bye.... Slain By Lightning")
@@ -271,12 +250,7 @@ class User(UserData, BasePlayer, Actor):
         World.load()
         self.dump_items()
         if self.visible < 10000:
-            self.send_message(
-                self,
-                message_codes.WIZARD,
-                0,
-                "{} has departed from AberMUDII\n".format(self.name)
-            )
+            self.send_wizard("{} has departed from AberMUDII\n".format(self.name))
         self.delete()
         World.save()
 
@@ -285,6 +259,8 @@ class User(UserData, BasePlayer, Actor):
 
     # Parse
     def on_messages(self):
+        self.save_position()
+
         time = datetime.now()
         if (time - self.__last_interrupt).total_seconds() > 2:
             self.__interrupt = True
@@ -327,7 +303,7 @@ class User(UserData, BasePlayer, Actor):
         self.__position_saved = self.position
 
     def start(self):
-        location_id = self.start_location_id()
+        location = self.start_location()
         UserData.load(self)
 
         World.load()
@@ -336,39 +312,19 @@ class User(UserData, BasePlayer, Actor):
         if self.load() is None:
             self.create(**self.get_new_player())
 
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            location_id,
-            "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self.name),
-        )
+        self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self.name))
 
         yield from self.read_messages(reset_after_read=True)
-        self.location_id = location_id
+        self.location = location
 
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            location_id,
-            "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.name),
-        )
+        self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.name))
 
     # Parse
     def __summoned(self, location):
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            self.location_id,
-            "\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name),
-        )
+        self.send_global("\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name))
         self.dump_items()
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            location,
-            "\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name),
-        )
-        self.location_id = location
+        self.send_global("\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name))
+        self.location = location
 
     def update(self):
         """
@@ -385,12 +341,7 @@ class User(UserData, BasePlayer, Actor):
             yield "You are now {} ".format(self.name)
             syslog("{} to level {}".format(self.name, level))
             yield self.level_name + "\n"
-            self.send_message(
-                self,
-                message_codes.WIZARD,
-                self.location_id,
-                "\001p{}\001 is now level {}\n".format(self.name, self.level),
-            )
+            self.send_wizard("\001p{}\001 is now level {}\n".format(self.name, self.level))
             if level == 10:
                 yield "\001f{}\001".format(GWIZ)
 
@@ -411,7 +362,7 @@ class User(UserData, BasePlayer, Actor):
         if not self.Blood.in_fight:
             return
         enemy = self.Blood.get_enemy()
-        if enemy.location != self.location_id:
+        if enemy.location.location_id != self.location.location_id:
             self.Blood.stop_fight()
         if not enemy.exists:
             self.Blood.stop_fight()
@@ -419,41 +370,6 @@ class User(UserData, BasePlayer, Actor):
             self.Blood.in_fight = 0
             enemy.hitplayer(self.__wpnheld)
 
-    # Messages
-    # Tk
-    def send_message(self, to_user, code, channel_id, message):
-        Message(to_user, self, code, channel_id, message).send(self)
-
     def broadcast(self, message):
-        self.__force_read = True
+        self.force_read = True
         Broadcast(message).send(self)
-
-    # Weather
-    def silly(self, message):
-        Silly(self, message).send(self)
-
-    # Tk
-    def __get_messages(self):
-        try:
-            World.load()
-            return Message.messages(self.position)
-        except ServiceError:
-            raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
-
-    def read_messages(self, unique=False, reset_after_read=False):
-        if unique and self.__force_read:
-            return
-
-        for message in self.__get_messages():
-            yield from self.before_message(message)
-            yield from handle(self, message)
-        self.save_position()
-
-        yield from self.on_messages()
-
-        if reset_after_read:
-            self.reset_position()
-
-        World.save()
-        if unique:
-            self.__force_read = False

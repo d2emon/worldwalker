@@ -51,8 +51,9 @@ class UserData(BasePlayer):
     def level(self, value):
         self.__level = value
 
+    # Abstract
     @property
-    def location_id(self):
+    def location(self):
         raise NotImplementedError()
 
     @property
@@ -77,22 +78,6 @@ class UserData(BasePlayer):
 
     @property
     def is_mobile(self):
-        raise NotImplementedError()
-
-    @property
-    def can_be_exorcised(self):
-        raise NotImplementedError()
-
-    @property
-    def can_set_flags(self):
-        raise NotImplementedError()
-
-    @property
-    def is_editor(self):
-        raise NotImplementedError()
-
-    @property
-    def is_debugger(self):
         raise NotImplementedError()
 
     def check_kicked(self):

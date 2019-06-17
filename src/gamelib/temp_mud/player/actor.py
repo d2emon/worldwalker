@@ -10,6 +10,8 @@ from ..world import World
 from ..zone import ZONES
 from .mobile import MOBILES
 from .player import Player
+from .reader import Reader
+from .sender import Sender
 
 
 EXE = None
@@ -64,7 +66,8 @@ def not_dumb_action(f):
     return wrapped
 
 
-class Actor:
+class Actor(Sender, Reader):
+    # Modules
     @property
     def Blood(self):
         raise NotImplementedError()
@@ -73,12 +76,21 @@ class Actor:
     def Disease(self):
         raise NotImplementedError()
 
+    # Not Implemented
     @property
     def brief(self):
         raise NotImplementedError()
 
     @brief.setter
     def brief(self, value):
+        raise NotImplementedError()
+
+    @property
+    def can_debug(self):
+        raise NotImplementedError()
+
+    @property
+    def can_edit(self):
         raise NotImplementedError()
 
     @property
@@ -118,14 +130,6 @@ class Actor:
         raise NotImplementedError()
 
     @property
-    def is_debugger(self):
-        raise NotImplementedError()
-
-    @property
-    def is_editor(self):
-        raise NotImplementedError()
-
-    @property
     def is_god(self):
         raise NotImplementedError()
 
@@ -142,21 +146,15 @@ class Actor:
         raise NotImplementedError()
 
     @property
-    def location_id(self):
+    def location(self):
         raise NotImplementedError()
 
-    @location_id.setter
-    def location_id(self, value):
-        # if value == 0:
-        #     self.__location_id = 0
+    @location.setter
+    def location(self, value):
         raise NotImplementedError()
 
     @property
     def name(self):
-        raise NotImplementedError()
-
-    @property
-    def player_id(self):
         raise NotImplementedError()
 
     @property
@@ -253,9 +251,6 @@ class Actor:
     def on_look(self, *args):
         raise NotImplementedError()
 
-    def read_messages(self, *args):
-        raise NotImplementedError()
-
     def remove(self, *args):
         raise NotImplementedError()
 
@@ -265,15 +260,13 @@ class Actor:
     def save_position(self, *args):
         raise NotImplementedError()
 
-    def send_message(self, *args):
-        raise NotImplementedError()
-
     def show_buffer(self, *args):
         raise NotImplementedError()
 
     def update(self, *args):
         raise NotImplementedError()
 
+    # Other
     @property
     def can_modify_messages(self):
         return self.is_god or self.name == "Lorry"
@@ -290,10 +283,6 @@ class Actor:
     @property
     def items(self):
         return [item for item in ITEMS if item.is_carried_by(self)]
-
-    @property
-    def location(self):
-        return Location(self.location_id)
 
     def check_kicked(self):
         self.reset_position()
@@ -315,74 +304,10 @@ class Actor:
         yield from Item.list_items_at(self, Item.CARRIED, self.debug, self.is_wizard)
 
     def __silly_sound(self, message):
-        self.silly("\001P{user.name}\001\001d " + message + "\n\001")
+        self.send_silly("\001P{user.name}\001\001d " + message + "\n\001")
 
     def __silly_visual(self, message):
-        self.silly("\001s{user.name}\001{user.name} " + message + "\n\001")
-
-    # Messages
-    def broadcast(self, *args):
-        raise NotImplementedError()
-
-    def communicate(self, code, message, target=None):
-        target = target or self
-        self.send_message(
-            target,
-            code,
-            self.location_id,
-            message,
-        )
-
-    def __send_exorcise(self, target):
-        self.send_message(
-            target,
-            message_codes.EXORCISE,
-            self.location_id,
-            None,
-        )
-
-    def send_flee(self):
-        self.send_message(
-            self,
-            message_codes.FLEE,
-            self.location_id,
-            None,
-        )
-
-    def send_global(self, message):
-        self.send_message(
-            self,
-            message_codes.GLOBAL,
-            self.location_id,
-            message,
-        )
-
-    def __send_lightning(self, target):
-        self.send_message(
-            target,
-            message_codes.LIGHTNING,
-            target.location_id,
-            None,
-        )
-
-    def send_personal(self, target, message):
-        self.send_message(
-            target,
-            message_codes.PERSONAL,
-            self.location_id,
-            message,
-        )
-
-    def send_wizard(self, message):
-        self.send_message(
-            self,
-            message_codes.WIZARD,
-            0,
-            message,
-        )
-
-    def silly(self, message):
-        raise NotImplementedError()
+        self.send_silly("\001s{user.name}\001{user.name} " + message + "\n\001")
 
     # 1 - 10
     def go(self, direction_id):
@@ -390,7 +315,7 @@ class Actor:
         # 1 - 7
         direction = DIRECTIONS.get(direction_id)
         if direction is None:
-            raise CommandError("Thats not a valid direction\n")
+            raise CommandError("That's not a valid direction\n")
         if self.in_fight > 0:
             raise CommandError("You can't just stroll out of a fight!\n"
                                "If you wish to leave a fight, you must FLEE in a direction\n")
@@ -399,10 +324,12 @@ class Actor:
         self.Disease.crippled.check()
         if is_door(location_id):
             location_id = Door(location_id).go_through(self)
-        yield from Location(location_id).on_enter(self)
-        yield from map(lambda mobile: mobile.on_actor_enter(self, direction_id, location_id), MOBILES)
+
         if location_id >= 0:
             raise CommandError("You can't go that way\n")
+        location = Location(location_id)
+        yield from location.on_enter(self)
+        yield from map(lambda mobile: mobile.on_actor_enter(self, direction_id, location), MOBILES)
 
         self.send_global(
             "\001s{actor.data.name}\001{actor.name} has gone {direction} {message}.\n\001".format(
@@ -411,7 +338,7 @@ class Actor:
                 message=self.out_ms
             ),
         )
-        self.location_id = location_id
+        self.location = location
         self.send_global(
             "\001s{actor.name}\001{actor.name}{message}.\n\001".format(
                 actor=self,
@@ -440,7 +367,7 @@ class Actor:
         self.remove()
         World.save()
 
-        self.location_id = 0
+        self.location = Location(0)
         self.show_players = False
         self.save()
         raise CrapupError("Goodbye")
@@ -470,12 +397,13 @@ class Actor:
         self.location.on_take_item(self, item)
 
     def drop(self, item):
+        # ObjSys
         if item is None:
             raise CommandError("You are not carrying that.\n")
 
         yield from item.on_drop(self)
 
-        item.set_location(self.location_id, 0)
+        item.set_location(self.location, 0)
         yield "OK..\n"
         self.send_global("\001D{}\001\001c drops the {}.\n\n\001".format(self.name, item.name))
 
@@ -519,7 +447,7 @@ class Actor:
         if not self.Disease.blind:
             yield from self.location.list_items()
             if self.show_players:
-                self.location.lispeople()
+                self.location.list_people()
         yield "\n"
 
         self.on_look()
@@ -536,10 +464,12 @@ class Actor:
         yield from Item.list_items_at(self, Item.IN_CONTAINER, self.debug, self.is_wizard)
 
     def inventory(self):
+        # ObjSys
         yield "You are carrying\n"
         yield from self.list_items()
 
     def who(self, users=False):
+        # ObjSys
         # 13 + 155
         if not self.is_wizard:
             users = True
@@ -569,7 +499,7 @@ class Actor:
         # Parse
         if target is None:
             raise CommandError("There is no one on with that name\n")
-        self.__send_lightning(target)
+        self.send_lightning(target)
         syslog("{} zapped {}".format(self.name, target.name))
         target.get_lightning()
         self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
@@ -609,6 +539,7 @@ class Actor:
 
     # 21 - 30
     def save(self):
+        # NewUaf
         if self.zapped:
             return
         # self.name = user.name
@@ -642,7 +573,7 @@ class Actor:
 
         target.exorcised()
         syslog("{} exorcised {}".format(self.name, target.name))
-        self.__send_exorcise(target)
+        self.send_exorcise(target)
 
     def give(self, item, target):
         # Parse
@@ -651,7 +582,7 @@ class Actor:
         if target is None:
             raise CommandError("I don't know who it is\n")
 
-        if not self.is_wizard and target.location_id != self.location_id:
+        if not self.is_wizard and target.location.location_id != self.location.location_id:
             raise CommandError("They are not here\n")
         if not item.is_carried_by(self):
             raise CommandError("You are not carrying that\n")
@@ -669,7 +600,7 @@ class Actor:
         if target is None:
             raise CommandError("Who is that ?\n")
 
-        if not self.is_wizard and target.location_id != self.location_id:
+        if not self.is_wizard and target.location.location_id != self.location.location_id:
             raise CommandError("But they aren't here\n")
         if item.carry_flag == item.WEARING:
             raise CommandError("They are wearing that\n")
@@ -1042,7 +973,7 @@ class Actor:
 
     def remote_editor(self):
         # Parse
-        if not self.is_editor:
+        if not self.can_edit:
             raise CommandError("Dum de dum.....\n")
 
         self.send_wizard("\001s{name}\001{name} fades out of reality\n\001".format(name=self.name))
@@ -1201,7 +1132,7 @@ class Actor:
 
     def typo(self, message):
         # Parse
-        syslog("Typo by {} in {} : {}".format(self.name, self.location_id, message))
+        syslog("Typo by {} in {} : {}".format(self.name, self.location.location_id, message))
 
     def pn(self):
         raise NotImplementedError()
@@ -1214,7 +1145,7 @@ class Actor:
 
     def switch_debug(self):
         # Parse
-        if not self.is_debugger:
+        if not self.can_debug:
             raise CommandError
 
         self.debug_mode = not self.debug_mode
@@ -1266,7 +1197,7 @@ class Actor:
     @god_action("Your emotions are strictly limited!\n")
     def emote(self, message):
         # Weather
-        self.silly("\001P{user.name}\001 " + message + "\n")
+        self.send_silly("\001P{user.name}\001 " + message + "\n")
 
     def dig(self):
         # Parse
@@ -1279,7 +1210,7 @@ class Actor:
             raise CommandError()
 
         for item in container.contain(destroyed=self.is_wizard):
-            item.set_location(self.location_id, item.CARRIED)
+            item.set_location(self.location, item.CARRIED)
             yield "You empty the {} from the {}\n".format(item.name, container.name)
             self.drop(item)
             self.show_buffer()
