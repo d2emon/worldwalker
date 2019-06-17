@@ -1,118 +1,8 @@
+from .actions import VerbsList
 from .actions.action import Action, Special
 from .actions.tk import StartGame
-from .errors import ServiceError, CrapupError, CommandError
-from .player.user import User
+from .errors import CommandError
 from .world import World
-
-
-# Unknown
-class Buffer:
-    def __init__(self):
-        self.__sysbuf = ""
-        makebfr()
-
-    def show(self):
-        raise NotImplementedError()
-
-    def add(self, *text, raw=False):
-        if raw:
-            self.__sysbuf += "".join(text)
-        else:
-            print("".join(text))
-
-
-class Screen:
-    def __init__(self, username, tty=0):
-        self.tty = tty
-
-        self.__key_buffer = ""
-
-        self.user = User(username)
-        self.buffer = Buffer()
-        self.parser = Parser(self.user)
-        self.user.get_new_user = self.get_new_user
-
-        try:
-            World.load()
-            # if self.user.player_id >= maxu:
-            #     raise Exception("\nSorry AberMUD is full at the moment\n")
-            self.buffer.add(*self.user.read_messages(reset_after_read=True))
-            World.save()
-        except ServiceError:
-            raise CrapupError("Sorry AberMUD is currently unavailable")
-
-        self.user.reset_position()
-        self.parser.start()
-        self.user.in_setup = True
-
-    def top(self):
-        if self.tty != 4:
-            return
-        # topscr()
-
-    def bottom(self):
-        self.buffer.show()
-        if self.tty != 4:
-            return
-        # btmscr()
-
-    # Tk
-    def __get_input(self):
-        # sig_alon()
-        # key_input(self.parser.prompt)[:80]
-        # sig_aloff()
-        return self.__key_buffer
-
-    def get_command(self):
-        self.bottom()
-
-        self.buffer.show()
-
-        if self.user.player.visible > 9999:
-            self.set_progname(0, "-csh")
-        elif self.user.player.visible == 0:
-            self.set_progname(0, "   --}----- ABERMUD -----{--     Playing as {}".format(self.user.name))
-
-        work = self.__get_input()
-
-        self.top()
-
-        self.buffer.add("\001l{}\n\001".format(work), raw=True)
-
-        World.load()
-        self.buffer.add(*self.user.read_messages())
-
-        if self.parser.parse(work) is None:
-            return self.get_command()
-
-    def get_new_user(self):
-        self.buffer.add("Creating character....\n")
-        self.buffer.add("\n")
-        self.buffer.add("Sex (M/F) : ")
-        self.buffer.show()
-
-        # Keys.setback()
-        sex = {
-            'm': User.SEX_MALE,
-            'f': User.SEX_FEMALE,
-        }.get(input()[:2].lower())
-        # Keys.setup()
-
-        if sex is None:
-            self.buffer.add("M or F")
-            return self.get_new_user()
-
-        return {'sex': sex}
-
-    def main(self):
-        self.buffer.show()
-        self.get_command()
-        self.buffer.add(*self.user.read_messages(unique=True))
-        World.save()
-        self.buffer.show()
-
-    def set_progname(self, *args):
-        raise NotImplementedError()
 
 
 class Parser:
@@ -142,7 +32,7 @@ class Parser:
 
         # TK
         self.__conversation_mode = self.CONVERSATION_NONE
-        self.__mode = self.MODE_SPECIAL
+        self.mode = self.MODE_SPECIAL
         # Unknown
         self.__debug_mode = False
 
@@ -163,11 +53,10 @@ class Parser:
     # Parse
     @property
     def mode(self):
-        return self.__mode
+        return self.MODE_GAME if self.user.show_players else self.MODE_SPECIAL
 
     @mode.setter
     def mode(self, value):
-        self.__mode = mode
         self.user.show_players = value == self.MODE_GAME
 
     # Tk
