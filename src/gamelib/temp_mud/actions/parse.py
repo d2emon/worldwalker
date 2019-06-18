@@ -386,9 +386,7 @@ class Roll(Action):
 
     @classmethod
     def action(cls, command, parser):
-        # item = get_item(parser)
-        item = parser.ohereandget()
-        return parser.user.roll(item)
+        return parser.user.roll(parser.get_item())
 
 
 class Credits(Action):
@@ -514,6 +512,4 @@ class Empty(Action):
 
     @classmethod
     def action(cls, command, parser):
-        # container = get_item(parser)
-        container = parser.ohereandget()
-        return parser.user.empty(container)
+        return parser.user.empty(parser.get_item())

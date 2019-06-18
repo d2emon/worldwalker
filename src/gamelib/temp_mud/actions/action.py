@@ -65,8 +65,6 @@ case 19:
 case 20:
 
 case 21:
-          saveme();
-          break;
 case 22:
 case 23:
 case 24:
@@ -139,12 +137,8 @@ case 101:
           wavecom();
           break;
 case 104:
-       case 105:
-          opencom();
-          break;
-       case 106:
-          closecom();
-          break;
+case 105:
+case 106:
        case 107:
           lockcom();
           break;

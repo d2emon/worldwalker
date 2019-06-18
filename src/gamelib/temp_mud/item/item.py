@@ -84,12 +84,25 @@ class Item:
 
     @property
     def location(self):
-        return self.__data[0]
+        return Location(self.__data[0])
 
     def set_location(self, value, carry_flag):
-        self.__data[0] = value
         self.carry_flag = carry_flag
+        self.__data[0] = value.location_id
 
+    # New1
+    @property
+    def state(self):
+        return self.__data[1]
+
+    @state.setter
+    def state(self, value):
+        self.__data[1] = value
+        if self.has_pair:
+            pass
+            # objinfo[4*(o^1)+1]=v;
+
+    # Support
     @property
     def carry_flag(self):
         return self.__data[3]
@@ -102,17 +115,12 @@ class Item:
     def is_destroyed(self):
         return self.__test_bit(0)
 
-    # Unknown
     @property
-    def state(self):
-        raise NotImplementedError()
-
-    @state.setter
-    def state(self, value):
-        raise NotImplementedError()
+    def has_pair(self):
+        return self.__test_bit(1)
 
     @property
-    def is_closable(self):
+    def is_openable(self):
         return self.__test_bit(2)
 
     @property
@@ -132,8 +140,20 @@ class Item:
         return self.__test_bit(14)
 
     @property
-    def is_closed(self):
-        return self.is_closable and self.state != 0
+    def is_open(self):
+        return self.is_openable and self.state == 0
+
+    @property
+    def is_locked(self):
+        return self.state == 2
+
+    @property
+    def pair_id(self):
+        return self.item_id ^ 1  # other door side
+
+    @property
+    def pair(self):
+        return Item(self.pair_id)
 
     @property
     def owner(self):
@@ -308,6 +328,26 @@ class Item:
     def roll(self, actor):
         raise CommandError("You can't roll that\n")
 
+    def open(self, actor):
+        if not self.is_openable:
+            raise CommandError("You can't open that\n")
+        elif self.is_open:
+            raise CommandError("It already is\n")
+        elif self.is_locked:
+            raise CommandError("It's locked!\n")
+        else:
+            self.state = 0
+            yield "Ok\n"
+
+    def close(self, actor):
+        if not self.is_openable:
+            raise CommandError("You can't close that\n")
+        elif not self.is_open:
+            raise CommandError("It is open already\n")
+        else:
+            self.state = 1
+            yield "Ok\n"
+
     def show_description(self, debug=False):
         if debug:
             return "{{{}}} {}".format(self.item_id, self.description)
@@ -364,31 +404,42 @@ class Door(Item):
         super().__init__(door_id - 1000)
 
     @property
-    def is_closed(self):
-        return self.state != 0
+    def is_open(self):
+        return self.state == 0
 
     @property
-    def other_id(self):
-        return self.item_id ^ 1  # other door side
-
-    @property
-    def other(self):
-        return Item(self.other_id)
-
-    @property
-    def invisible(self):
+    def is_invisible(self):
         return self.name != "door" or not self.description
 
     def go_through(self, actor):
-        new_location = self.other.location if not self.is_closed else 0
-        if new_location < 0:
+        new_location = self.pair.location if self.is_open else 0
+        if new_location is not None and new_location.location_id > 0:
             return new_location
 
-        if actor.in_dark or self.invisible:
+        if actor.in_dark or self.is_invisible:
             # Invis doors
-            return 0
+            return None
         else:
             raise CommandError("The door is not open\n")
+
+
+class Umbrella(Item):
+    def __init__(self):
+        super().__init__(1)
+
+    def open(self, actor):
+        if self.state == 1:
+            raise CommandError("It is\n")
+        else:
+            self.state = 1
+            yield "The Umbrella Opens\n"
+
+    def close(self, actor):
+        if self.state == 0:
+            raise CommandError("It is closed, silly!\n")
+        else:
+            self.state = 0
+            yield "Ok\n"
 
 
 class Item11(Item):
@@ -399,6 +450,25 @@ class Item11(Item):
         yield "You feel funny, and then pass out\n"
         yield "You wake up elsewhere....\n"
         actor.teleport(-1076)
+
+
+class Item20(Item):
+    def __init__(self):
+        super().__init__(20)
+
+    def open(self, actor):
+        raise CommandError("You can't shift the door from this side!!!!\n")
+
+
+class Item21(Item):
+    def __init__(self):
+        super().__init__(21)
+
+    def open(self, actor):
+        if self.state == 0:
+            raise CommandError("It is\n")
+        else:
+            raise CommandError("It seems to be magically closed\n")
 
 
 class MagicSword(Item):
@@ -532,7 +602,10 @@ class Item186(Item):
 
 
 ITEMS = [
+    Umbrella(),  # 1
     Item11(),
+    Item20(),
+    Item21(),
     MagicSword,  # 32
     Item75(),
     Shield89(),

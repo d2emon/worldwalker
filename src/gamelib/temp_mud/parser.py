@@ -208,3 +208,18 @@ class Parser:
             self.user.location_id,
             "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.user),
         )
+
+    def get_item(self):
+        word = next(self)
+        if word is None:
+            raise CommandError("Tell me more ?\n")
+
+        World.load()
+        item = Item.find(
+            word,
+            available=True,
+            destroyed=self.user.is_wizard,
+        )
+        if item is None:
+            raise CommandError("There isn't one of those here\n")
+        return item

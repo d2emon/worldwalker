@@ -787,11 +787,13 @@ class Actor(Sender, Reader):
 
     # 104 -> set_weather
 
-    def open(self):
-        raise NotImplementedError()
+    def open(self, item):
+        # New1
+        item.open(self)
 
-    def close(self):
-        raise NotImplementedError()
+    def close(self, item):
+        # New1
+        item.close(self)
 
     def lock(self):
         raise NotImplementedError()

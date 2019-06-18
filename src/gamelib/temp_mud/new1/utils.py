@@ -11,17 +11,6 @@ from ..tk import Tk
 from .messages import MSG_PRIVATE
 
 
-def get_item(parser):
-    word = parser.brkword()
-    if word is None:
-        raise CommandError("Tell me more ?\n")
-    openworld()
-    item = Item.fobna(word)
-    if item is None:
-        raise CommandError("There isn't one of those here\n")
-    return item
-
-
 def __victim_base(parser):
     word = parser.brkword()
     if word is None:

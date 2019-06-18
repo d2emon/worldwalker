@@ -1,5 +1,5 @@
 from .action import ActionList
-from .new1 import Sigh, Scream, Bounce
+from .new1 import Open, Sigh, Scream, Bounce
 from .objsys import Take, Drop, Inventory, Who, Users
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Look, Reset, Lightning, Eat, Play, \
     Shout, Say, Tell, Score, Exorcise, Give, Steal, Grope, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, \
@@ -83,7 +83,7 @@ class VerbsList(ActionList):
             # 102
             # 103
             Blizzard,
-            # 105
+            Open,
             # 106
             # 107
             # 108

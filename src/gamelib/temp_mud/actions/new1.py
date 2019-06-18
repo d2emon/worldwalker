@@ -1,6 +1,24 @@
 from .action import Action
 
 
+class Open(Action):
+    # 105
+    commands = "open",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.open(parser.get_item())
+
+
+class Close(Action):
+    # 106
+    commands = "close", "shut",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.close(parser.get_item())
+
+
 class Sigh(Action):
     # 127
     commands = "sigh",
@@ -26,51 +44,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def opencom(parser):
-    item = get_item(parser)
-    if item.item_id == 21:
-        if Item(21).state == 0:
-            raise CommandError("It is\n")
-        else:
-            raise CommandError("It seems to be magically closed\n")
-    elif item.item_id == 1:
-        if Item(1).state == 1:
-            raise CommandError("It is\n")
-        else:
-            Item(1).state = 1
-            yield "The Umbrella Opens\n"
-    elif item.item_id == 20:
-        raise CommandError("You can't shift the door from this side!!!!\n")
-    else:
-        if item.tstbit(2) == 0:
-            raise CommandError("You can't open that\n")
-        elif item.state == 0:
-            raise CommandError("It already is\n")
-        elif item.state == 2:
-            raise CommandError("It's locked!\n")
-        else:
-            item.state = 0
-            yield "Ok\n"
-
-
-def closecom(parser):
-    item = get_item(parser)
-    if item.item_id == 1:
-        if Item(1).state == 0:
-            raise CommandError("It is closed, silly!\n")
-        else:
-            Item(1).state = 0
-            yield "Ok\n"
-    else:
-        if item.tstbit(2) == 0:
-            raise CommandError("You can't close that\n")
-        elif item.state != 0:
-            raise CommandError("It is open already\n")
-        else:
-            item.state = 1
-            yield "Ok\n"
 
 
 def lockcom(parser):
