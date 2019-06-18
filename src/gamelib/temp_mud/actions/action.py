@@ -190,9 +190,7 @@ case 121:
        case 126:
           blowcom();
           break;
-       case 127:
-          sighcom();
-          break;
+case 127:
        case 128:
           kisscom();
           break;
@@ -206,12 +204,8 @@ case 121:
 case 131:
           ticklecom();
           break;
-       case 132:
-          screamcom();
-          break;
-       case 133:
-          bouncecom();
-          break;
+case 132:
+case 133:
        case 134:
           wizcom();
           break;

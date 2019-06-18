@@ -1,25 +1,34 @@
 from ..errors import CommandError
+from .base_player import BasePlayer
 
 
-class Mobile:
+class Mobile(BasePlayer):
     def __init__(self, player_id):
         self.player_id = player_id
+        self.__name = None
+        self.__location_id = None
+        self.__strength = None
+        self.__level = None
 
+    # Reset data
     @property
-    def exists(self):
-        raise NotImplementedError()
-
-    @property
-    def is_mobile(self):
-        raise NotImplementedError()
+    def name(self):
+        return self.__name
 
     @property
     def location(self):
-        raise NotImplementedError()
+        return Location(self.__location_id)
 
-    def woundmn(self, *args):
-        raise NotImplementedError()
+    @property
+    def strength(self):
+        return self.__strength
 
+    @property
+    def level(self):
+        return self.__level
+        pass
+
+    # Other
     def is_here(self, player):
         if not self.exists:
             return
@@ -40,6 +49,41 @@ class Mobile:
     def on_steal(self):
         if self.is_mobile:
             self.woundmn(0)
+
+    # Abstract
+    @property
+    def position(self):
+        raise NotImplementedError()
+
+    @property
+    def visible(self):
+        raise NotImplementedError()
+
+    @property
+    def weapon(self):
+        raise NotImplementedError()
+
+    @property
+    def helping(self):
+        raise NotImplementedError()
+
+    @property
+    def sex(self):
+        raise NotImplementedError()
+
+    @property
+    def exists(self):
+        raise NotImplementedError()
+
+    @property
+    def is_mobile(self):
+        raise NotImplementedError()
+
+    def woundmn(self, *args):
+        raise NotImplementedError()
+
+    def check_kicked(self):
+        raise NotImplementedError()
 
 
 class Golem(Mobile):

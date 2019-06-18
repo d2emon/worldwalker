@@ -814,10 +814,10 @@ class Actor(Sender, Reader):
 
     # 113
 
-    def invisible(self):
+    def become_invisible(self):
         raise NotImplementedError()
 
-    def visible(self):
+    def become_visible(self):
         raise NotImplementedError()
 
     # 116
@@ -853,8 +853,11 @@ class Actor(Sender, Reader):
     def blow(self):
         raise NotImplementedError()
 
+    @not_dumb_action
     def sigh(self):
-        raise NotImplementedError()
+        # New1
+        self.__silly_sound("sighs loudly")
+        yield "You sigh\n"
 
     def kiss(self):
         raise NotImplementedError()
@@ -869,11 +872,16 @@ class Actor(Sender, Reader):
     def tickle(self):
         raise NotImplementedError()
 
+    @not_dumb_action
     def scream(self):
-        raise NotImplementedError()
+        # New1
+        self.__silly_sound("screams loudly")
+        yield "ARRRGGGGHHHHHHHHHHHH!!!!!!\n"
 
     def bounce(self):
-        raise NotImplementedError()
+        # New1
+        self.__silly_visual("bounces around")
+        yield "B O I N G !!!!\n"
 
     def wiz(self):
         raise NotImplementedError()
