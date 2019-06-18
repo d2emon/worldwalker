@@ -74,6 +74,10 @@ class Actor(Sender, Reader):
 
     # Not Implemented
     @property
+    def available_items(self):
+        raise NotImplementedError()
+
+    @property
     def brief(self):
         raise NotImplementedError()
 
@@ -795,11 +799,17 @@ class Actor(Sender, Reader):
         # New1
         item.close(self)
 
-    def lock(self):
-        raise NotImplementedError()
+    def lock(self, item):
+        # New1
+        if not any(item.is_key for item in self.available_items):
+            raise CommandError("You haven't got a key\n")
+        item.lock(self)
 
-    def unlock(self):
-        raise NotImplementedError()
+    def unlock(self, item):
+        # New1
+        if not any(item.is_key for item in self.available_items):
+            raise CommandError("You have no keys\n")
+        item.unlock(self)
 
     def force(self):
         raise NotImplementedError()

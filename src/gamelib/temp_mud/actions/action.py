@@ -139,12 +139,8 @@ case 101:
 case 104:
 case 105:
 case 106:
-       case 107:
-          lockcom();
-          break;
-       case 108:
-          unlockcom();
-          break;
+case 107:
+case 108:
        case 109:
           forcecom();
           break;

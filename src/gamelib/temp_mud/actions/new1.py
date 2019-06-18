@@ -19,6 +19,24 @@ class Close(Action):
         return parser.user.close(parser.get_item())
 
 
+class Lock(Action):
+    # 107
+    commands = "lock",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.lock(parser.get_item())
+
+
+class Unlock(Action):
+    # 108
+    commands = "unlock",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.unlock(parser.get_item())
+
+
 class Sigh(Action):
     # 127
     commands = "sigh",
@@ -44,34 +62,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def lockcom(parser):
-    item = get_item(parser)
-    if not ohany(1 << 11):
-        raise CommandError("You haven't got a key\n")
-    else:
-        if item.tstbit(3) == 0:
-            raise CommandError("You can't lock that!\n")
-        elif item.state != 0:
-            raise CommandError("It's already locked\n")
-        else:
-            item.state = 2
-            yield "Ok\n"
-
-
-def unlockcom(parser):
-    item = get_item(parser)
-    if not ohany(1 << 11):
-        raise CommandError("You have no keys\n")
-    else:
-        if item.tstbit(3) == 0:
-            raise CommandError("You can't unlock that\n")
-        elif item.state != 0:
-            raise CommandError("Its not locked!\n")
-        else:
-            item.state = 1
-            yield "Ok...\n"
 
 
 def wavecom(parser):

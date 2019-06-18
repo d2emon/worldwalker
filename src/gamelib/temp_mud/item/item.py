@@ -124,8 +124,16 @@ class Item:
         return self.__test_bit(2)
 
     @property
+    def is_lockable(self):
+        return self.__test_bit(3)
+
+    @property
     def is_edible(self):
         return self.__test_bit(6)
+
+    @property
+    def is_key(self):
+        return self.__test_bit(11)
 
     @property
     def is_light(self):
@@ -347,6 +355,24 @@ class Item:
         else:
             self.state = 1
             yield "Ok\n"
+
+    def lock(self, actor):
+        if not self.is_lockable:
+            raise CommandError("You can't lock that!\n")
+        elif self.is_locked:
+            raise CommandError("It's already locked\n")
+        else:
+            self.state = 2
+            yield "Ok\n"
+
+    def unlock(self, actor):
+        if not self.is_lockable:
+            raise CommandError("You can't unlock that\n")
+        elif not self.is_locked:
+            raise CommandError("Its not locked!\n")
+        else:
+            self.state = 1
+            yield "Ok...\n"
 
     def show_description(self, debug=False):
         if debug:
