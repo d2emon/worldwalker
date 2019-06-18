@@ -133,9 +133,7 @@ case 101:
        case 102:
           putcom();
           break;
-       case 103:
-          wavecom();
-          break;
+case 103:
 case 104:
 case 105:
 case 106:

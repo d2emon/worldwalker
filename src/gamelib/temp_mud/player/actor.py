@@ -786,8 +786,9 @@ class Actor(Sender, Reader):
     def put(self):
         raise NotImplementedError()
 
-    def wave(self):
-        raise NotImplementedError()
+    def wave(self, item):
+        # New1
+        item.wave(self)
 
     # 104 -> set_weather
 

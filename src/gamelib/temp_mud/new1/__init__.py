@@ -165,29 +165,6 @@ def on_flee_event():
 
 
 """
- wavecom()
-    {
-    long a,b;
-    b=ohereandget(&a);
-    if(b==-1) return;
-    switch(a)
-       {
-       case 136:
-          if((state(151)==1)&&(Item(151).location==user.location_id))
-             {
-             setstate(150,0);
-             bprintf("The drawbridge is lowered!\n");
-             return;
-             }
-break ;
-       case 158:
-          bprintf("You are teleported!\n");
-          teletrap(-114);
-          return;
-          }
-    bprintf("Nothing happens\n");
-    }
- 
  blowcom()
     {
     long a,b;

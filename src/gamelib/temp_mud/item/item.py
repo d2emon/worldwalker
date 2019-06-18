@@ -374,6 +374,9 @@ class Item:
             self.state = 1
             yield "Ok...\n"
 
+    def wave(self, actor):
+        yield "Nothing happens\n"
+
     def show_description(self, debug=False):
         if debug:
             return "{{{}}} {}".format(self.item_id, self.description)
@@ -590,6 +593,37 @@ class Item123(Item122):
         super().__init__(123)
 
 
+class Item136(Item):
+    def __init__(self):
+        super().__init__(136)
+
+    def wave(self, actor):
+        door = Item151()
+        if door.state != 1 or door.location.location_id == actor.location.location_id:
+            return
+        Item150().state = 0
+        yield "The drawbridge is lowered!\n"
+
+
+class Item150(Item):
+    def __init__(self):
+        super().__init__(150)
+
+
+class Item151(Item):
+    def __init__(self):
+        super().__init__(151)
+
+
+class Item158(Item):
+    def __init__(self):
+        super().__init__(158)
+
+    def wave(self, actor):
+        yield "You are teleported!\n"
+        actor.teleport(Location(-114))
+
+
 class Item175(Item):
     def __init__(self):
         super().__init__(175)
@@ -643,6 +677,10 @@ ITEMS = [
     Shield114(),
     Item122(),
     Item123(),
+    Item136(),
+    Item150(),
+    Item151(),
+    Item158(),
     Item175(),
     Item176(),
     Item186(),

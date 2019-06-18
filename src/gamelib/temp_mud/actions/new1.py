@@ -1,6 +1,15 @@
 from .action import Action
 
 
+class Wave(Action):
+    # 103
+    commands = "wave",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.wave(parser.get_item())
+
+
 class Open(Action):
     # 105
     commands = "open",
@@ -62,21 +71,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def wavecom(parser):
-    item = get_item(parser)
-    if item.item_id == 136:
-        if Item(151).state == 1 and Item(151).loc == Tk.curch:
-            Item(150).state = 0
-            yield "The drawbridge is lowered!\n"
-        return
-    elif item.item_id == 158:
-        yield "You are teleported!\n"
-        teletrap(-114)
-        return
-    else:
-        yield "Nothing happens\n"
 
 
 def blowcom(parser):
