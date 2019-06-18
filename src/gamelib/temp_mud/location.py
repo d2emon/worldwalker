@@ -230,6 +230,11 @@ class Location:
             else:
                 raise CommandError("The intense heat drives you back\n")
 
+    def on_put(self, actor, item, container):
+        if self.location_id == -1081:
+            Item(20).state = 1
+            yield "The door clicks shut....\n"
+
     def on_take_item(self, actor, item):
         if self.location_id == -1081:
             Item(20).state = 1

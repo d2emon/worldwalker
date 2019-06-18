@@ -380,6 +380,26 @@ class Item:
     def blow(self, actor):
         raise CommandError("You can't blow that\n")
 
+    def put_in(self, item, actor):
+        if self.item_id == item.item_id:
+            raise CommandError("What do you think this is, the goon show ?\n")
+        if not self.is_container:
+            raise CommandError("You can't do that\n")
+        if item.flannel:
+            raise CommandError("You can't take that !\n")
+        if dragget():
+            return
+        item.on_put(actor, self)
+
+        item.set_location(self, self.IN_CONTAINER)
+        yield "Ok.\n"
+        actor.send_global("\001D{}\001\001c puts the {} in the {}.\n\001".format(actor.name, item.name, self.name))
+
+        if item.__test_bit(12):
+            item.state = 0
+
+        actor.location.on_put(actor, item, self)
+
     def show_description(self, debug=False):
         if debug:
             return "{{{}}} {}".format(self.item_id, self.description)
@@ -421,6 +441,9 @@ class Item:
         return None
 
     def on_owner_flee(self, owner):
+        return None
+
+    def on_put(self, actor, container):
         return None
 
     def on_take(self, actor, container):
@@ -474,6 +497,30 @@ class Umbrella(Item):
             yield "Ok\n"
 
 
+class Item10(Item):
+    def __init__(self):
+        super().__init__(10)
+
+    def put_in(self, item, actor):
+        if item.item_id < 4 or item.item_id > 6:
+            raise CommandError("You can't do that\n")
+        if self.state != 2:
+            raise CommandError("There is already a candle in it!\n")
+
+        yield "The candle fixes firmly into the candlestick\n"
+        actor.score += 50
+        item.destroy()
+        self.__set_byte(1, item.item_id)
+        self.__set_bit(9)
+        self.__set_bit(10)
+        if item.__test_bit(13):
+            self.__set_bit(13)
+            self.state = 0
+        else:
+            self.__clear_bit(13)
+            self.state = 1
+
+
 class Item11(Item):
     def __init__(self):
         super().__init__(11)
@@ -503,6 +550,19 @@ class Item21(Item):
             raise CommandError("It seems to be magically closed\n")
 
 
+class Item23(Item):
+    def __init__(self):
+        super().__init__(23)
+
+    def put_in(self, item, actor):
+        if item.item_id == 19 and Item21.state == 1:
+            yield "The door clicks open!\n"
+            Item20.state = 0
+            return
+
+        yield "Nothing happens\n"
+
+
 class MagicSword(Item):
     def __init__(self):
         super().__init__(32)
@@ -521,6 +581,9 @@ class MagicSword(Item):
     def on_take(self, actor, container):
         if self.state == 1 and actor.helper is None:
             raise CommandError("Its too well embedded to shift alone.\n")
+
+    def on_put(self, actor, container):
+        raise CommandError("You can't let go of it!\n")
 
 
 class Item75(Item):
@@ -608,6 +671,24 @@ class Item136(Item):
         yield "The drawbridge is lowered!\n"
 
 
+class Item137(Item):
+    def __init__(self):
+        super().__init__(137)
+
+    def put_in(self, item, actor):
+        if self.state == 0:
+            item.set_location(Location(-162), self.CARRY_0)
+            yield "ok\n"
+            return
+
+        item.destroy()
+        yield "It dissappears with a fizzle into the slime\n"
+
+        if item.item_id == 108:
+            yield "The soap dissolves the slime away!\n"
+            self.state = 0
+
+
 class Item150(Item):
     def __init__(self):
         super().__init__(150)
@@ -664,11 +745,33 @@ class Item186(Item):
             return
 
 
+class ChuteTop(Item):
+    def __init__(self):
+        super().__init__(192)
+
+    def put_in(self, item, actor):
+        if item.item_id == 32:
+            raise CommandError("You can't let go of it!\n")
+        yield "It vanishes down the chute....\n"
+        actor.send_global("The {} comes out of the chute!\n".format(item.name), ChuteBottom.location)
+        item.set_location(ChuteBottom.location, self.CARRY_0)
+
+
+class ChuteBottom(Item):
+    def __init__(self):
+        super().__init__(193)
+
+    def put_in(self, item, actor):
+        raise CommandError("You can't do that, the chute leads up from here!\n")
+
+
 ITEMS = [
     Umbrella(),  # 1
+    Item10(),
     Item11(),
     Item20(),
     Item21(),
+    Item23(),
     MagicSword,  # 32
     Item75(),
     Shield89(),
@@ -681,10 +784,13 @@ ITEMS = [
     Item122(),
     Item123(),
     Item136(),
+    Item137(),
     Item150(),
     Item151(),
     Item158(),
     Item175(),
     Item176(),
     Item186(),
+    ChuteTop(),  # 192
+    ChuteBottom(),  # 193
 ]

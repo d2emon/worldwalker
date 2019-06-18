@@ -783,8 +783,11 @@ class Actor(Sender, Reader):
     def remove_clothes(self):
         raise NotImplementedError()
 
-    def put(self):
-        raise NotImplementedError()
+    def put(self, item, container):
+        # New1
+        if container is None:
+            raise CommandError("There isn't one of those here.\n")
+        container.put_in(item, self)
 
     def wave(self, item):
         # New1

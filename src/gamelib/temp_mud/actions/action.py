@@ -130,9 +130,7 @@ case 100:
 case 101:
           removecom();
           break;
-       case 102:
-          putcom();
-          break;
+case 102:
 case 103:
 case 104:
 case 105:
@@ -198,14 +196,14 @@ case 133:
        case 135:
           starecom();
           break;
-       case 136:
+case 136:
        case 137:
           crashcom();
           break;
        case 138:
           singcom();
           break;
-       case 139:
+case 139:
        case 140:
           spraycom();
           break;

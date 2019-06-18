@@ -32,33 +32,35 @@ SCALES = {
 
 
 MOBILES = [
+    # 0-15
     PlayerData("The Wraith", -1077, 60, 0, -2),
     PlayerData("Shazareth", -1080, 99, 0, -30),
     PlayerData("Bomber", -308, 50, 0, -10),
     PlayerData("Owin", -311, 50, 0, -11),
     PlayerData("Glowin", -318, 50, 0, -12),
+
     PlayerData("Smythe", -320, 50, 0, -13),
     PlayerData("Dio", -332, 50, 0, -14),
     PlayerData("The Dragon", -326, 500, 0, -2),
     PlayerData("The Zombie", -639, 20, 0, -2),
     PlayerData("The Golem", -1056, 90, 0, -2),
-
     PlayerData("The Haggis", -341, 50, 0, -2),
     PlayerData("The Piper", -630, 50, 0, -2),
     PlayerData("The Rat", -1064, 20, 0, -2),
     PlayerData("The Ghoul", -129, 40, 0, -2),
     PlayerData("The Figure", -130, 90, 0, -2),
+
     PlayerData("The Ogre", -144, 40, 0, -2),
     PlayerData("Riatha", -165, 50, 0, -31),
     PlayerData("The Yeti", -173, 80, 0, -2),
     PlayerData("The Guardian", -197, 50, 0, -2),
     PlayerData("Prave", -201, 60, 0, -400),
-
     PlayerData("Wraith", -350, 60, 0, -2),
     PlayerData("Bath", -1, 70, 0, -401),
     PlayerData("Ronnie", -809, 40, 0, -402),
     PlayerData("The Mary", -1, 50, 0, -403),
     PlayerData("The Cookie", -126, 70, 0, -404),
+
     PlayerData("MSDOS", -1, 50, 0, -405),
     PlayerData("The Devil", -1, 70, 0, -2),
     PlayerData("The Copper", -1, 40, 0, -2),
@@ -165,155 +167,6 @@ def on_flee_event():
 
 
 """
- blowcom()
-    {
-    long a,b;
-    b=ohereandget(&a);
-    if(b== -1) return;
-    bprintf("You can't blow that\n");
-    }
- 
- 
- putcom()
-    {
-    long a,b;
-    char ar[128];
-    extern char wordbuf[];
-    long c;
-    b=ohereandget(&a);
-    if(b== -1) return;
-    if(brkword()== -1)
-       {
-       bprintf("where ?\n");
-       return;
-       }
-    if((!strcmp(wordbuf,"on"))||(!strcmp(wordbuf,"in")))
-       {
-       if(brkword()== -1)
-          {
-          bprintf("What ?\n");
-          return;
-          }
-       }
-    c = Item.find(
-	    wordbuf,
-	    available=True,
-	    destroyed=parser.user.is_wizard,
-	)
-    
-    if(c== -1)
-       {
-       bprintf("There isn't one of those here.\n");
-       return;
-       }
-    if(c==10)
-       {
-       if((a<4)||(a>6))
-          {
-          bprintf("You can't do that\n");
-          return;
-          }
-       if(state(10)!=2)
-          {
-          bprintf("There is already a candle in it!\n");
-          return;
-          }
-       bprintf("The candle fixes firmly into the candlestick\n");
-       user.score+=50;
-       destroy(a);
-       Item(10).set_byte(1,a);
-       Item(10).set_bit(9);
-       Item(10).set_bit(10);
-       if(Item(a).test_bit(13))
-          {
-          Item(10).set_bit(13);
-          setstate(10,0);
-          return;
-          }
-       else
-          {
-          setstate(10,1);
-          Item(10).clear_bit(13);
-          }
-       return;
-       }
-    if(c==137)
-       {
-       if(state(c)==0)
-          {
-          Item(a).set_location(-162,0);
-          bprintf("ok\n");
-	  return;
-          }
-       destroy(a);
-       bprintf("It dissappears with a fizzle into the slime\n");
-       if(a==108)
-          {
-          bprintf("The soap dissolves the slime away!\n");
-          setstate(137,0);
-          }
-       return;
-       }
-    if(c==193)
-	{
-		bprintf("You can't do that, the chute leads up from here!\n");
-		return;
-	}
-    if(c==192)
-    {
-    	if(a==32)
-    	{
-    		bprintf("You can't let go of it!\n");
-    		return;
-    	}
-    	bprintf("It vanishes down the chute....\n");
-    	sprintf(ar,"The %s comes out of the chute!\n",Item(a).name);
-    	user.send_message("","",-10000,Item(193).location,ar);
-    	Item(a).set_location(Item(193).location, 0);
-    	return;
-    }
-    	
-    if(c==23)
-       {
-       if((a==19)&&(state(21)==1))
-          {
-          bprintf("The door clicks open!\n");
-          setstate(20,0);
-          return;
-          }
-       bprintf("Nothing happens\n");
-       return;
-       }
-    if(c==a)
-    {
-    	bprintf("What do you think this is, the goon show ?\n");
-	return;
-    }
-    if(Item(c).test_bit(14)==0) {bprintf("You can't do that\n");return;}
-    if(state(c)!=0){bprintf("That's not open\n");return;}
-    if(Item(a).flannel)
-    {
-    	bprintf("You can't take that !\n");
-    	return;
-    }
-    if(dragget()) return;
-    if(a==32)
-    {
-    	bprintf("You can't let go of it!\n");
-    	return;
-    }
-    Item(a).set_location(c,3);
-    bprintf("Ok.\n");
-    sprintf(ar,"\001D%s\001\001c puts the %s in the %s.\n\001",globme,Item(a).name,Item(c).name);
-    user.send_message(globme,globme,-10000,user.location_id,ar);
-    if(Item(a).test_bit(12)) setstate(a,0);
-    if(user.location_id==-1081) 
-    {
-	setstate(20,1);
-	bprintf("The door clicks shut....\n");
-    }    
-}
- 
  lightcom()
     {
     long a,b;

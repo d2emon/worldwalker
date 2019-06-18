@@ -1,6 +1,30 @@
 from .action import Action
 
 
+class Put(Action):
+    # 102
+    commands = "put",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = parser.get_item()
+
+        container_name = next(parser)
+        if container_name is None:
+            raise CommandError("where ?\n")
+        if container_name in ['on', 'in']:
+            container_name = next(parser)
+        if container_name is None:
+            raise CommandError("What ?\n")
+
+        container = Item.find(
+            container_name,
+            available=True,
+            destroyed=parser.user.is_wizard,
+        )
+        return parser.user.put(item, container)
+
+
 class Wave(Action):
     # 103
     commands = "wave",
@@ -80,98 +104,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def putcom(parser):
-    item = get_item(parser)
-    word = parser.brkword()
-    if word is None:
-        raise CommandError("where ?\n")
-    if word in ['on', 'in']:
-        word = parser.brkword()
-    if word is None:
-        raise CommandError("What ?\n")
-
-    c = Item.fobna(word)
-    if c is None:
-        raise CommandError("There isn't one of those here.\n")
-    elif c.item_id == 10:
-        if item.item_id < 4 or item.item_id > 6:
-            raise CommandError("You can't do that\n")
-        if Item(10).state != 2:
-            raise CommandError("There is already a candle in it!\n")
-
-        yield "The candle fixes firmly into the candlestick\n"
-        NewUaf.my_sco += 50
-        item.destroy()
-        Item(10).setbyte(1, item)
-        Item(10).setbit(9)
-        Item(10).setbit(10)
-        if item.tstbit(13):
-            Item(10).setbit(13)
-            Item(10).state = 0
-        else:
-            Item(10).state = 1
-            Item(10).clearbit(13)
-        return
-    elif c.item_id == 137:
-        if c.state == 0:
-            item.setloc(-162, 0)
-            yield "ok\n"
-            return
-        item.destroy()
-        yield "It dissappears with a fizzle into the slime\n"
-        if item.item_id == 108:
-            yield "The soap dissolves the slime away!\n"
-            Item(137).state = 0
-        return
-    elif c.item_id == 193:
-        raise CommandError("You can't do that, the chute leads up from here!\n")
-    elif c.item_id == 192:
-        if item.item_id == 32:
-            raise CommandError("You can't let go of it!\n")
-        yield "It vanishes down the chute....\n"
-        Message(
-            None,
-            None,
-            MSG_GLOBAL,
-            Item(193).loc,
-            "The {} comes out of the chute!\n".format(item.name)
-        ).send()
-        item.setloc(Item(193).loc, 0)
-        return
-    elif c.item_id == 23:
-        if item.item_id == 19 and Item(21).state == 1:
-            yield "The door clicks open!\n"
-            Item(20).state = 0
-            return
-        yield "Nothing happens\n"
-        return
-    elif c.item_id == item.item_id:
-        raise CommandError("What do you think this is, the goon show ?\n")
-    else:
-        if c.tstbit(14) == 0:
-            raise CommandError("You can't do that\n")
-        if item.obflannel:
-            raise CommandError("You can't take that !\n")
-        if dragget():
-            return
-        if item.item_id == 32:
-            raise CommandError("You can't let go of it!\n")
-        item.setoloc(c.item_id, 23)
-        yield "Ok.\n"
-        Message(
-            Tk,
-            Tk,
-            MSG_GLOBAL,
-            Tk.curch,
-            "\001D{}\001\001c puts the {} in the {}.\n\001".format(Tk.globme, item.name, c.name)
-        ).send()
-        if item.tstbit(12):
-            item.state = 0
-        if Tk.curch == -1081:
-            Item(20).state = 1
-            yield "The door clicks shut....\n"
 
 
 def lightcom(parser):
