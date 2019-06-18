@@ -377,6 +377,9 @@ class Item:
     def wave(self, actor):
         yield "Nothing happens\n"
 
+    def blow(self, actor):
+        raise CommandError("You can't blow that\n")
+
     def show_description(self, debug=False):
         if debug:
             return "{{{}}} {}".format(self.item_id, self.description)

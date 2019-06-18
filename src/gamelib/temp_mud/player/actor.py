@@ -863,8 +863,9 @@ class Actor(Sender, Reader):
     def translocate(self):
         raise NotImplementedError()
 
-    def blow(self):
-        raise NotImplementedError()
+    def blow(self, item):
+        # New1
+        item.blow(self)
 
     @not_dumb_action
     def sigh(self):

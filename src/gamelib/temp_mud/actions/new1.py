@@ -46,6 +46,15 @@ class Unlock(Action):
         return parser.user.unlock(parser.get_item())
 
 
+class Blow(Action):
+    # 126
+    commands = "blow",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.blow(parser.get_item())
+
+
 class Sigh(Action):
     # 127
     commands = "sigh",
@@ -71,11 +80,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def blowcom(parser):
-    get_item(parser)
-    raise CommandError("You can't blow that\n")
 
 
 def putcom(parser):

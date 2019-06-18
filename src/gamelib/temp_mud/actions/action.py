@@ -175,9 +175,7 @@ case 121:
        case 124:
           fireballcom();
           break;
-       case 126:
-          blowcom();
-          break;
+case 126:
 case 127:
        case 128:
           kisscom();
