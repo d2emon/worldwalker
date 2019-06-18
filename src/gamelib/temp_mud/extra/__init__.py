@@ -126,7 +126,7 @@ else
        yield Item(a).location.get_name(user)
 }
        }
-    bprintf("\nState       :%d",state(a));
+    bprintf("\nState       :%d",Item(a).state);
     bprintf("\nCarr_Flag   :%d",Item(a).carry_flag);
     bprintf("\nSpare       :%d",Item(a).is_destroyed);
     bprintf("\nMax State   :%d",Item(a).max_state);
@@ -183,8 +183,8 @@ else
              }
           break;
        case 7:
-          setstate(7,randperc()%3+1);
-          switch(state(7))
+          Item(7).state = randperc()%3+1
+          switch(Item(7).state)
              {
              case 1:
                 bprintf("It glows red");break;
@@ -196,7 +196,7 @@ else
           bprintf("\n");
           return;
        case 8:
-          if(state(7)!=0)
+          if(Item(7).state!=0)
              {
              if((Item(3 + Item(7).state).is_carried_by(user))&&(Item(3+Item(7).state).test_bit(13)))
                 {
@@ -344,7 +344,7 @@ user.location.load_exits(unit)
  }
  if(b==0){bprintf("Wheeeeee....\n");
  return;}
- if((not user.is_wizard)&&((!Item(1).is_carried_by(user))||(state(1)==0)))
+ if((not user.is_wizard)&&((!Item(1).is_carried_by(user))||(Item(1).state==0)))
  {
  	user.__location_id=b;
  bprintf("Wheeeeeeeeeeeeeeeee  <<<<SPLAT>>>>\n");

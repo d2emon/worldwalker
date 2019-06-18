@@ -1143,8 +1143,16 @@ class Actor(Sender, Reader):
         # Parse
         syslog("Typo by {} in {} : {}".format(self.name, self.location.location_id, message))
 
-    def pn(self):
-        raise NotImplementedError()
+    def list_pronouns(self):
+        yield("Current pronouns are:\n")
+        yield("Me              : {}\n".format(self.name))
+        yield("Myself          : {}\n".format(self.name))
+        yield("It              : {}\n".format(self.pronouns['it']))
+        yield("Him             : {}\n".format(self.pronouns['him']))
+        yield("Her             : {}\n".format(self.pronouns['her']))
+        yield("Them            : {}\n".format(self.pronouns['them']))
+        if self.is_wizard:
+            yield("There           : {}\n".format(self.pronouns['there']))
 
     def blind(self):
         raise NotImplementedError()

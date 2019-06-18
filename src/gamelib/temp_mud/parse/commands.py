@@ -13,14 +13,6 @@ from ..tk import Tk, trapch, broad
 from .messages import Message
 
 
-def disle3(*args):
-    raise NotImplementedError
-
-
-def saveme(*args):
-    raise NotImplementedError
-
-
 """
 char *verbtxt[]={,
     "laugh",
@@ -452,68 +444,6 @@ int verbnum[]={
     }
 
 """
-
-
-
-
-class Take(Command):
-    item_id = 9
-    verbs = "get", "take",
-
-    @classmethod
-    def action(cls, parser):
-        # getobj()
-        pass
-
-
-class Drop(Command):
-    item_id = 10
-    verbs = "drop",
-
-    @classmethod
-    def action(cls, parser):
-        # dropitem()
-        pass
-
-
-class Look(Command):
-    item_id = 11
-    verbs = "look",
-
-    @classmethod
-    def action(cls, parser):
-        #           look_cmd();
-        pass
-
-
-class Inventory(Command):
-    item_id = 12
-    verbs = "i", "inv", "inventory"
-
-    @classmethod
-    def action(cls, parser):
-        #           inventory();
-        pass
-
-
-class Who(Command):
-    item_id = 13
-    verbs = "who",
-
-    @classmethod
-    def action(cls, parser):
-        #           whocom();
-        pass
-
-
-class Save(Command):
-    item_id = 21
-    verbs = "save",
-
-    @classmethod
-    def action(cls, parser):
-        #   saveme();
-        pass
 
 
 class Levels(Command):

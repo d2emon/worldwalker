@@ -278,9 +278,7 @@ case 173:
 case 174:
 case 175:
 case 176:
-       case 177:
-          pncom();
-          break;
+case 177:
        case 178:
           blindcom();
           break;

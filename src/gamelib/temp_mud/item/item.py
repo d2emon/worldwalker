@@ -99,8 +99,7 @@ class Item:
     def state(self, value):
         self.__data[1] = value
         if self.has_pair:
-            pass
-            # objinfo[4*(o^1)+1]=v;
+            self.pair.__data[1] = value
 
     # Support
     @property

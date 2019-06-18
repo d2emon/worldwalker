@@ -14,9 +14,6 @@ from ..objsys import ObjSys, iscarrby
 
 
 class Player:
-    def __init__(self, player_id):
-        self.player_id = player_id
-
     @property
     def damage(self):
         if self.player_id in (18, 19, 20, 21, 22):
@@ -38,29 +35,8 @@ class Player:
         else:
             return 10
 
-    @classmethod
-    def fpbns(cls, name):
-        raise NotImplementedError()
-
-    @classmethod
-    def fpbn(cls, name):
-        raise NotImplementedError()
-
 
 class Item:
-    def __init__(self, item_id):
-        self.item_id = item_id
-
-    @property
-    def state(self):
-        return ObjSys.objinfo[4 * self.item_id + 1]
-
-    @state.setter
-    def state(self, value):
-        ObjSys.objinfo[4 * self.item_id + 1] = value
-        if self.tstbit(1):
-            ObjSys.objinfo[4 * (self.item_id ^ 1) + 1] = value
-
     @property
     def can_wear(self):
         return self.tstbit(8)
@@ -75,10 +51,3 @@ class Item:
             return False
         return True
 
-    @classmethod
-    def fobn(cls, name):
-        raise NotImplementedError()
-
-    @classmethod
-    def fobna(cls, name):
-        raise NotImplementedError()

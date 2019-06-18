@@ -3,8 +3,8 @@ from .new1 import Put, Wave, Open, Close, Lock, Unlock, Blow, Sigh, Scream, Boun
 from .objsys import Take, Drop, Inventory, Who, Users
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Look, Reset, Lightning, Eat, Play, \
     Shout, Say, Tell, Score, Exorcise, Give, Steal, Grope, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, \
-    Converse, Shell, Raw, Roll, Credits, Brief, Debug, MapWorld, Flee, Bug, Typo, DebugMode, SetIn, SetOut, SetMin, \
-    SetMout, Dig, Empty
+    Converse, Shell, Raw, Roll, Credits, Brief, Debug, MapWorld, Flee, Bug, Typo, Pronouns, DebugMode, SetIn, SetOut, \
+    SetMin, SetMout, Dig, Empty
 from .weather import Storm, Rain, Sun, Snow, Blizzard, Laugh, Cry, Burp, Fart, Hiccup, Grin, Smile, Wink, Snigger, \
     Pose, SetValue, Pray, Groan, Moan, Yawn, Purr, Sulk, SetPFlags, Emote
 from .zones import Exits, Loc

@@ -107,7 +107,7 @@ class Bounce(Action):
 
 
 def lightcom(parser):
-    item = get_item(parser)
+    item = parser.get_item()
     if not ohany(1 << 13):
         raise CommandError("You have nothing to light things from\n")
     else:
@@ -121,7 +121,7 @@ def lightcom(parser):
 
 
 def extinguishcom(parser):
-    item = get_item(parser)
+    item = parser.get_item()
     if not item.tstbit(13):
         raise CommandError("That isn't lit\n")
     if not item.tstbit(10):
@@ -466,7 +466,7 @@ def ticklecom(parser):
 
 
 def wearcom(parser):
-    item = get_item(parser)
+    item = parser.get_item()
     if not iscarrby(item.item_id, Tk.mynum):
         raise CommandError("You are not carrying this\n")
     if item.is_worn_by(Tk.mynum):
@@ -481,7 +481,7 @@ def wearcom(parser):
 
 
 def removecom(parser):
-    item = get_item(parser)
+    item = parser.get_item()
     if item.is_worn_by(Tk.mynum):
         raise CommandError("You are not wearing this\n")
     item.carry_flag = 1

@@ -452,6 +452,15 @@ class Typo(Action):
         return parser.user.typo(parser.full())
 
 
+class Pronouns(Action):
+    # 177
+    commands = "pn",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.list_pronouns()
+
+
 class DebugMode(Action):
     # 180
     commands = "debugmode",
