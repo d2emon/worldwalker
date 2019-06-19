@@ -33,53 +33,6 @@ class Disease:
             bprintf("\001p{}\001 tried to dumb you\n".format(caster))
 
 
-class Dumb(Disease):
-    error_message = "You are dumb...\n"
-    activate_message = "You have been struck magically dumb\n"
-
-    def magic(self, caster):
-        if NewUaf.my_lev < 10:
-            bprintf(self.activate_message)
-            self.activate()
-        else:
-            bprintf("\001p{}\001 tried to dumb you\n".format(caster))
-
-
-class Cripple(Disease):
-    error_message = "You are crippled\n"
-    activate_message = "You have been magically crippled\n"
-
-    def magic(self, caster):
-        if NewUaf.my_lev < 10:
-            bprintf(self.activate_message)
-            self.activate()
-        else:
-            bprintf("\001p{}\001 tried to cripple you\n".format(caster))
-
-
-class Blind(Disease):
-    error_message = "You are blind, you cannot see\n"
-    activate_message = "You have been struck magically blind\n"
-
-    def magic(self, caster):
-        if NewUaf.my_lev < 10:
-            bprintf(self.activate_message)
-            self.activate()
-        else:
-            bprintf("\001p{}\001 tried to blind you\n".format(caster))
-
-
-class Deaf(Disease):
-    activate_message = "You have been magically deafened\n"
-
-    def magic(self, caster):
-        if NewUaf.my_lev < 10:
-            bprintf(self.activate_message)
-            self.activate()
-        else:
-            bprintf("\001p{}\001 tried to deafen you\n".format(caster))
-
-
 class Force:
     def __init__(self):
         self.__action = None

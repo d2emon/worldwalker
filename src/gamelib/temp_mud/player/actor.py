@@ -54,16 +54,34 @@ def message_action(f):
     return wrapped
 
 
+def not_blind_action(f):
+    def wrapped(self, *args):
+        if self.is_blind:
+            raise CommandError("You are blind, you cannot see\n")
+        return f(self, *args)
+    return wrapped
+
+
 def not_crippled_action(f):
     def wrapped(self, *args):
-        self.Disease.crippled.check()
+        if self.is_crippled:
+            raise CommandError("You are crippled\n")
+        return f(self, *args)
+    return wrapped
+
+
+def not_deaf_action(f):
+    def wrapped(self, *args):
+        if self.is_blind:
+            raise CommandError()
         return f(self, *args)
     return wrapped
 
 
 def not_dumb_action(f):
     def wrapped(self, *args):
-        self.Disease.dumb.check()
+        if self.is_dumb:
+            raise CommandError("You are dumb...\n")
         return f(self, *args)
     return wrapped
 

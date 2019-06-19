@@ -99,8 +99,7 @@ class Item:
     def state(self, value):
         self.__data[1] = value
         if self.has_pair:
-            pass
-            # objinfo[4*(o^1)+1]=v;
+            self.pair.__data[1] = value
 
     # Support
     @property
@@ -337,6 +336,9 @@ class Item:
     def contain(self, destroyed=False):
         items = [item for item in self.items() if item.is_contained_in(self)]
         return [item for item in items if destroyed or not item.is_destroyed]
+
+    def destroy(self):
+        self.__set_bit(0)
 
     def eat(self, actor):
         if not self.is_edible:

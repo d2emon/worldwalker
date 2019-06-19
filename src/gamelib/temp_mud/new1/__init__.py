@@ -20,17 +20,6 @@ class PlayerData:
         self.level = level
 
 
-SCALES = {
-    1: 2,
-    2: 3,
-    3: 3,
-    4: 4,
-    5: 4,
-    6: 5,
-    7: 6,
-}
-
-
 MOBILES = [
     # 0-15
     PlayerData("The Wraith", -1077, 60, 0, -2),
@@ -65,11 +54,6 @@ MOBILES = [
     PlayerData("The Devil", -1, 70, 0, -2),
     PlayerData("The Copper", -1, 40, 0, -2),
 ]
-
-
-def tscale():
-    players = len(list(filter(lambda player: len(player.name) > 0, [Player(b) for b in range(16)])))
-    return SCALES.get(players, 7)
 
 
 def woundmn(enemy, damage):
@@ -167,83 +151,6 @@ def on_flee_event():
 
 
 """
- new1rcv(isme,chan,to,from,code,text)
- char *to,*from,*text;
-    {
-    extern long ail_dumb,ail_crip;
-    extern long ail_deaf,ail_blind;
-    extern char globme[];
-    switch(code)
-       {
-    }
- 
- destroy(ob)
-    {
-    Item(ob).set_bit(0);
-    }
- 
- tscale()
-    {
-    long a,b;
-    a=0;
-    b=0;
-    while(b<16)
-       {
-       if(Player(b).exists) a++;
-       b++;
-       }
-    switch(a)
-       {
-       case 1:
-          return(2);
-       case 2:
-          return(3);
-       case 3:
-          return(3);
-       case 4:
-          return(4);
-       case 5:
-          return(4);
-       case 6:
-          return(5);
-       case 7:
-          return(6);
-       default:
-          return(7);
-          }
-    }
- 
- chkdumb()
-    {
-    extern long ail_dumb;
-    if(!ail_dumb) return(0);
-    bprintf("You are dumb...\n");
-    return(1);
-    }
- 
- chkcrip()
-    {
-    extern long ail_crip;
-    if(!ail_crip) return(0);
-    bprintf("You are crippled\n");
-    return(1);
-    }
-
- chkblind()
-    {
-    extern long ail_blind;
-    if(!ail_blind) return(0);
-    bprintf("You are blind, you cannot see\n");
-    return(1);
-    }
- 
- chkdeaf()
-    {
-    extern long ail_deaf;
-    if(!ail_deaf) return(0);
-    return(1);
-    }
- 
  wounded(n)
     {
     extern long me_cal;
