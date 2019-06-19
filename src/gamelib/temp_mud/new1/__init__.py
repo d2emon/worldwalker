@@ -167,37 +167,6 @@ def on_flee_event():
 
 
 """
- shockcom()
-    {
-    long a,b;
-    extern char globme[];
-    extern long fighting,in_fight;    
-    long ar[2];
-    b=vichfb(&a);
-    if(b== -1) return;
-    if(a==user)
-       {
-       bprintf("You are supposed to be killing other people not yourself\n");
-       return;
-       }
-       if(Player(a).strength - 2 * user.level<0)
-	{
-	bprintf("Your last spell did the trick\n");
-	if(not Player(a).is_dead)
-	{
-	/* Bonus ? */
-		if(a<16) user.score+=(Player(a).level*Player(a).level*100);
-		else user.score+=10*damof(a);
-	}
-	Player(a).die() /* MARK ALREADY DEAD */
-	in_fight=0;
-	fighting= -1;
-    }       
-    sprintf(ar,"%d",user.level * 2);
-    user.send_message(Player(a).name,globme,-10110,user.location_id,ar);
-    if(a>15) woundmn(a,2 * user.level);
-    }
- 
  starecom()
     {
     long a,b;

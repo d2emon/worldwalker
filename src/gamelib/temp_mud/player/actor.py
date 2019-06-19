@@ -888,8 +888,23 @@ class Actor(Sender, Reader):
         if target.is_mobile:
             target.woundmn(power)
 
-    def shock(self):
-        raise NotImplementedError()
+    def shock(self, target):
+        # New1
+        if self.player_id == target.player_id:
+            raise CommandError("You are supposed to be killing other people not yourself\n")
+
+        power = self.level * damage
+        if target.strength < power:
+            yield "Your last spell did the trick\n"
+            if not target.is_dead:
+                # Bonus ?
+                self.score += target.value
+                target.die()  # MARK ALREADY DEAD
+            self.Blood.in_fight = 0
+            self.Blood.fighting = -1
+        self.send_magic_missile(target, message_codes.SHOCK, power)
+        if target.is_mobile:
+            target.woundmn(power)
 
     def fireball(self, target):
         # New1
