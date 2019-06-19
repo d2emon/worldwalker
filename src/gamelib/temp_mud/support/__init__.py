@@ -41,9 +41,6 @@ class Item:
     def can_wear(self):
         return self.tstbit(8)
 
-    def destroy(self):
-        self.setbit(0)
-
     def is_worn_by(self, player):
         if not iscarrby(self.item_id, player):
             return False

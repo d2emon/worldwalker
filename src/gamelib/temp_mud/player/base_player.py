@@ -166,6 +166,12 @@ class BasePlayer:
     def items(self):
         return [item for item in ITEMS if item.is_carried_by(self)]
 
+    @property
+    def value(self):
+        if self.is_mobile:
+            return 10 * self.damage
+        return self.level * self.level * 100
+
     # Parse
     def level_of(self, score):
         score = score / 2  # Scaling factor

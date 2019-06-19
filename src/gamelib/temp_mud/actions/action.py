@@ -137,65 +137,33 @@ case 105:
 case 106:
 case 107:
 case 108:
-       case 109:
-          forcecom();
-          break;
-       case 110:
-          lightcom();
-          break;
+case 109:
+case 110:
 
 case 111:
-          extinguishcom();
-          break;
-       case 113:
-          pushcom();
-          break;
-       case 117: case 113;
-       case 118:
-          cripplecom();
-          break;
-       case 119:
-          curecom();
-          break;
-       case 120:
-          dumbcom();
-          break;
+case 113:
+case 117: case 113;
+case 118:
+case 119:
+case 120:
 
 case 121:
-          changecom();
-          break;
-       case 122:
-          missilecom();
-          break;
-       case 123:
-          shockcom();
-          break;
-       case 124:
-          fireballcom();
-          break;
+case 122:
+case 123:
+case 124:
 case 126:
 case 127:
-       case 128:
-          kisscom();
-          break;
-       case 129:
-          hugcom();
-          break;
-       case 130:
-          slapcom();
-          break;
+case 128:
+case 129:
+case 130:
 
 case 131:
-          ticklecom();
-          break;
 case 132:
 case 133:
        case 134:
           wizcom();
           break;
-       case 135:
-          starecom();
-          break;
+case 135:
 case 136:
        case 137:
           crashcom();
@@ -241,9 +209,7 @@ case 144:
 
 case 151:
 case 152:
-       case 154:
-          squeezecom();
-          break;
+case 154:
 case 153:
 case 155:
 case 156:
@@ -259,9 +225,7 @@ case 161:
 case 163:
 case 164:
 case 165:
-       case 166:
-          cuddlecom();
-          break;
+case 166:
 case 167:
 case 168:
 case 169:
@@ -371,6 +335,45 @@ class Action(BaseAction):
         if cls.wizard_only and not parser.user.is_wizard:
             raise CommandError(cls.wizard_only)
         return True
+
+
+class Spell(Action):
+    reflect = False
+
+    @classmethod
+    def cast(cls, parser, target):
+        raise NotImplementedError()
+
+    @classmethod
+    def action(cls, command, parser):
+        target = parser.get_target(False)
+
+        if parser.user.strength < 10:
+            raise CommandError("You are too weak to cast magic\n")
+
+        spell_level = 5
+        if Item(111).is_carried_by(parser.user):
+            spell_level += 1
+        if Item(121).is_carried_by(parser.user):
+            spell_level += 1
+        if Item(163).is_carried_by(parser.user):
+            spell_level += 1
+
+        if not parser.user.is_wizard:
+            parser.user.strength -= 2
+            if randperc() > spell_level * parser.user.level:
+                yield ("You fumble the magic\n")
+                if not cls.reflect:
+                    raise CommandError()
+                yield ("The spell reflects back\n")
+                target = parser.user
+            else:
+                yield ("The spell succeeds!!\n")
+
+        if cls.reflect and target.location.location_id != parser.user.location_id:
+            raise CommandError("They are not here\n")
+
+        yield from cls.cast(parser, target)
 
 
 class Special(BaseAction):

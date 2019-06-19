@@ -1,4 +1,4 @@
-from .action import Action
+from .action import Action, Spell
 
 
 class Put(Action):
@@ -70,6 +70,121 @@ class Unlock(Action):
         return parser.user.unlock(parser.get_item())
 
 
+class Force(Spell):
+    # 109
+    commands = "force",
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.force(target, parser.full())
+
+
+class Light(Action):
+    # 110
+    commands = "light",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.light(parser.get_item())
+
+
+class Extinguish(Action):
+    # 111
+    commands = "extinguish",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.extinguish(parser.get_item())
+
+
+class Push(Action):
+    # 117
+    commands = "turn", "pull", "press", "push",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = Item.find(
+            parser.require_next("Push what ?\n"),
+            available=True,
+            destroyed=parser.user.is_wizard,
+        )
+        return parser.user.push(item)
+
+
+class Cripple(Spell):
+    # 118
+    commands = "cripple",
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.cripple(target)
+
+
+class Cure(Spell):
+    # 119
+    commands = "cure",
+    reflect = True
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.cure(target)
+
+
+class Dumb(Spell):
+    # 120
+    commands = "dumb",
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.dumb(target)
+
+
+class Change(Spell):
+    # 121
+    commands = "change",
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.change(target)
+
+    @classmethod
+    def action(cls, command, parser):
+        word = parser.require_next("change what (Sex ?) ?\n")
+        if word != 'sex':
+            raise CommandError("I don't know how to change that\n")
+        return super().action(command, parser)
+
+
+class Missile(Spell):
+    # 122
+    commands = "missile",
+    reflect = True
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.missile(target)
+
+
+class Shock(Spell):
+    # 123
+    commands = "shock",
+    reflect = True
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.shock(target)
+
+
+class Fireball(Spell):
+    # 124
+    commands = "fireball",
+    reflect = True
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.fireball(target)
+
+
 class Blow(Action):
     # 126
     commands = "blow",
@@ -86,6 +201,42 @@ class Sigh(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.sigh()
+
+
+class Kiss(Action):
+    # 128
+    commands = "kiss",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.kiss(parser.get_target())
+
+
+class Hug(Action):
+    # 129
+    commands = "hug",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.hug(parser.get_target())
+
+
+class Slap(Action):
+    # 130
+    commands = "slap",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.slap(parser.get_target())
+
+
+class Tickle(Action):
+    # 131
+    commands = "tickle",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.tickle(parser.get_target())
 
 
 class Scream(Action):
@@ -106,363 +257,40 @@ class Bounce(Action):
         return parser.user.bounce()
 
 
-def lightcom(parser):
-    item = parser.get_item()
-    if not ohany(1 << 13):
-        raise CommandError("You have nothing to light things from\n")
-    else:
-        if not item.tstbit(9):
-            raise CommandError("You can't light that!\n")
-        elif item.state == 0:
-            raise CommandError("It is lit\n")
-        item.state = 0
-        item.setbit(13)
-        yield "Ok\n"
+class Stare(Action):
+    # 135
+    commands = "stare",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.stare(parser.get_target())
 
 
-def extinguishcom(parser):
-    item = parser.get_item()
-    if not item.tstbit(13):
-        raise CommandError("That isn't lit\n")
-    if not item.tstbit(10):
-        raise CommandError("You can't extinguish that!\n")
-    item.state = 1
-    item.clearbit(13)
-    yield "Ok\n"
+class Grope(Action):
+    # 139
+    commands = "grope",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.grope(parser.get_target())
 
 
-def pushcom(parser):
-    word = parser.brkword()
-    if word is None:
-        raise CommandError("Push what ?\n")
-    x = Item.fobna(word)
-    if x is None:
-        raise CommandError("That is not here\n")
-    elif x.item_id == 126:
-        yield "The tripwire moves and a huge stone crashes down from above!\n"
-        Broadcast("\001dYou hear a thud and a squelch in the distance.\n\001").send(user)
-        loseme()
-        raise CrapupError("             S   P    L      A         T           !")
-    elif x.item_id == 162:
-        yield "A trapdoor opens at your feet and you plumment downwards!\n"
-        Tk.curch = -140
-        trapch(Tk.curch)
-        return
-    elif x.item_id == 130:
-        if Item(132).state == 1:
-            Item(132).state = 0
-            yield "A secret panel opens in the east wall!\n"
-        else:
-            yield "Nothing happens\n"
-    elif x.item_id == 131:
-        if Item(134).state == 1:
-            yield "Uncovering a hole behind it.\n"
-            Item(134).state = 0
-    elif x.item_id == 138:
-        if Item(137).state == 0:
-            yield "Ok...\n"
-        else:
-            yield "You hear a gurgling noise and then silence.\n"
-            Item(137).state = 0
-    elif x.item_id in (146, 147):
-        Item(146).state = 1 - Item(146).state
-        yield "Ok...\n"
-    elif x.item_id == 30:
-        Item(28).state = 1 - Item(28).state
-        if Item(28).state:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(28).loc,
-                "\001cThe portcullis falls\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(29).loc,
-                "\001cThe portcullis falls\n\001",
-            ).send()
-        else:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(28).loc,
-                "\001cThe portcullis rises\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(29).loc,
-                "\001cThe portcullis rises\n\001",
-            ).send()
-    elif x.item_id == 149:
-        Item(150).state = 1 - Item(150).state
-        if Item(150).state:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(150).loc,
-                "\001cThe drawbridge rises\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(151).loc,
-                "\001cThe drawbridge rises\n\001",
-            ).send()
-        else:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(150).loc,
-                "\001cThe drawbridge is lowered\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(151).loc,
-                "\001cThe drawbridge is lowered\n\001",
-            ).send()
-    elif x.item_id == 24:
-        if Item(26).state == 1:
-            Item(26).state = 0
-            yield "A secret door slides quietly open in the south wall!!!\n"
-        else:
-            yield "It moves but nothing seems to happen\n"
-    elif x.item_id == 49:
-        Broadcast("\001dChurch bells ring out around you\n\001").send(user)
-    elif x.item_id == 104:
-        if Player(Tk.mynum).tothlp == -1:
-            raise CommandError("You can't shift it alone, maybe you need help\n")
-        Broadcast("\001dChurch bells ring out around you\n\001").send(user)
-    else:
-        # ELSE RUN INTO DEFAULT
-        if x.tstbit(4):
-            x.state = 0
-            x.oplong()
-            return
-        if x.tstbit(5):
-            x.state = 1 - x.state
-            x.oplong()
-            return
-        yield "Nothing happens\n"
+class Squeeze(Action):
+    # 154
+    commands = "squeeze",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.squeeze(parser.get_target())
 
 
-def cripplecom(parser):
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_CRIPPLE,
-        Tk.curch,
-        "",
-    ).send()
+class Cuddle(Action):
+    # 166
+    commands = "cuddle",
 
-
-def curecom(parser):
-    victim = victim_magic_is_here(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_CURE,
-        Tk.curch,
-        "",
-    ).send()
-
-
-def dumbcom(parser):
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_DUMB,
-        Tk.curch,
-        "",
-    ).send()
-
-
-def forcecom(parser):
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_FORCE,
-        Tk.curch,
-        parser.getreinput(),
-    ).send()
-
-
-def missilecom(parser):
-    victim = victim_magic_is_here(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_BOLT,
-        Tk.curch,
-        NewUaf.my_lev * 2,
-    ).send()
-    if victim.strength - 2 * NewUaf.my_lev < 0:
-        yield "Your last spell did the trick\n"
-        if victim.strength >= 0:
-            # Bonus ?
-            if victim.player_id < 16:
-                NewUaf.my_sco += victim.level * victim.level * 100
-            else:
-                NewUaf.my_sco += 10 * victim.damage
-        victim.strength = -1  # MARK ALREADY DEAD
-        Blood.in_fight = 0
-        Blood.fighting = -1
-    if victim.player_id > 15:
-        woundmn(victim, 2 * NewUaf.my_lev)
-
-
-def changecom(parser):
-    word = parser.brkword()
-    if word is None:
-        raise CommandError("change what (Sex ?) ?\n")
-    if word != 'sex':
-        raise CommandError("I don't know how to change that\n")
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_CHANGE,
-        Tk.curch,
-        "",
-    ).send()
-    if victim.player_id < 16:
-        return
-    victim.sex = 1 - victim.sex
-
-
-def fireballcom(parser):
-    victim = victim_magic_is_here(parser)
-    if Tk.mynum == victim.player_id:
-        raise CommandError("Seems rather dangerous to me....\n")
-    wound = 6 if victim.player_id == Player.fpbns('yeti').player_id else 2
-    if victim.strength - wound * NewUaf.my_lev < 0:
-        yield "Your last spell did the trick\n"
-        if victim.strength >= 0:
-            # Bonus ?
-            if victim.player_id < 16:
-                NewUaf.my_sco += victim.level * victim.level * 100
-            else:
-                NewUaf.my_sco += 10 * victim.damage
-        victim.strength = -1  # MARK ALREADY DEAD
-        Blood.in_fight = 0
-        Blood.fighting = -1
-    Message(
-        victim,
-        Tk,
-        MSG_FIREBALL,
-        Tk.curch,
-        2 * NewUaf.my_lev,
-    ).send()
-    if victim.player_id == Player.fpbns('yeti').player_id:
-        woundmn(victim, 6 * NewUaf.my_lev)
-        return
-    if victim.player_id > 15:
-        woundmn(victim, 2 * NewUaf.my_lev)
-
-
-def shockcom(parser):
-    victim = victim_magic_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("You are supposed to be killing other people not yourself\n")
-    if victim.strength - 2 * NewUaf.my_lev < 0:
-        yield "Your last spell did the trick\n"
-        if victim.strength >= 0:
-            # Bonus ?
-            if victim.player_id < 16:
-                NewUaf.my_sco += victim.level * victim.level * 100
-            else:
-                NewUaf.my_sco += 10 * victim.damage
-        victim.strength = -1  # MARK ALREADY DEAD
-        Blood.in_fight = 0
-        Blood.fighting = -1
-    Message(
-        victim,
-        Tk,
-        MSG_SHOCK,
-        Tk.curch,
-        2 * NewUaf.my_lev,
-    ).send()
-    if victim.player_id > 15:
-        woundmn(victim, 2 * NewUaf.my_lev)
-
-
-def starecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("That is pretty neat if you can do it!\n")
-    social(victim, "stares deep into your eyes\n")
-    yield "You stare at \001p{}\001\n".format(victim.name)
-
-
-def gropecom(parser):
-    if DISEASES.force.is_force:
-        raise CommandError("You can't be forced to do that\n")
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "With a sudden attack of morality the machine edits your persona\n"
-        loseme()
-        raise CrapupError("Bye....... LINE TERMINATED - MORALITY REASONS")
-    social(victim, "gropes you")
-    yield "<Well what sort of noise do you want here ?>\n"
-
-
-def squeezecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "Ok....\n"
-    social(victim, "gives you a squeeze\n")
-    yield "You give them a squeeze\n"
-
-
-def kisscom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("Weird!\n")
-    social(victim, "kisses you")
-    yield "Slurp!\n"
-
-
-def cuddlecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("You aren't that lonely are you ?\n")
-    social(victim, "cuddles you")
-
-
-def hugcom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("Ohhh flowerr!\n")
-    social(victim, "hugs you")
-
-
-def slapcom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "You slap yourself\n"
-        return
-    social(victim, "slaps you")
-
-
-def ticklecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "You tickle yourself\n"
-        return
-    social(victim, "tickles you")
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.cuddle(parser.get_target())
 
 
 def wearcom(parser):
@@ -488,7 +316,7 @@ def removecom(parser):
 
 
 def deafcom():
-    victim = victim_magic()
+    victim = parser.get_spell_target()
     Message(
         victim,
         Tk,
@@ -499,7 +327,7 @@ def deafcom():
 
 
 def blindcom():
-    victim = victim_magic()
+    victim = parser.get_spell_target()
     Message(
         victim,
         Tk,

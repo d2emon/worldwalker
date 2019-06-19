@@ -72,15 +72,6 @@ class Message:
             self.message,
         ]
 
-    def is_my(self, name):
-        name = name.lower()
-        user_to = self.user_to.lower()
-        if user_to == name:
-            return True
-        if user_to[:4] == "the " and user_to[4:] == name:
-            return True
-        return False
-
 
 class Broadcast(Message):
     def __init__(self, message):

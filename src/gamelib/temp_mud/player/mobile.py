@@ -2,6 +2,21 @@ from ..errors import CommandError
 from .base_player import BasePlayer
 
 
+SCALES = {
+    1: 2,
+    2: 3,
+    3: 3,
+    4: 4,
+    5: 4,
+    6: 5,
+    7: 6,
+}
+
+
+def scale():
+    return SCALES.get(len([player for player in MOBILES if player.exists]), 7)
+
+
 class Mobile(BasePlayer):
     def __init__(self, player_id):
         self.player_id = player_id

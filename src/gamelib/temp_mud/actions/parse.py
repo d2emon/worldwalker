@@ -134,8 +134,8 @@ class Lightning(Action):
 
     @classmethod
     def action(cls, command, parser):
-        victim = parser.user.find(parser.require_next("But who do you wish to blast into pieces....\n"))
-        return parser.user.lightning(victim)
+        target = parser.user.find(parser.require_next("But who do you wish to blast into pieces....\n"))
+        return parser.user.lightning(target)
 
 
 class Eat(Action):
@@ -272,21 +272,6 @@ class Steal(Action):
             destroyed=parser.user.is_wizard,
         )
         return parser.user.steal(item, player)
-
-
-class Grope(Action):
-    # 139
-    commands = "grope",
-
-    @classmethod
-    def validate(cls, command, parser):
-        if parser.user.Blood.in_fight:
-            raise CommandError("Not in a fight!\n")
-        return True
-
-    @classmethod
-    def action(cls, command, parser):
-        return gropecom()
 
 
 class Tss(Action):

@@ -223,3 +223,18 @@ class Parser:
         if item is None:
             raise CommandError("There isn't one of those here\n")
         return item
+
+    def get_target(self, here=True):
+        # This one isn't for magic
+        player_name = self.require_next("Who ?\n")
+        if player_name == "at":
+            return self.get_target(here)  # STARE AT etc
+
+        World.load()
+        target = Player.find(player_name)
+        if target is None:
+            raise CommandError("Who ?\n")
+
+        if here and target.location.location_id != self.user.location_id:
+            raise CommandError("They are not here\n")
+        return target

@@ -1,6 +1,5 @@
-from ..direction import DIRECTIONS
 from ..errors import CommandError, CrapupError, LooseError, ServiceError
-from ..item.item import Item, Door, Shield89, Shield113, Shield114, ITEMS
+from ..item.item import Item, ITEMS
 from ..location import Location
 from ..message import message_codes
 from ..parser import Parser
@@ -55,11 +54,46 @@ def message_action(f):
     return wrapped
 
 
-def not_dumb_action(f):
+def not_blind_action(f):
     def wrapped(self, *args):
-        self.Disease.dumb.check()
+        if self.is_blind:
+            raise CommandError("You are blind, you cannot see\n")
         return f(self, *args)
     return wrapped
+
+
+def not_crippled_action(f):
+    def wrapped(self, *args):
+        if self.is_crippled:
+            raise CommandError("You are crippled\n")
+        return f(self, *args)
+    return wrapped
+
+
+def not_deaf_action(f):
+    def wrapped(self, *args):
+        if self.is_blind:
+            raise CommandError()
+        return f(self, *args)
+    return wrapped
+
+
+def not_dumb_action(f):
+    def wrapped(self, *args):
+        if self.is_dumb:
+            raise CommandError("You are dumb...\n")
+        return f(self, *args)
+    return wrapped
+
+
+def not_force_action(message):
+    def wrapper(f):
+        def wrapped(self, *args):
+            if self.Disease.is_force:
+                raise CommandError(message)
+            return f(self, *args)
+        return wrapped
+    return wrapper
 
 
 class Actor(Sender, Reader):
@@ -172,6 +206,10 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
+    def player_id(self):
+        raise NotImplementedError()
+
+    @property
     def __uid(self):
         raise NotImplementedError()
 
@@ -278,6 +316,23 @@ class Actor(Sender, Reader):
     def fade(self, *args):
         raise NotImplementedError()
 
+    # Disease
+    @property
+    def is_dumb(self):
+        raise NotImplementedError()
+
+    @property
+    def is_crippled(self):
+        raise NotImplementedError()
+
+    @property
+    def is_blind(self):
+        raise NotImplementedError()
+
+    @property
+    def is_deaf(self):
+        raise NotImplementedError()
+
     # Other
     @property
     def is_fighting(self):
@@ -303,6 +358,7 @@ class Actor(Sender, Reader):
         self.send_silly("\001s{user.name}\001{user.name} " + message + "\n\001")
 
     # 1 - 10
+    @not_crippled_action
     def go(self, direction):
         # Parse
         # 1 - 7
@@ -312,7 +368,6 @@ class Actor(Sender, Reader):
             raise CommandError("You can't just stroll out of a fight!\n"
                                "If you wish to leave a fight, you must FLEE in a direction\n")
         yield from map(lambda mobile: mobile.on_actor_leave(self, direction), MOBILES)
-        self.Disease.crippled.check()
 
         location = self.location.go_to(direction, self)
 
@@ -335,11 +390,9 @@ class Actor(Sender, Reader):
             ),
         )
 
+    @not_force_action("You can't be forced to do that\n")
     def quit_game(self):
         # Parse
-        if self.Disease.is_force:
-            raise CommandError("You can't be forced to do that\n")
-
         yield from self.read_messages()
 
         if self.is_fighting:
@@ -408,14 +461,14 @@ class Actor(Sender, Reader):
             yield self.location.get_name(self)
 
         if self.location.death_room:
-            if self.Disease.blind:
+            if self.is_blind:
                 self.Disease.blind.cure()
             if self.is_wizard:
                 yield "<DEATH ROOM>\n"
             else:
                 raise LooseError("bye bye.....\n")
 
-        if self.Disease.blind:
+        if self.is_blind:
             yield "You are blind... you can't see a thing!\n"
             return
 
@@ -432,7 +485,7 @@ class Actor(Sender, Reader):
 
         World.load()
 
-        if not self.Disease.blind:
+        if not self.is_blind:
             yield from self.location.list_items()
             if self.show_players:
                 self.location.list_people()
@@ -487,7 +540,7 @@ class Actor(Sender, Reader):
         # Parse
         if target is None:
             raise CommandError("There is no one on with that name\n")
-        self.send_lightning(target)
+        self.send_magic(target, message_codes.LIGHTNING)
         syslog("{} zapped {}".format(self.name, target.name))
         target.get_lightning()
         self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
@@ -815,15 +868,20 @@ class Actor(Sender, Reader):
             raise CommandError("You have no keys\n")
         item.unlock(self)
 
-    def force(self):
-        raise NotImplementedError()
+    def force(self, target, action):
+        # New1
+        self.send_magic(target, message_codes.FORCE, action)
 
-    def light(self):
-        raise NotImplementedError()
+    def light(self, item):
+        # New1
+        if not any(item.is_light for item in self.available_items):
+            raise CommandError("You have nothing to light things from\n")
+        item.light(self)
 
     # 111 - 120
-    def extinguish(self):
-        raise NotImplementedError()
+    def extinguish(self, item):
+        # New1
+        item.extinguish(self)
 
     def where(self):
         raise NotImplementedError()
@@ -838,30 +896,84 @@ class Actor(Sender, Reader):
 
     # 116
 
-    def push(self):
-        raise NotImplementedError()
+    def push(self, item):
+        # New1
+        if item is None:
+            raise CommandError("That is not here\n")
+        item.push(self)
 
-    def cripple(self):
-        raise NotImplementedError()
+    def cripple(self, target):
+        # New1
+        self.send_magic(target, message_codes.CRIPPLE)
 
-    def cure(self):
-        raise NotImplementedError()
+    def cure(self, target):
+        # New1
+        self.send_magic(target, message_codes.CURE)
 
-    def dumb(self):
-        raise NotImplementedError()
+    def dumb(self, target):
+        # New1
+        self.send_magic(target, message_codes.DUMB)
 
     # 121 - 130
-    def change(self):
-        raise NotImplementedError()
+    def change(self, target):
+        # New1
+        self.send_change_sex(target)
+        if target.is_mobile:
+            return
+        target.sex = 1 - target.sex
 
-    def missile(self):
-        raise NotImplementedError()
+    def missile(self, target):
+        # New1
+        power = self.level * 2
+        self.send_magic_missile(target, message_codes.BOLT, power)
+        if target.strength < power:
+            yield "Your last spell did the trick\n"
+            if not target.is_dead:
+                # Bonus ?
+                self.score += target.value
+                target.die()  # MARK ALREADY DEAD
+            self.Blood.in_fight = 0
+            self.Blood.fighting = -1
+        if target.is_mobile:
+            target.woundmn(power)
 
-    def shock(self):
-        raise NotImplementedError()
+    def shock(self, target):
+        # New1
+        if self.player_id == target.player_id:
+            raise CommandError("You are supposed to be killing other people not yourself\n")
 
-    def fireball(self):
-        raise NotImplementedError()
+        power = self.level * 2
+        if target.strength < power:
+            yield "Your last spell did the trick\n"
+            if not target.is_dead:
+                # Bonus ?
+                self.score += target.value
+                target.die()  # MARK ALREADY DEAD
+            self.Blood.in_fight = 0
+            self.Blood.fighting = -1
+        self.send_magic_missile(target, message_codes.SHOCK, power)
+        if target.is_mobile:
+            target.woundmn(power)
+
+    def fireball(self, target):
+        # New1
+        if self.player_id == target.player_id:
+            raise CommandError("Seems rather dangerous to me....\n")
+
+        damage = 6 if target.player_id == Player.find('yeti').player_id else 2
+        power = self.level * damage
+
+        if target.strength < power:
+            yield "Your last spell did the trick\n"
+            if not target.is_dead:
+                # Bonus ?
+                self.score += target.value
+                target.die()  # MARK ALREADY DEAD
+            self.Blood.in_fight = 0
+            self.Blood.fighting = -1
+        self.send_magic_missile(target, message_codes.FIREBALL, power)
+        if target.is_mobile:
+            target.woundmn(power)
 
     def translocate(self):
         raise NotImplementedError()
@@ -876,18 +988,31 @@ class Actor(Sender, Reader):
         self.__silly_sound("sighs loudly")
         yield "You sigh\n"
 
-    def kiss(self):
-        raise NotImplementedError()
+    def kiss(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("Weird!\n")
+        self.send_social(target, "kisses you")
+        yield "Slurp!\n"
 
-    def hug(self):
-        raise NotImplementedError()
+    def hug(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("Ohhh flowerr!\n")
+        self.send_social(target, "hugs you")
 
-    def slap(self):
-        raise NotImplementedError()
+    def slap(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("You slap yourself\n")
+        self.send_social(target, "slaps you")
 
     # 131 - 140
-    def tickle(self):
-        raise NotImplementedError()
+    def tickle(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("You tickle yourself\n")
+        self.send_social(target, "tickles you")
 
     @not_dumb_action
     def scream(self):
@@ -903,8 +1028,13 @@ class Actor(Sender, Reader):
     def wiz(self):
         raise NotImplementedError()
 
-    def stare(self):
-        raise NotImplementedError()
+    def stare(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("That is pretty neat if you can do it!\n")
+
+        self.send_social(target, "stares deep into your eyes\n")
+        yield "You stare at \001p{}\001\n".format(target.name)
 
     def list_exits(self):
         # Zones
@@ -930,8 +1060,17 @@ class Actor(Sender, Reader):
     def sing(self):
         raise NotImplementedError()
 
-    def grope(self):
-        raise NotImplementedError()
+    @not_force_action("You can't be forced to do that\n")
+    def grope(self, target):
+        if self.Blood.in_fight:
+            raise CommandError("Not in a fight!\n")
+
+        if target.player_id == self.player_id:
+            yield "With a sudden attack of morality the machine edits your persona\n"
+            self.loose()
+            raise CrapupError("Bye....... LINE TERMINATED - MORALITY REASONS")
+        self.send_social(target, "gropes you")
+        yield "<Well what sort of noise do you want here ?>\n"
 
     def spray(self):
         raise NotImplementedError()
@@ -999,8 +1138,12 @@ class Actor(Sender, Reader):
                 yield "\n"
         yield "\n"
 
-    def squeeze(self):
-        raise NotImplementedError()
+    def squeeze(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            yield "Ok....\n"
+        self.send_social(target, "gives you a squeeze\n")
+        yield "You give them a squeeze\n"
 
     # 155 -> 13
 
@@ -1081,8 +1224,11 @@ class Actor(Sender, Reader):
         self.__silly_sound("starts purring")
         yield "MMMMEMEEEEEEEOOOOOOOWWWWWWW!!\n"
 
-    def cuddle(self):
-        raise NotImplementedError()
+    def cuddle(self, target):
+        if target.player_id == self.player_id:
+            raise CommandError("You aren't that lonely are you ?\n")
+
+        self.send_social(target, "cuddles you")
 
     def sulk(self):
         # Weather

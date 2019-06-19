@@ -1,10 +1,11 @@
 from .action import ActionList
-from .new1 import Put, Wave, Open, Close, Lock, Unlock, Blow, Sigh, Scream, Bounce
+from .new1 import Put, Wave, Open, Close, Lock, Unlock, Force, Light, Extinguish, Push, Cripple, Cure, Dumb, Change, \
+    Missile, Shock, Fireball, Blow, Sigh, Kiss, Hug, Slap, Tickle, Scream, Bounce, Stare, Grope, Squeeze, Cuddle
 from .objsys import Take, Drop, Inventory, Who, Users
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Look, Reset, Lightning, Eat, Play, \
-    Shout, Say, Tell, Score, Exorcise, Give, Steal, Grope, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, \
-    Converse, Shell, Raw, Roll, Credits, Brief, Debug, MapWorld, Flee, Bug, Typo, Pronouns, DebugMode, SetIn, SetOut, \
-    SetMin, SetMout, Dig, Empty
+    Shout, Say, Tell, Score, Exorcise, Give, Steal, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, Converse, \
+    Shell, Raw, Roll, Credits, Brief, Debug, MapWorld, Flee, Bug, Typo, Pronouns, DebugMode, SetIn, SetOut, SetMin, \
+    SetMout, Dig, Empty
 from .weather import Storm, Rain, Sun, Snow, Blizzard, Laugh, Cry, Burp, Fart, Hiccup, Grin, Smile, Wink, Snigger, \
     Pose, SetValue, Pray, Groan, Moan, Yawn, Purr, Sulk, SetPFlags, Emote
 from .zones import Exits, Loc
@@ -87,36 +88,36 @@ class VerbsList(ActionList):
             Close,
             Lock,
             Unlock,
-            # 109
-            # 110
+            Force,
+            Light,
 
-            # 111
+            Extinguish,
             # - 112
-            # 113
+            # 113 -> 117
             # - 114
             # - 115
             # - 116
-            # 117
-            # 118
-            # 119
-            # 110
+            Push,
+            Cripple,
+            Cure,
+            Dumb,
 
-            # 121
-            # 122
-            # 123
-            # 124
+            Change,
+            Missile,
+            Shock,
+            Fireball,
             # 125
             Blow,
             Sigh,
-            # 128
-            # 129
-            # 130
+            Kiss,
+            Hug,
+            Slap,
 
-            # 131
+            Tickle,
             Scream,
             Bounce,
             # 134
-            # 135
+            Stare,
             Exits,
             # 137
             # 138
@@ -137,7 +138,7 @@ class VerbsList(ActionList):
             Tss,
             RmEdit,
             Loc,
-            # 154
+            Squeeze,
             Users,
             USystem,
             INumber,
@@ -150,7 +151,7 @@ class VerbsList(ActionList):
             Shell,
             Raw,
             Purr,
-            # 166
+            Cuddle,
             Sulk,
             Roll,
             Credits,

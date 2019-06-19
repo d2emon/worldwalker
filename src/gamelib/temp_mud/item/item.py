@@ -127,20 +127,37 @@ class Item:
         return self.__test_bit(3)
 
     @property
+    def is_turnable(self):
+        return self.__test_bit(4)
+
+    @property
+    def is_switchable(self):
+        return self.__test_bit(5)
+
+    @property
     def is_edible(self):
         return self.__test_bit(6)
+
+    # 7
+    # 8
+
+    @property
+    def is_lightable(self):
+        return self.__test_bit(9)
+
+    @property
+    def is_extinguishable(self):
+        return self.__test_bit(10)
 
     @property
     def is_key(self):
         return self.__test_bit(11)
 
+    # 12
+
     @property
     def is_light(self):
-        if self.item_id == 32:
-            return True
-        if self.__test_bit(13):
-            return True
-        return False
+        return self.__test_bit(13)
 
     @property
     def is_container(self):
@@ -320,6 +337,9 @@ class Item:
         items = [item for item in self.items() if item.is_contained_in(self)]
         return [item for item in items if destroyed or not item.is_destroyed]
 
+    def destroy(self):
+        self.__set_bit(0)
+
     def eat(self, actor):
         if not self.is_edible:
             raise CommandError("That's sure not the latest in health food....\n")
@@ -398,6 +418,36 @@ class Item:
             item.state = 0
 
         actor.location.on_put(actor, item, self)
+
+    def light(self, actor):
+        if not self.is_lightable:
+            raise CommandError("You can't light that!\n")
+        if self.state == 0:
+            raise CommandError("It is lit\n")
+
+        self.state = 0
+        self.__set_bit(13)
+        yield "Ok\n"
+
+    def extinguish(self, actor):
+        if not self.is_light:
+            raise CommandError("That isn't lit\n")
+        if not self.is_extinguishable:
+            raise CommandError("You can't extinguish that!\n")
+        self.state = 1
+        self.__clear_bit(13)
+        yield "Ok\n"
+
+    def push(self, actor):
+        # ELSE RUN INTO DEFAULT
+        if self.is_turnable:
+            self.state = 0
+            yield self.show_description(actor.debug_mode)
+        elif self.is_switchable:
+            self.state = 1 - self.state
+            yield self.show_description(actor.debug_mode)
+        else:
+            yield "Nothing happens\n"
 
     def show_description(self, debug=False):
         if debug:
@@ -562,9 +612,54 @@ class Item23(Item):
         yield "Nothing happens\n"
 
 
+class Item24(Item):
+    def __init__(self):
+        super().__init__(24)
+
+    def push(self, actor):
+        if SecretDoor().state == 1:
+            SecretDoor().state = 0
+            yield "A secret door slides quietly open in the south wall!!!\n"
+        else:
+            yield "It moves but nothing seems to happen\n"
+
+
+class SecretDoor(Item):
+    def __init__(self):
+        super().__init__(26)
+
+
+class PortcullisFront(Item):
+    def __init__(self):
+        super().__init__(28)
+
+
+class PortcullisBack(Item):
+    def __init__(self):
+        super().__init__(29)
+
+
+class Item30(Item):
+    def __init__(self):
+        super().__init__(30)
+
+    def push(self, actor):
+        PortcullisFront().state = 1 - PortcullisFront().state
+        if PortcullisFront().state:
+            actor.send_global("\001cThe portcullis falls\n\001", PortcullisFront().location)
+            actor.send_global("\001cThe portcullis falls\n\001", PortcullisBack().location)
+        else:
+            actor.send_global("\001cThe portcullis rises\n\001", PortcullisFront().location)
+            actor.send_global("\001cThe portcullis rises\n\001", PortcullisBack().location)
+
+
 class MagicSword(Item):
     def __init__(self):
         super().__init__(32)
+
+    @property
+    def is_light(self):
+        return True
 
     def on_drop(self, actor):
         if not actor.is_wizard:
@@ -583,6 +678,14 @@ class MagicSword(Item):
 
     def on_put(self, actor, container):
         raise CommandError("You can't let go of it!\n")
+
+
+class Bell(Item):
+    def __init__(self):
+        super().__init__(49)
+
+    def push(self, actor):
+        actor.broadcast("\001dChurch bells ring out around you\n\001")
 
 
 class Item75(Item):
@@ -613,6 +716,16 @@ class Item103(Item):
         super().__init__(103)
 
 
+class Item104(Item):
+    def __init__(self):
+        super().__init__(104)
+
+    def push(self, actor):
+        if actor.helper is None:
+            raise CommandError("You can't shift it alone, maybe you need help\n")
+        actor.broadcast("\001dChurch bells ring out around you\n\001")
+
+
 class Shields(Item):
     def __init__(self):
         super().__init__(112)
@@ -621,10 +734,10 @@ class Shields(Item):
         if container is None:
             return self
 
-        if Item(113).is_destroyed:
-            return Item113().on_take(actor, container)
-        elif Item(114).is_destroyed:
-            return Item114().on_take(actor, container)
+        if Shield113().is_destroyed:
+            return Shield113().on_take(actor, container)
+        elif Shield114().is_destroyed:
+            return Shield114().on_take(actor, container)
         else:
             raise CommandError("The shields are all to firmly secured to the walls\n")
 
@@ -658,15 +771,58 @@ class Item123(Item122):
         super().__init__(123)
 
 
+class Item126(Item):
+    def __init__(self):
+        super().__init__(126)
+
+    def push(self, actor):
+        yield "The tripwire moves and a huge stone crashes down from above!\n"
+        actor.broadcast("\001dYou hear a thud and a squelch in the distance.\n\001")
+        actor.loose()
+        raise CrapupError("             S   P    L      A         T           !")
+
+
+class Item130(Item):
+    def __init__(self):
+        super().__init__(130)
+
+    def push(self, actor):
+        if Item132().state == 1:
+            Item132().state = 0
+            yield "A secret panel opens in the east wall!\n"
+        else:
+            yield "Nothing happens\n"
+
+
+class Item131(Item):
+    def __init__(self):
+        super().__init__(131)
+
+    def push(self, actor):
+        if Item134().state == 1:
+            yield "Uncovering a hole behind it.\n"
+            Item134().state = 0
+
+
+class Item132(Item):
+    def __init__(self):
+        super().__init__(132)
+
+
+class Item134(Item):
+    def __init__(self):
+        super().__init__(134)
+
+
 class Item136(Item):
     def __init__(self):
         super().__init__(136)
 
     def wave(self, actor):
-        door = Item151()
+        door = DrawbridgeBack()
         if door.state != 1 or door.location.location_id == actor.location.location_id:
             return
-        Item150().state = 0
+        DrawbridgeFront().state = 0
         yield "The drawbridge is lowered!\n"
 
 
@@ -688,12 +844,52 @@ class Item137(Item):
             self.state = 0
 
 
-class Item150(Item):
+class Item138(Item):
+    def __init__(self):
+        super().__init__(138)
+
+    def push(self, actor):
+        if Item137().state == 0:
+            yield "Ok...\n"
+        else:
+            yield "You hear a gurgling noise and then silence.\n"
+            Item137().state = 0
+
+
+class Item146(Item):
+    def __init__(self, item_id=146):
+        super().__init__(item_id)
+
+    def push(self, actor):
+        Item146().state = 1 - Item146().state
+        yield "Ok...\n"
+
+
+class Item147(Item146):
+    def __init__(self):
+        super().__init__(147)
+
+
+class Item149(Item):
+    def __init__(self):
+        super().__init__(149)
+
+    def push(self, actor):
+        DrawbridgeFront().state = 1 - DrawbridgeFront().state
+        if DrawbridgeFront().state:
+            actor.send_global("\001cThe drawbridge rises\n\001", DrawbridgeFront().location)
+            actor.send_global("\001cThe drawbridge rises\n\001", DrawbridgeBack().location)
+        else:
+            actor.send_global("\001cThe drawbridge is lowered\n\001", DrawbridgeFront().location)
+            actor.send_global("\001cThe drawbridge is lowered\n\001", DrawbridgeBack().location)
+
+
+class DrawbridgeFront(Item):
     def __init__(self):
         super().__init__(150)
 
 
-class Item151(Item):
+class DrawbridgeBack(Item):
     def __init__(self):
         super().__init__(151)
 
@@ -705,6 +901,15 @@ class Item158(Item):
     def wave(self, actor):
         yield "You are teleported!\n"
         actor.teleport(Location(-114))
+
+
+class Item162(Item):
+    def __init__(self):
+        super().__init__(162)
+
+    def push(self, actor):
+        yield "A trapdoor opens at your feet and you plumment downwards!\n"
+        actor.location_id = -140
 
 
 class Item175(Item):
@@ -766,30 +971,70 @@ class ChuteBottom(Item):
 
 ITEMS = [
     Umbrella(),  # 1
+
     Item10(),
     Item11(),
+
     Item20(),
     Item21(),
+
     Item23(),
+    Item24(),
+
+    SecretDoor(),
+
+    PortcullisFront(),  # 28
+    PortcullisBack(),  # 29
+    Item30(),
+
     MagicSword,  # 32
+
+    Bell(),
+
     Item75(),
+
     Shield89(),
+
     Item101(),
     Item102(),
     Item103(),
+    Item104(),
+
     Shields(),  # 112
     Shield113(),
     Shield114(),
+
     Item122(),
     Item123(),
+
+    Item126(),
+
+    Item130(),
+    Item131(),
+    Item132(),
+
+    Item134(),
+
     Item136(),
     Item137(),
-    Item150(),
-    Item151(),
+    Item138(),
+
+    Item146(),
+    Item147(),
+
+    Item149(),
+    DrawbridgeFront(),  # 150
+    DrawbridgeBack(),  # 151
+
     Item158(),
+
+    Item162(),
+
     Item175(),
     Item176(),
+
     Item186(),
+
     ChuteTop(),  # 192
     ChuteBottom(),  # 193
 ]

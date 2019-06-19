@@ -7,6 +7,10 @@ class Sender:
     def location(self):
         raise NotImplementedError()
 
+    @property
+    def name(self):
+        raise NotImplementedError()
+
     # Tk
     def send_message(self, to_user, code, channel_id, message):
         Message(to_user, self, code, channel_id, message).send(self)
@@ -22,6 +26,14 @@ class Sender:
             code,
             self.location,
             message,
+        )
+
+    def send_change_sex(self, target):
+        self.send_message(
+            target,
+            message_codes.CHANGE_SEX,
+            self.location,
+            None,
         )
 
     def send_exorcise(self, target):
@@ -48,18 +60,38 @@ class Sender:
             message,
         )
 
-    def send_lightning(self, target):
+    def send_magic(self, target, code, message=None):
         self.send_message(
             target,
-            message_codes.LIGHTNING,
+            code,
             target.location,
-            None,
+            message,
+        )
+
+    def send_magic_missile(self, target, code, power):
+        self.send_message(
+            target,
+            code,
+            self.location,
+            power,
         )
 
     def send_personal(self, target, message):
         self.send_message(
             target,
             message_codes.PERSONAL,
+            self.location,
+            message,
+        )
+
+    def send_social(self, target, message):
+        if message[:4] == "star":
+            message = "\001s{name}\001{name} {message}\n\001".format(name=self.name, message=message)
+        else:
+            message = "\001p{name}\001 {message}\n\001".format(name=self.name, message=message)
+        self.send_message(
+            target,
+            message_codes.SOCIAL,
             self.location,
             message,
         )
