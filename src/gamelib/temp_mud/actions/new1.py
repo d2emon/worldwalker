@@ -70,6 +70,15 @@ class Unlock(Action):
         return parser.user.unlock(parser.get_item())
 
 
+class Force(Action):
+    # 109
+    commands = "force",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.force(parser.victim_magic(), parser.full())
+
+
 class Light(Action):
     # 110
     commands = "light",
@@ -100,6 +109,33 @@ class Push(Action):
             destroyed=parser.user.is_wizard,
         )
         return parser.user.push(item)
+
+
+class Cripple(Action):
+    # 118
+    commands = "cripple",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.cripple(parser.victim_magic())
+
+
+class Cure(Action):
+    # 119
+    commands = "cure",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.cure(parser.victim_magic_is_here())
+
+
+class Dumb(Action):
+    # 120
+    commands = "dumb",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.dumb(parser.victim_magic())
 
 
 class Blow(Action):
@@ -136,39 +172,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def cripplecom(parser):
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_CRIPPLE,
-        Tk.curch,
-        "",
-    ).send()
-
-
-def curecom(parser):
-    victim = victim_magic_is_here(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_CURE,
-        Tk.curch,
-        "",
-    ).send()
-
-
-def dumbcom(parser):
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_DUMB,
-        Tk.curch,
-        "",
-    ).send()
 
 
 def forcecom(parser):

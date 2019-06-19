@@ -167,44 +167,6 @@ def on_flee_event():
 
 
 """
- cripplecom()
-    {
-    long a,b;
-    extern char globme[];
-    b=victim(&a);
-    if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10101,user.location_id,"");
-    }
- 
- curecom()
-    {
-    long a,b;
-    extern char globme[];
-    b=vichfb(&a);
-    if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10100,user.location_id,"");
-    }
- 
- dumbcom()
-    {
-    long a,b;
-    extern char globme[];
-    b=victim(&a);
-    if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10102,user.location_id,"");
-    }
- 
- forcecom()
-    {
-    long a,b;
-    extern char globme[];
-    char z[128];
-    b=victim(&a);
-    if(b== -1) return;
-    getreinput(z);
-    user.send_message(Player(a).name,globme,-10103,user.location_id,z);
-    }
- 
  missilecom()
     {
     long a,b;

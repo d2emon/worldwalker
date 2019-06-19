@@ -487,7 +487,7 @@ class Actor(Sender, Reader):
         # Parse
         if target is None:
             raise CommandError("There is no one on with that name\n")
-        self.send_lightning(target)
+        self.send_magic(target, message_codes.LIGHTNING)
         syslog("{} zapped {}".format(self.name, target.name))
         target.get_lightning()
         self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
@@ -815,8 +815,9 @@ class Actor(Sender, Reader):
             raise CommandError("You have no keys\n")
         item.unlock(self)
 
-    def force(self):
-        raise NotImplementedError()
+    def force(self, target, action):
+        # New1
+        self.send_magic(target, message_codes.FORCE, action)
 
     def light(self, item):
         # New1
@@ -843,18 +844,22 @@ class Actor(Sender, Reader):
     # 116
 
     def push(self, item):
+        # New1
         if item is None:
             raise CommandError("That is not here\n")
         item.push(self)
 
-    def cripple(self):
-        raise NotImplementedError()
+    def cripple(self, target):
+        # New1
+        self.send_magic(target, message_codes.CRIPPLE)
 
-    def cure(self):
-        raise NotImplementedError()
+    def cure(self, target):
+        # New1
+        self.send_magic(target, message_codes.CURE)
 
-    def dumb(self):
-        raise NotImplementedError()
+    def dumb(self, target):
+        # New1
+        self.send_magic(target, message_codes.DUMB)
 
     # 121 - 130
     def change(self):

@@ -48,12 +48,12 @@ class Sender:
             message,
         )
 
-    def send_lightning(self, target):
+    def send_magic(self, target, code, message=None):
         self.send_message(
             target,
-            message_codes.LIGHTNING,
+            code,
             target.location,
-            None,
+            message,
         )
 
     def send_personal(self, target, message):

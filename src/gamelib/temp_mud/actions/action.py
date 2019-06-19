@@ -137,23 +137,15 @@ case 105:
 case 106:
 case 107:
 case 108:
-       case 109:
-          forcecom();
-          break;
+case 109:
 case 110:
 
 case 111:
 case 113:
 case 117: case 113;
-       case 118:
-          cripplecom();
-          break;
-       case 119:
-          curecom();
-          break;
-       case 120:
-          dumbcom();
-          break;
+case 118:
+case 119:
+case 120:
 
 case 121:
           changecom();
