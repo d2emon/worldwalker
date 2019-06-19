@@ -862,8 +862,12 @@ class Actor(Sender, Reader):
         self.send_magic(target, message_codes.DUMB)
 
     # 121 - 130
-    def change(self):
-        raise NotImplementedError()
+    def change(self, target):
+        # New1
+        self.send_change_sex(target)
+        if target.is_mobile:
+            return
+        target.sex = 1 - target.sex
 
     def missile(self, target):
         # New1

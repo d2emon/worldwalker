@@ -167,28 +167,6 @@ def on_flee_event():
 
 
 """
- changecom()
-    {
-    long a,b;
-    extern char globme[];
-    extern char wordbuf[];
-    if(brkword()== -1)
-       {
-       bprintf("change what (Sex ?) ?\n");
-       return;
-       }
-    if(!!strcmp(wordbuf,"sex"))
-       {
-       bprintf("I don't know how to change that\n");
-       return;
-       }
-    b=victim(&a);
-    if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10107,user.location_id,"");
-    if(a<16) return;
-    Player(a).sex = 1 - Player(a).sex
-    }
- 
  fireballcom()
     {
     long a,b;

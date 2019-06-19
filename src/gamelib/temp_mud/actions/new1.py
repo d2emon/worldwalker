@@ -138,6 +138,18 @@ class Dumb(Action):
         return parser.user.dumb(parser.victim_magic())
 
 
+class Change(Action):
+    # 121
+    commands = "change",
+
+    @classmethod
+    def action(cls, command, parser):
+        word = parser.require_next("change what (Sex ?) ?\n")
+        if word != 'sex':
+            raise CommandError("I don't know how to change that\n")
+        return parser.user.change(parser.victim_magic())
+
+
 class Missile(Action):
     # 122
     commands = "missile",
@@ -181,25 +193,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def changecom(parser):
-    word = parser.brkword()
-    if word is None:
-        raise CommandError("change what (Sex ?) ?\n")
-    if word != 'sex':
-        raise CommandError("I don't know how to change that\n")
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_CHANGE,
-        Tk.curch,
-        "",
-    ).send()
-    if victim.player_id < 16:
-        return
-    victim.sex = 1 - victim.sex
 
 
 def fireballcom(parser):

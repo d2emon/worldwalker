@@ -24,6 +24,14 @@ class Sender:
             message,
         )
 
+    def send_change_sex(self, target):
+        self.send_message(
+            target,
+            message_codes.CHANGE_SEX,
+            self.location,
+            None,
+        )
+
     def send_exorcise(self, target):
         self.send_message(
             target,
