@@ -1,4 +1,4 @@
-from .action import Action
+from .action import Action, Spell
 
 
 class Put(Action):
@@ -70,13 +70,13 @@ class Unlock(Action):
         return parser.user.unlock(parser.get_item())
 
 
-class Force(Action):
+class Force(Spell):
     # 109
     commands = "force",
 
     @classmethod
-    def action(cls, command, parser):
-        return parser.user.force(parser.victim_magic(), parser.full())
+    def cast(cls, parser, target):
+        return parser.user.force(target, parser.full())
 
 
 class Light(Action):
@@ -111,70 +111,78 @@ class Push(Action):
         return parser.user.push(item)
 
 
-class Cripple(Action):
+class Cripple(Spell):
     # 118
     commands = "cripple",
 
     @classmethod
-    def action(cls, command, parser):
-        return parser.user.cripple(parser.victim_magic())
+    def cast(cls, parser, target):
+        return parser.user.cripple(target)
 
 
-class Cure(Action):
+class Cure(Spell):
     # 119
     commands = "cure",
+    reflect = True
 
     @classmethod
-    def action(cls, command, parser):
-        return parser.user.cure(parser.victim_magic_is_here())
+    def cast(cls, parser, target):
+        return parser.user.cure(target)
 
 
-class Dumb(Action):
+class Dumb(Spell):
     # 120
     commands = "dumb",
 
     @classmethod
-    def action(cls, command, parser):
-        return parser.user.dumb(parser.victim_magic())
+    def cast(cls, parser, target):
+        return parser.user.dumb(target)
 
 
-class Change(Action):
+class Change(Spell):
     # 121
     commands = "change",
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.change(target)
 
     @classmethod
     def action(cls, command, parser):
         word = parser.require_next("change what (Sex ?) ?\n")
         if word != 'sex':
             raise CommandError("I don't know how to change that\n")
-        return parser.user.change(parser.victim_magic())
+        return super().action(command, parser)
 
 
-class Missile(Action):
+class Missile(Spell):
     # 122
     commands = "missile",
+    reflect = True
 
     @classmethod
-    def action(cls, command, parser):
-        return parser.user.missile(parser.victim_magic_is_here())
+    def cast(cls, parser, target):
+        return parser.user.missile(target)
 
 
-class Shock(Action):
+class Shock(Spell):
     # 123
     commands = "shock",
+    reflect = True
 
     @classmethod
-    def action(cls, command, parser):
-        return parser.user.shock(parser.victim_magic_is_here())
+    def cast(cls, parser, target):
+        return parser.user.shock(target)
 
 
-class Fireball(Action):
+class Fireball(Spell):
     # 124
     commands = "fireball",
+    reflect = True
 
     @classmethod
-    def action(cls, command, parser):
-        return parser.user.fireball(parser.victim_magic_is_here())
+    def cast(cls, parser, target):
+        return parser.user.fireball(target)
 
 
 class Blow(Action):
@@ -201,7 +209,7 @@ class Kiss(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.kiss(parser.victim_is_here)
+        return parser.user.kiss(parser.get_target())
 
 
 class Hug(Action):
@@ -210,7 +218,7 @@ class Hug(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.hug(parser.victim_is_here)
+        return parser.user.hug(parser.get_target())
 
 
 class Slap(Action):
@@ -219,7 +227,7 @@ class Slap(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.slap(parser.victim_is_here)
+        return parser.user.slap(parser.get_target())
 
 
 class Tickle(Action):
@@ -228,7 +236,7 @@ class Tickle(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.tickle(parser.victim_is_here)
+        return parser.user.tickle(parser.get_target())
 
 
 class Scream(Action):
@@ -255,7 +263,7 @@ class Stare(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.stare(parser.victim_is_here)
+        return parser.user.stare(parser.get_target())
 
 
 class Grope(Action):
@@ -264,7 +272,7 @@ class Grope(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.grope(parser.victim_is_here)
+        return parser.user.grope(parser.get_target())
 
 
 class Squeeze(Action):
@@ -273,7 +281,7 @@ class Squeeze(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.squeeze(parser.victim_is_here)
+        return parser.user.squeeze(parser.get_target())
 
 
 class Cuddle(Action):
@@ -282,7 +290,7 @@ class Cuddle(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.user.cuddle(parser.victim_is_here)
+        return parser.user.cuddle(parser.get_target())
 
 
 def wearcom(parser):
@@ -308,7 +316,7 @@ def removecom(parser):
 
 
 def deafcom():
-    victim = victim_magic()
+    victim = parser.get_spell_target()
     Message(
         victim,
         Tk,
@@ -319,7 +327,7 @@ def deafcom():
 
 
 def blindcom():
-    victim = victim_magic()
+    victim = parser.get_spell_target()
     Message(
         victim,
         Tk,

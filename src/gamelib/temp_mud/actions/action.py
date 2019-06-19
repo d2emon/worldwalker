@@ -339,6 +339,45 @@ class Action(BaseAction):
         return True
 
 
+class Spell(Action):
+    reflect = False
+
+    @classmethod
+    def cast(cls, parser, target):
+        raise NotImplementedError()
+
+    @classmethod
+    def action(cls, command, parser):
+        target = parser.get_target(False)
+
+        if parser.user.strength < 10:
+            raise CommandError("You are too weak to cast magic\n")
+
+        spell_level = 5
+        if Item(111).is_carried_by(parser.user):
+            spell_level += 1
+        if Item(121).is_carried_by(parser.user):
+            spell_level += 1
+        if Item(163).is_carried_by(parser.user):
+            spell_level += 1
+
+        if not parser.user.is_wizard:
+            parser.user.strength -= 2
+            if randperc() > spell_level * parser.user.level:
+                yield ("You fumble the magic\n")
+                if not cls.reflect:
+                    raise CommandError()
+                yield ("The spell reflects back\n")
+                target = parser.user
+            else:
+                yield ("The spell succeeds!!\n")
+
+        if cls.reflect and target.location.location_id != parser.user.location_id:
+            raise CommandError("They are not here\n")
+
+        yield from cls.cast(parser, target)
+
+
 class Special(BaseAction):
     @classmethod
     def action(cls, command, parser):

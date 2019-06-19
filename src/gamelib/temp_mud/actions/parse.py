@@ -134,8 +134,8 @@ class Lightning(Action):
 
     @classmethod
     def action(cls, command, parser):
-        victim = parser.user.find(parser.require_next("But who do you wish to blast into pieces....\n"))
-        return parser.user.lightning(victim)
+        target = parser.user.find(parser.require_next("But who do you wish to blast into pieces....\n"))
+        return parser.user.lightning(target)
 
 
 class Eat(Action):

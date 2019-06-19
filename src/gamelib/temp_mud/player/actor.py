@@ -951,27 +951,27 @@ class Actor(Sender, Reader):
         # New1
         if target.player_id == self.player_id:
             raise CommandError("Weird!\n")
-        self.social(target, "kisses you")
+        self.send_social(target, "kisses you")
         yield "Slurp!\n"
 
     def hug(self, target):
         # New1
         if target.player_id == self.player_id:
             raise CommandError("Ohhh flowerr!\n")
-        self.social(target, "hugs you")
+        self.send_social(target, "hugs you")
 
     def slap(self, target):
         # New1
         if target.player_id == self.player_id:
             raise CommandError("You slap yourself\n")
-        self.social(target, "slaps you")
+        self.send_social(target, "slaps you")
 
     # 131 - 140
     def tickle(self, target):
         # New1
         if target.player_id == self.player_id:
             raise CommandError("You tickle yourself\n")
-        self.social(target, "tickles you")
+        self.send_social(target, "tickles you")
 
     @not_dumb_action
     def scream(self):
@@ -992,7 +992,7 @@ class Actor(Sender, Reader):
         if target.player_id == self.player_id:
             raise CommandError("That is pretty neat if you can do it!\n")
 
-        self.social(target, "stares deep into your eyes\n")
+        self.send_social(target, "stares deep into your eyes\n")
         yield "You stare at \001p{}\001\n".format(target.name)
 
     def list_exits(self):
@@ -1028,7 +1028,7 @@ class Actor(Sender, Reader):
             yield "With a sudden attack of morality the machine edits your persona\n"
             self.loose()
             raise CrapupError("Bye....... LINE TERMINATED - MORALITY REASONS")
-        self.social(target, "gropes you")
+        self.send_social(target, "gropes you")
         yield "<Well what sort of noise do you want here ?>\n"
 
     def spray(self):
@@ -1101,7 +1101,7 @@ class Actor(Sender, Reader):
         # New1
         if target.player_id == self.player_id:
             yield "Ok....\n"
-        self.social(target, "gives you a squeeze\n")
+        self.send_social(target, "gives you a squeeze\n")
         yield "You give them a squeeze\n"
 
     # 155 -> 13
@@ -1187,7 +1187,7 @@ class Actor(Sender, Reader):
         if target.player_id == self.player_id:
             raise CommandError("You aren't that lonely are you ?\n")
 
-        self.social(target, "cuddles you")
+        self.send_social(target, "cuddles you")
 
     def sulk(self):
         # Weather

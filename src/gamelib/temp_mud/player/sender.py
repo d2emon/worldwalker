@@ -7,6 +7,10 @@ class Sender:
     def location(self):
         raise NotImplementedError()
 
+    @property
+    def name(self):
+        raise NotImplementedError()
+
     # Tk
     def send_message(self, to_user, code, channel_id, message):
         Message(to_user, self, code, channel_id, message).send(self)
@@ -76,6 +80,18 @@ class Sender:
         self.send_message(
             target,
             message_codes.PERSONAL,
+            self.location,
+            message,
+        )
+
+    def send_social(self, target, message):
+        if message[:4] == "star":
+            message = "\001s{name}\001{name} {message}\n\001".format(name=self.name, message=message)
+        else:
+            message = "\001p{name}\001 {message}\n\001".format(name=self.name, message=message)
+        self.send_message(
+            target,
+            message_codes.SOCIAL,
             self.location,
             message,
         )
