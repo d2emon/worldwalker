@@ -1,6 +1,5 @@
-from ..direction import DIRECTIONS
 from ..errors import CommandError, CrapupError, LooseError, ServiceError
-from ..item.item import Item, Door, Shield89, Shield113, Shield114, ITEMS
+from ..item.item import Item, ITEMS
 from ..location import Location
 from ..message import message_codes
 from ..parser import Parser
@@ -51,6 +50,13 @@ def message_action(f):
     def wrapped(self, *args):
         if not self.can_modify_messages:
             raise NotImplementedError("No way !\n")
+        return f(self, *args)
+    return wrapped
+
+
+def not_crippled_action(f):
+    def wrapped(self, *args):
+        self.Disease.crippled.check()
         return f(self, *args)
     return wrapped
 
@@ -292,6 +298,23 @@ class Actor(Sender, Reader):
     def fade(self, *args):
         raise NotImplementedError()
 
+    # Disease
+    @property
+    def is_dumb(self):
+        raise NotImplementedError()
+
+    @property
+    def is_crippled(self):
+        raise NotImplementedError()
+
+    @property
+    def is_blind(self):
+        raise NotImplementedError()
+
+    @property
+    def is_deaf(self):
+        raise NotImplementedError()
+
     # Other
     @property
     def is_fighting(self):
@@ -317,6 +340,7 @@ class Actor(Sender, Reader):
         self.send_silly("\001s{user.name}\001{user.name} " + message + "\n\001")
 
     # 1 - 10
+    @not_crippled_action
     def go(self, direction):
         # Parse
         # 1 - 7
@@ -326,7 +350,6 @@ class Actor(Sender, Reader):
             raise CommandError("You can't just stroll out of a fight!\n"
                                "If you wish to leave a fight, you must FLEE in a direction\n")
         yield from map(lambda mobile: mobile.on_actor_leave(self, direction), MOBILES)
-        self.Disease.crippled.check()
 
         location = self.location.go_to(direction, self)
 
@@ -420,14 +443,14 @@ class Actor(Sender, Reader):
             yield self.location.get_name(self)
 
         if self.location.death_room:
-            if self.Disease.blind:
+            if self.is_blind:
                 self.Disease.blind.cure()
             if self.is_wizard:
                 yield "<DEATH ROOM>\n"
             else:
                 raise LooseError("bye bye.....\n")
 
-        if self.Disease.blind:
+        if self.is_blind:
             yield "You are blind... you can't see a thing!\n"
             return
 
@@ -444,7 +467,7 @@ class Actor(Sender, Reader):
 
         World.load()
 
-        if not self.Disease.blind:
+        if not self.is_blind:
             yield from self.location.list_items()
             if self.show_players:
                 self.location.list_people()
@@ -901,7 +924,7 @@ class Actor(Sender, Reader):
         if self.player_id == target.player_id:
             raise CommandError("You are supposed to be killing other people not yourself\n")
 
-        power = self.level * damage
+        power = self.level * 2
         if target.strength < power:
             yield "Your last spell did the trick\n"
             if not target.is_dead:
