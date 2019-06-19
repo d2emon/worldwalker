@@ -62,6 +62,16 @@ def not_dumb_action(f):
     return wrapped
 
 
+def not_force_action(message):
+    def wrapper(f):
+        def wrapped(self, *args):
+            if self.Disease.is_force:
+                raise CommandError(message)
+            return f(self, *args)
+        return wrapped
+    return wrapper
+
+
 class Actor(Sender, Reader):
     # Modules
     @property
@@ -339,11 +349,9 @@ class Actor(Sender, Reader):
             ),
         )
 
+    @not_force_action("You can't be forced to do that\n")
     def quit_game(self):
         # Parse
-        if self.Disease.is_force:
-            raise CommandError("You can't be forced to do that\n")
-
         yield from self.read_messages()
 
         if self.is_fighting:
@@ -939,18 +947,31 @@ class Actor(Sender, Reader):
         self.__silly_sound("sighs loudly")
         yield "You sigh\n"
 
-    def kiss(self):
-        raise NotImplementedError()
+    def kiss(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("Weird!\n")
+        self.social(target, "kisses you")
+        yield "Slurp!\n"
 
-    def hug(self):
-        raise NotImplementedError()
+    def hug(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("Ohhh flowerr!\n")
+        self.social(target, "hugs you")
 
-    def slap(self):
-        raise NotImplementedError()
+    def slap(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("You slap yourself\n")
+        self.social(target, "slaps you")
 
     # 131 - 140
-    def tickle(self):
-        raise NotImplementedError()
+    def tickle(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("You tickle yourself\n")
+        self.social(target, "tickles you")
 
     @not_dumb_action
     def scream(self):
@@ -966,8 +987,13 @@ class Actor(Sender, Reader):
     def wiz(self):
         raise NotImplementedError()
 
-    def stare(self):
-        raise NotImplementedError()
+    def stare(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            raise CommandError("That is pretty neat if you can do it!\n")
+
+        self.social(target, "stares deep into your eyes\n")
+        yield "You stare at \001p{}\001\n".format(target.name)
 
     def list_exits(self):
         # Zones
@@ -993,8 +1019,17 @@ class Actor(Sender, Reader):
     def sing(self):
         raise NotImplementedError()
 
-    def grope(self):
-        raise NotImplementedError()
+    @not_force_action("You can't be forced to do that\n")
+    def grope(self, target):
+        if self.Blood.in_fight:
+            raise CommandError("Not in a fight!\n")
+
+        if target.player_id == self.player_id:
+            yield "With a sudden attack of morality the machine edits your persona\n"
+            self.loose()
+            raise CrapupError("Bye....... LINE TERMINATED - MORALITY REASONS")
+        self.social(target, "gropes you")
+        yield "<Well what sort of noise do you want here ?>\n"
 
     def spray(self):
         raise NotImplementedError()
@@ -1062,8 +1097,12 @@ class Actor(Sender, Reader):
                 yield "\n"
         yield "\n"
 
-    def squeeze(self):
-        raise NotImplementedError()
+    def squeeze(self, target):
+        # New1
+        if target.player_id == self.player_id:
+            yield "Ok....\n"
+        self.social(target, "gives you a squeeze\n")
+        yield "You give them a squeeze\n"
 
     # 155 -> 13
 
@@ -1144,8 +1183,11 @@ class Actor(Sender, Reader):
         self.__silly_sound("starts purring")
         yield "MMMMEMEEEEEEEOOOOOOOWWWWWWW!!\n"
 
-    def cuddle(self):
-        raise NotImplementedError()
+    def cuddle(self, target):
+        if target.player_id == self.player_id:
+            raise CommandError("You aren't that lonely are you ?\n")
+
+        self.social(target, "cuddles you")
 
     def sulk(self):
         # Weather

@@ -195,6 +195,42 @@ class Sigh(Action):
         return parser.user.sigh()
 
 
+class Kiss(Action):
+    # 128
+    commands = "kiss",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.kiss(parser.victim_is_here)
+
+
+class Hug(Action):
+    # 129
+    commands = "hug",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.hug(parser.victim_is_here)
+
+
+class Slap(Action):
+    # 130
+    commands = "slap",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.slap(parser.victim_is_here)
+
+
+class Tickle(Action):
+    # 131
+    commands = "tickle",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.tickle(parser.victim_is_here)
+
+
 class Scream(Action):
     # 132
     commands = "scream",
@@ -213,70 +249,40 @@ class Bounce(Action):
         return parser.user.bounce()
 
 
-def starecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("That is pretty neat if you can do it!\n")
-    social(victim, "stares deep into your eyes\n")
-    yield "You stare at \001p{}\001\n".format(victim.name)
+class Stare(Action):
+    # 135
+    commands = "stare",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.stare(parser.victim_is_here)
 
 
-def gropecom(parser):
-    if DISEASES.force.is_force:
-        raise CommandError("You can't be forced to do that\n")
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "With a sudden attack of morality the machine edits your persona\n"
-        loseme()
-        raise CrapupError("Bye....... LINE TERMINATED - MORALITY REASONS")
-    social(victim, "gropes you")
-    yield "<Well what sort of noise do you want here ?>\n"
+class Grope(Action):
+    # 139
+    commands = "grope",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.grope(parser.victim_is_here)
 
 
-def squeezecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "Ok....\n"
-    social(victim, "gives you a squeeze\n")
-    yield "You give them a squeeze\n"
+class Squeeze(Action):
+    # 154
+    commands = "squeeze",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.squeeze(parser.victim_is_here)
 
 
-def kisscom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("Weird!\n")
-    social(victim, "kisses you")
-    yield "Slurp!\n"
+class Cuddle(Action):
+    # 166
+    commands = "cuddle",
 
-
-def cuddlecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("You aren't that lonely are you ?\n")
-    social(victim, "cuddles you")
-
-
-def hugcom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        raise CommandError("Ohhh flowerr!\n")
-    social(victim, "hugs you")
-
-
-def slapcom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "You slap yourself\n"
-        return
-    social(victim, "slaps you")
-
-
-def ticklecom(parser):
-    victim = victim_is_here(parser)
-    if victim.player_id == Tk.mynum:
-        yield "You tickle yourself\n"
-        return
-    social(victim, "tickles you")
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.cuddle(parser.victim_is_here)
 
 
 def wearcom(parser):

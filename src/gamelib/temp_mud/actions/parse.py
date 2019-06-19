@@ -274,21 +274,6 @@ class Steal(Action):
         return parser.user.steal(item, player)
 
 
-class Grope(Action):
-    # 139
-    commands = "grope",
-
-    @classmethod
-    def validate(cls, command, parser):
-        if parser.user.Blood.in_fight:
-            raise CommandError("Not in a fight!\n")
-        return True
-
-    @classmethod
-    def action(cls, command, parser):
-        return gropecom()
-
-
 class Tss(Action):
     # 151
     commands = "tss",

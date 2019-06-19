@@ -153,27 +153,17 @@ case 123:
 case 124:
 case 126:
 case 127:
-       case 128:
-          kisscom();
-          break;
-       case 129:
-          hugcom();
-          break;
-       case 130:
-          slapcom();
-          break;
+case 128:
+case 129:
+case 130:
 
 case 131:
-          ticklecom();
-          break;
 case 132:
 case 133:
        case 134:
           wizcom();
           break;
-       case 135:
-          starecom();
-          break;
+case 135:
 case 136:
        case 137:
           crashcom();
@@ -219,9 +209,7 @@ case 144:
 
 case 151:
 case 152:
-       case 154:
-          squeezecom();
-          break;
+case 154:
 case 153:
 case 155:
 case 156:
@@ -237,9 +225,7 @@ case 161:
 case 163:
 case 164:
 case 165:
-       case 166:
-          cuddlecom();
-          break;
+case 166:
 case 167:
 case 168:
 case 169:
