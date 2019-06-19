@@ -465,6 +465,27 @@ class Item:
         self.__data[2][bit_id] = False
 
     def __test_bit(self, bit_id):
+        """
+        15=weapon
+        14=container
+        13=Is lit  (state 0 is lit)
+        12=State 0 if taken
+        11=Is A Key
+        10=Can Extinguish (state 1 is extinguished)
+        09=Can Light	(state 0 is lit)
+        08=Can Wear
+        07=
+        06=Is Food	(normal food)
+        05=Push toggles state 1-0-1
+        04=Push sets to state 0
+        03=Can lock/unlock   2=locked
+        02=Can open/close   1=closed 0=open
+        01=Item is paired in state with then item number which is its num XOR 1
+        00=Destroyed
+
+        :param bit_id:
+        :return:
+        """
         return self.__data[2][bit_id]
 
     def __set_byte(self, byte_id, value):

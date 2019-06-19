@@ -46,7 +46,7 @@ if( ( x==Player.find( "yeti" ) )&&( user.has_any([
 {
 return ;
 }
-    mhitplayer( x, user ) ;
+    x.attack(user)
     }
  
  consid_move(x)
@@ -64,10 +64,9 @@ return ;
     user.send_message( "", "", -666, 0, "" ) ;
     rescom(  ) ;
     }
- 
+  @not_dumb_action
  singcom(  )
     {
-    if( chkdumb(  ) ) return ;
     user.silly( "\001P%s\001\001d sings in Gaelic\n\001" ) ;
     bprintf( "You sing\n" ) ;
     }
@@ -78,8 +77,8 @@ return ;
     long c ;
     char bk[ 128 ] ;
     extern long wordbuf[  ] ;
-    b=vichere( &a ) ;
-    if( b== -1 ) return ;
+    a = parser.get_target()
+    if( a== -1 ) return ;
     if( brkword(  )== -1 )
        {
        bprintf( "With what ?\n" ) ;
@@ -146,7 +145,7 @@ return ;
     char xx[ 128 ] ;
     FILE *fl ;
     long t, u ;
-    if( tscale(  )!=2 )
+    if( scale()!=2 )
        {
        bprintf( "There are other people on.... So it wont work!\n" ) ;
        return ;

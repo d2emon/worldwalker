@@ -89,7 +89,7 @@ if(brkword()!= -1)
        bprintf("There isn't one of those here.\n");
        return;
        }
-    bprintf("%s : %d points\n",wordbuf,(tscale()*(Item(b).base_value))/5);
+    bprintf("%s : %d points\n",wordbuf,(scale()*(Item(b).base_value))/5);
     return;
     }
  stacom()
@@ -169,7 +169,7 @@ else
        case 145:
           ;
           bprintf("As you read the scroll you are teleported!\n");
-          destroy(145);
+          Item(145).destroy();
           user.location = -114
           return;
        case 101:
@@ -201,7 +201,7 @@ else
              if((Item(3 + Item(7).state).is_carried_by(user))&&(Item(3+Item(7).state).test_bit(13)))
                 {
                 bprintf("Everything shimmers and then solidifies into a different view!\n");
-                destroy(8);
+                Item(8_.destroy()
                 teletrap(-1074);
                 return;
        case 85:

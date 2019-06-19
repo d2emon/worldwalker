@@ -54,12 +54,12 @@ def message_action(f):
     return wrapped
 
 
-def not_blind_action(f):
-    def wrapped(self, *args):
-        if self.is_blind:
-            raise CommandError("You are blind, you cannot see\n")
-        return f(self, *args)
-    return wrapped
+# def not_blind_action(f):
+#     def wrapped(self, *args):
+#         if self.is_blind:
+#             raise CommandError("You are blind, you cannot see\n")
+#         return f(self, *args)
+#     return wrapped
 
 
 def not_crippled_action(f):
@@ -70,12 +70,12 @@ def not_crippled_action(f):
     return wrapped
 
 
-def not_deaf_action(f):
-    def wrapped(self, *args):
-        if self.is_blind:
-            raise CommandError()
-        return f(self, *args)
-    return wrapped
+# def not_deaf_action(f):
+#     def wrapped(self, *args):
+#         if self.is_blind:
+#             raise CommandError()
+#         return f(self, *args)
+#     return wrapped
 
 
 def not_dumb_action(f):
@@ -542,7 +542,7 @@ class Actor(Sender, Reader):
             raise CommandError("There is no one on with that name\n")
         self.send_magic(target, message_codes.LIGHTNING)
         syslog("{} zapped {}".format(self.name, target.name))
-        target.get_lightning()
+        target.get_lightning(self)
         self.broadcast("\001dYou hear an ominous clap of thunder in the distance\n\001")
 
     def eat(self, item):
@@ -657,7 +657,7 @@ class Actor(Sender, Reader):
         item.set_location(self, item.CARRIED)
         if roll & 1:
             self.send_personal(target, "\001p{}\001 steals the {} from you !\n".format(self.name, item.name))
-            target.on_steal()
+            target.on_steal(self)
 
     def levels(self):
         raise NotImplementedError()
@@ -935,7 +935,7 @@ class Actor(Sender, Reader):
             self.Blood.in_fight = 0
             self.Blood.fighting = -1
         if target.is_mobile:
-            target.woundmn(power)
+            target.get_damage(self, power)
 
     def shock(self, target):
         # New1
@@ -953,7 +953,7 @@ class Actor(Sender, Reader):
             self.Blood.fighting = -1
         self.send_magic_missile(target, message_codes.SHOCK, power)
         if target.is_mobile:
-            target.woundmn(power)
+            target.get_damage(self, power)
 
     def fireball(self, target):
         # New1
@@ -973,7 +973,7 @@ class Actor(Sender, Reader):
             self.Blood.fighting = -1
         self.send_magic_missile(target, message_codes.FIREBALL, power)
         if target.is_mobile:
-            target.woundmn(power)
+            target.get_damage(self, power)
 
     def translocate(self):
         raise NotImplementedError()

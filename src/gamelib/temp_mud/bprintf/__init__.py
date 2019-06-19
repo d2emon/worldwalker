@@ -78,9 +78,8 @@ int pndeaf(str,ct,file)
  FILE *file;
     {
     char x[256];
-    extern long ail_deaf;
     ct=tocontinue(str,ct,x,256);
-    if(!ail_deaf)fprintf(file,"%s",x);
+    if(!parser.user.is_deaf)fprintf(file,"%s",x);
     return(ct);
     }
 
@@ -122,9 +121,8 @@ int pndark(str,ct,file)
  FILE *file;
     {
     char x[257];
-    extern long ail_blind;
     ct=tocontinue(str,ct,x,256);
-    if((!user.in_dark)&&(ail_blind==0))
+    if((!user.in_dark)&&(parser.user.is_blind==0))
     fprintf(file,"%s",x);
     return(ct);
     }
@@ -153,11 +151,10 @@ crapup("Buffer OverRun in IO_TOcontinue");
 
 int seeplayer(x)
     {
-    extern long ail_blind;
     if(x==-1) return(1);
     if(user==x) {return(1);} /* me */
     if(user.data.level < Player(x).visible) return(0);
-    if(ail_blind) return(0); /* Cant see */
+    if(parser.user.is_blind) return(0); /* Cant see */
     if((user.location_id==Player(x).location)&&user.in_dark)return(0);
     setname(x);
     return(1);
@@ -167,10 +164,9 @@ int ppndeaf(str,ct,file)
  FILE *file;
     {
     char x[24];
-    extern long ail_deaf;
     long a;
     ct=tocontinue(str,ct,x,24);
-    if(ail_deaf) return(ct);
+    if(parser.user.is_deaf) return(ct);
     a=Player.find(x);
     if(seeplayer(a)) fprintf(file,"%s",x);
     else
@@ -182,11 +178,10 @@ int  ppnblind(str,ct,file)
 char *str;
 FILE *file;
     {
-    extern long ail_blind;
     char x[24];
     long a;
     ct=tocontinue(str,ct,x,24);
-    if(ail_blind) return(ct);
+    if(parser.user.is_blind) return(ct);
     a=Player.find(x);
     if(seeplayer(a)) fprintf(file,"%s",x);
     else

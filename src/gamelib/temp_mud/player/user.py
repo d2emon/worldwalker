@@ -161,6 +161,30 @@ class User(UserData, BasePlayer, Actor):
     def start_location(cls):
         return Location(-5 if randperc() > 50 else -183)
 
+    # New1
+    def get_damage(self, damage):
+        if self.is_wizard:
+            return
+
+        self.strength -= damage
+        self.__to_update = True
+
+        if not self.is_dead:
+            return
+
+        World.save()
+
+        syslog("{} slain magically".format(self.name))
+        self.remove()
+        self.zapped = True
+
+        World.load()
+        self.dump_items()
+        self.loose()
+        self.send_global("{} has just died\n".format(self.name))
+        self.send_wizard("[ {} has just died ]\n".format(self.name))
+        raise CrapupError("Oh dear you just died\n")
+
     # Not Implemented
     def chksnp(self, *args):
         raise NotImplementedError()
@@ -294,7 +318,7 @@ class User(UserData, BasePlayer, Actor):
 
         if self.__drunk_counter > 0:
             self.__drunk_counter -= 1
-            if not self.Disease.dumb:
+            if not self.is_dumb:
                 self.hiccup()
 
         self.__is_summoned = False

@@ -38,12 +38,57 @@ class Mobile(BasePlayer):
     def strength(self):
         return self.__strength
 
+    @strength.setter
+    def strength(self, value):
+        self.__strength = value
+
     @property
     def level(self):
         return self.__level
         pass
 
     # Other
+    def attack(self, enemy):
+        if self.location.location_id != enemy.location.location_id:
+            return
+        if not 0 <= self.player_id <= 47:
+            return
+        chance = randperc()
+        defense = 3 * (15 - enemy.level) + 20
+
+        shields = [Item(89), Item(113), Item(114)]
+        if any(shield.is_worn_by(enemy) for shield in shields):
+            defense -= 10
+
+        if chance < defense:
+            damage = randperc() * self.damof
+        else:
+            damage = -1
+
+        self.send_message(
+            enemy,
+            self,
+            -10021,
+            self.location,
+            [self.player_id, damage, None],
+        )
+
+    def get_damage(self, enemy, damage):
+        self.strength -= damage
+
+        if self.strength >= 0:
+            return self.attack(enemy)
+
+        self.dump_items()
+        self.send_global("{} has just died\n".format(self.name))
+        self.remove()
+        self.send_wizard("[ {} has just died ]\n".format(self.name))
+
+    def get_lightning(self, enemy):
+        if self.is_mobile:
+            # DIE
+            self.get_damage(enemy, 10000)
+
     def is_here(self, player):
         if not self.exists:
             return
@@ -61,9 +106,9 @@ class Mobile(BasePlayer):
             return
         pass
 
-    def on_steal(self):
+    def on_steal(self, actor):
         if self.is_mobile:
-            self.woundmn(0)
+            self.get_damage(actor, 0)
 
     # Abstract
     @property

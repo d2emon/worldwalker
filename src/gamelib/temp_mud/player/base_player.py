@@ -265,10 +265,11 @@ class BasePlayer:
     def fade(self):
         self.position = -2
 
-    def get_lightning(self):
+    def get_lightning(self, enemy):
+        pass
         if not self.is_mobile:
             return
-        self.woundmn(10000)
+        self.get_damage(enemy, 10000)
         # DIE
 
     def is_helping(self, player):

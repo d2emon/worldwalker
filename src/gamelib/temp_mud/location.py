@@ -219,7 +219,7 @@ class Location:
         if self.location_id in [-5, -183]:
             yield "It disappears down into the bottomless pit.....\n"
             actor.send_global("The {} disappears into the bottomless pit.\n".format(item.name))
-            actor.score += tscale() * item.base_value / 5
+            actor.score += scale() * item.base_value / 5
             yield from actor.update()
             item.set_location(-6, 0)
 

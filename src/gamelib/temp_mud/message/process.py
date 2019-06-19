@@ -237,7 +237,7 @@ def bolt(user, message):
     yield "Bolts of fire leap from the fingers of \001p{}\001\n".format(message.user_from)
     if message.is_my(user.name.lower()):
         yield "You are struck!\n"
-        wounded(message.message)
+        user.get_damage(message.message)
     else:
         yield "\001p{}\001 is struck\n".format(message.user_to)
 
@@ -260,7 +260,7 @@ def fireball(user, message):
     yield "\001p{}\001 casts a fireball\n".format(message.user_from)
     if message.is_my(user.name.lower()):
         yield "You are struck!\n"
-        wounded(message.message)
+        user.get_damage(message.message)
     else:
         yield "\001p{}\001 is struck\n".format(message.user_to)
 
@@ -270,7 +270,7 @@ def fireball(user, message):
 @__private
 def shock(user, message):
     yield "\001p{}\001 touches you giving you a sudden electric shock!\n".format(message.user_from)
-    wounded(message.message)
+    user.get_damage(message.message)
 
 
 # -10111

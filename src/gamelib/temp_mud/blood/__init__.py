@@ -144,7 +144,7 @@ void hitplayer(victim,wpn)
        if(victim<16) user.send_message(Player(victim).name,globme,-10021,user.location_id,(char *)x);
        else
           	{
-          	woundmn(victim,ddn);
+          	victim.get_damage(parser.user, ddn)
           	}
        user.score+=ddn*2;
         yield from user.update()
@@ -158,7 +158,7 @@ void hitplayer(victim,wpn)
 	       x[2]=wpn;
 	       if(victim<16) user.send_message(Player(victim).name,globme,-10021,user.location_id,(char *)x);
      		else
-		woundmn(victim,0);
+          	victim.get_damage(parser.user, 0)
        }
     }
 
