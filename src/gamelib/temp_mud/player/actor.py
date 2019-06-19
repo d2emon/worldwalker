@@ -172,6 +172,10 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
+    def player_id(self):
+        raise NotImplementedError()
+
+    @property
     def __uid(self):
         raise NotImplementedError()
 
@@ -872,7 +876,7 @@ class Actor(Sender, Reader):
     def missile(self, target):
         # New1
         power = self.level * 2
-        self.send_missile(target, power)
+        self.send_magic_missile(target, message_codes.BOLT, power)
         if target.strength < power:
             yield "Your last spell did the trick\n"
             if not target.is_dead:
@@ -887,8 +891,25 @@ class Actor(Sender, Reader):
     def shock(self):
         raise NotImplementedError()
 
-    def fireball(self):
-        raise NotImplementedError()
+    def fireball(self, target):
+        # New1
+        if self.player_id == target.player_id:
+            raise CommandError("Seems rather dangerous to me....\n")
+
+        damage = 6 if target.player_id == Player.find('yeti').player_id else 2
+        power = self.level * damage
+
+        if target.strength < power:
+            yield "Your last spell did the trick\n"
+            if not target.is_dead:
+                # Bonus ?
+                self.score += target.value
+                target.die()  # MARK ALREADY DEAD
+            self.Blood.in_fight = 0
+            self.Blood.fighting = -1
+        self.send_magic_missile(target, message_codes.FIREBALL, power)
+        if target.is_mobile:
+            target.woundmn(power)
 
     def translocate(self):
         raise NotImplementedError()

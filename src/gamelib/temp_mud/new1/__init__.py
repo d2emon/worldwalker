@@ -167,38 +167,6 @@ def on_flee_event():
 
 
 """
- fireballcom()
-    {
-    long a,b;
-    extern long fighting,in_fight;    
-    extern char globme[];
-    long ar[2];
-    b=vichfb(&a);
-    if(b== -1) return;
-    if(user==a)
-       {
-       bprintf("Seems rather dangerous to me....\n");
-       return;
-       }
-    sprintf(ar,"%d",2 * user.level);
-    if(Player(a).strength - (a==Player.find("yeti")?6:2) * user.level<0)
-	{
-	bprintf("Your last spell did the trick\n");
-	if(not Player(a).is_dead)
-	{
-	/* Bonus ? */
-		if(a<16) user.score+=(Player(a).level*Player(a).level*100);
-		else user.score+=10*damof(a);
-	}
-	Player(a).die() /* MARK ALREADY DEAD */
-	in_fight=0;
-	fighting= -1;
-    }    
-    user.send_message(Player(a).name,globme,-10109,user.location_id,ar);
-    if(a==Player.find("yeti")) {woundmn(a,6 * user.level);return;}
-    if(a>15) woundmn(a,2 * user.level);
-    }
- 
  shockcom()
     {
     long a,b;

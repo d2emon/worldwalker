@@ -64,10 +64,10 @@ class Sender:
             message,
         )
 
-    def send_missile(self, target, power):
+    def send_magic_missile(self, target, code, power):
         self.send_message(
             target,
-            message_codes.BOLT,
+            code,
             self.location,
             power,
         )

@@ -152,9 +152,7 @@ case 122:
        case 123:
           shockcom();
           break;
-       case 124:
-          fireballcom();
-          break;
+case 124:
 case 126:
 case 127:
        case 128:

@@ -159,6 +159,15 @@ class Missile(Action):
         return parser.user.missile(parser.victim_magic_is_here())
 
 
+class Fireball(Action):
+    # 124
+    commands = "fireball",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.fireball(parser.victim_magic_is_here())
+
+
 class Blow(Action):
     # 126
     commands = "blow",
@@ -193,36 +202,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def fireballcom(parser):
-    victim = victim_magic_is_here(parser)
-    if Tk.mynum == victim.player_id:
-        raise CommandError("Seems rather dangerous to me....\n")
-    wound = 6 if victim.player_id == Player.fpbns('yeti').player_id else 2
-    if victim.strength - wound * NewUaf.my_lev < 0:
-        yield "Your last spell did the trick\n"
-        if victim.strength >= 0:
-            # Bonus ?
-            if victim.player_id < 16:
-                NewUaf.my_sco += victim.level * victim.level * 100
-            else:
-                NewUaf.my_sco += 10 * victim.damage
-        victim.strength = -1  # MARK ALREADY DEAD
-        Blood.in_fight = 0
-        Blood.fighting = -1
-    Message(
-        victim,
-        Tk,
-        MSG_FIREBALL,
-        Tk.curch,
-        2 * NewUaf.my_lev,
-    ).send()
-    if victim.player_id == Player.fpbns('yeti').player_id:
-        woundmn(victim, 6 * NewUaf.my_lev)
-        return
-    if victim.player_id > 15:
-        woundmn(victim, 2 * NewUaf.my_lev)
 
 
 def shockcom(parser):
