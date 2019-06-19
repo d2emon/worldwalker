@@ -865,8 +865,20 @@ class Actor(Sender, Reader):
     def change(self):
         raise NotImplementedError()
 
-    def missile(self):
-        raise NotImplementedError()
+    def missile(self, target):
+        # New1
+        power = self.level * 2
+        self.send_missile(target, power)
+        if target.strength < power:
+            yield "Your last spell did the trick\n"
+            if not target.is_dead:
+                # Bonus ?
+                self.score += target.value
+                target.die()  # MARK ALREADY DEAD
+            self.Blood.in_fight = 0
+            self.Blood.fighting = -1
+        if target.is_mobile:
+            target.woundmn(power)
 
     def shock(self):
         raise NotImplementedError()

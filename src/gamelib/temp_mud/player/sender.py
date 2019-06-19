@@ -56,6 +56,14 @@ class Sender:
             message,
         )
 
+    def send_missile(self, target, power):
+        self.send_message(
+            target,
+            message_codes.BOLT,
+            self.location,
+            power,
+        )
+
     def send_personal(self, target, message):
         self.send_message(
             target,

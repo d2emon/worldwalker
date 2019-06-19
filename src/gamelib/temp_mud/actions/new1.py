@@ -138,6 +138,15 @@ class Dumb(Action):
         return parser.user.dumb(parser.victim_magic())
 
 
+class Missile(Action):
+    # 122
+    commands = "missile",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.missile(parser.victim_magic_is_here())
+
+
 class Blow(Action):
     # 126
     commands = "blow",
@@ -172,41 +181,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def forcecom(parser):
-    victim = victim_magic(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_FORCE,
-        Tk.curch,
-        parser.getreinput(),
-    ).send()
-
-
-def missilecom(parser):
-    victim = victim_magic_is_here(parser)
-    Message(
-        victim,
-        Tk,
-        MSG_BOLT,
-        Tk.curch,
-        NewUaf.my_lev * 2,
-    ).send()
-    if victim.strength - 2 * NewUaf.my_lev < 0:
-        yield "Your last spell did the trick\n"
-        if victim.strength >= 0:
-            # Bonus ?
-            if victim.player_id < 16:
-                NewUaf.my_sco += victim.level * victim.level * 100
-            else:
-                NewUaf.my_sco += 10 * victim.damage
-        victim.strength = -1  # MARK ALREADY DEAD
-        Blood.in_fight = 0
-        Blood.fighting = -1
-    if victim.player_id > 15:
-        woundmn(victim, 2 * NewUaf.my_lev)
 
 
 def changecom(parser):

@@ -150,9 +150,7 @@ case 120:
 case 121:
           changecom();
           break;
-       case 122:
-          missilecom();
-          break;
+case 122:
        case 123:
           shockcom();
           break;
