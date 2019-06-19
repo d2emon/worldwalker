@@ -140,13 +140,9 @@ case 108:
        case 109:
           forcecom();
           break;
-       case 110:
-          lightcom();
-          break;
+case 110:
 
 case 111:
-          extinguishcom();
-          break;
        case 113:
           pushcom();
           break;

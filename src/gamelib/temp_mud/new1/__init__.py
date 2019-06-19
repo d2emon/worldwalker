@@ -167,64 +167,6 @@ def on_flee_event():
 
 
 """
- lightcom()
-    {
-    long a,b;
-    b=ohereandget(&a);
-    if(b== -1) return;
-    if(!user.has_any([
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 1, 0, 0,
-]))
-       {
-       bprintf("You have nothing to light things from\n");
-       return;
-       }
-    switch(a)
-       {
-       default:
-          if(!Item(a).test_bit(9))
-             {
-             bprintf("You can't light that!\n");
-             return;
-             }
-          if(state(a)==0)
-             {
-             bprintf("It is lit\n");
-             return;
-             }
-          setstate(a,0);
-          Item(a).set_bit(13);
-          bprintf("Ok\n");
-          }
-    }
- 
- extinguishcom()
-    {
-    long a,b;
-    b=ohereandget(&a);
-    if(b== -1) return;
-    switch(a)
-       {
-       default:
-          if(!Item(a).test_bit(13))
-             {
-             bprintf("That isn't lit\n");
-             return;
-             }
-          if(!Item(a).test_bit(10))
-             {
-             bprintf("You can't extinguish that!\n");
-             return;
-             }
-          setstate(a,1);
-          Item(a).clear_bit(13);
-          bprintf("Ok\n");
-          }
-    }
- 
  pushcom()
     {
     extern char wordbuf[];

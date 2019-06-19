@@ -127,21 +127,33 @@ class Item:
     def is_lockable(self):
         return self.__test_bit(3)
 
+    # 4
+    # 5
+
     @property
     def is_edible(self):
         return self.__test_bit(6)
+
+    # 7
+    # 8
+
+    @property
+    def is_lightable(self):
+        return self.__test_bit(9)
+
+    @property
+    def is_extinguishable(self):
+        return self.__test_bit(10)
 
     @property
     def is_key(self):
         return self.__test_bit(11)
 
+    # 12
+
     @property
     def is_light(self):
-        if self.item_id == 32:
-            return True
-        if self.__test_bit(13):
-            return True
-        return False
+        return self.__test_bit(13)
 
     @property
     def is_container(self):
@@ -400,6 +412,25 @@ class Item:
 
         actor.location.on_put(actor, item, self)
 
+    def light(self, actor):
+        if not self.is_lightable:
+            raise CommandError("You can't light that!\n")
+        if self.state == 0:
+            raise CommandError("It is lit\n")
+
+        self.state = 0
+        self.__set_bit(13)
+        yield "Ok\n"
+
+    def extinguish(self, actor):
+        if not self.is_light:
+            raise CommandError("That isn't lit\n")
+        if not self.is_extinguishable:
+            raise CommandError("You can't extinguish that!\n")
+        self.state = 1
+        self.__clear_bit(13)
+        yield "Ok\n"
+
     def show_description(self, debug=False):
         if debug:
             return "{{{}}} {}".format(self.item_id, self.description)
@@ -566,6 +597,10 @@ class Item23(Item):
 class MagicSword(Item):
     def __init__(self):
         super().__init__(32)
+
+    @property
+    def is_light(self):
+        return True
 
     def on_drop(self, actor):
         if not actor.is_wizard:

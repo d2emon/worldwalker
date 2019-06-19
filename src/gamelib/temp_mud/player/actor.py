@@ -818,12 +818,16 @@ class Actor(Sender, Reader):
     def force(self):
         raise NotImplementedError()
 
-    def light(self):
-        raise NotImplementedError()
+    def light(self, item):
+        # New1
+        if not any(item.is_light for item in self.available_items):
+            raise CommandError("You have nothing to light things from\n")
+        item.light(self)
 
     # 111 - 120
-    def extinguish(self):
-        raise NotImplementedError()
+    def extinguish(self, item):
+        # New1
+        item.extinguish(self)
 
     def where(self):
         raise NotImplementedError()

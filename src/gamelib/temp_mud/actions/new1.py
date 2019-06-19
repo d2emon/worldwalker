@@ -70,6 +70,24 @@ class Unlock(Action):
         return parser.user.unlock(parser.get_item())
 
 
+class Light(Action):
+    # 110
+    commands = "light",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.light(parser.get_item())
+
+
+class Extinguish(Action):
+    # 111
+    commands = "extinguish",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.extinguish(parser.get_item())
+
+
 class Blow(Action):
     # 126
     commands = "blow",
@@ -104,31 +122,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def lightcom(parser):
-    item = get_item(parser)
-    if not ohany(1 << 13):
-        raise CommandError("You have nothing to light things from\n")
-    else:
-        if not item.tstbit(9):
-            raise CommandError("You can't light that!\n")
-        elif item.state == 0:
-            raise CommandError("It is lit\n")
-        item.state = 0
-        item.setbit(13)
-        yield "Ok\n"
-
-
-def extinguishcom(parser):
-    item = get_item(parser)
-    if not item.tstbit(13):
-        raise CommandError("That isn't lit\n")
-    if not item.tstbit(10):
-        raise CommandError("You can't extinguish that!\n")
-    item.state = 1
-    item.clearbit(13)
-    yield "Ok\n"
 
 
 def pushcom(parser):
