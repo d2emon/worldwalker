@@ -88,6 +88,20 @@ class Extinguish(Action):
         return parser.user.extinguish(parser.get_item())
 
 
+class Push(Action):
+    # 117
+    commands = "turn", "pull", "press", "push",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = Item.find(
+            parser.require_next("Push what ?\n"),
+            available=True,
+            destroyed=parser.user.is_wizard,
+        )
+        return parser.user.push(item)
+
+
 class Blow(Action):
     # 126
     commands = "blow",
@@ -122,131 +136,6 @@ class Bounce(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.bounce()
-
-
-def pushcom(parser):
-    word = parser.brkword()
-    if word is None:
-        raise CommandError("Push what ?\n")
-    x = Item.fobna(word)
-    if x is None:
-        raise CommandError("That is not here\n")
-    elif x.item_id == 126:
-        yield "The tripwire moves and a huge stone crashes down from above!\n"
-        Broadcast("\001dYou hear a thud and a squelch in the distance.\n\001").send(user)
-        loseme()
-        raise CrapupError("             S   P    L      A         T           !")
-    elif x.item_id == 162:
-        yield "A trapdoor opens at your feet and you plumment downwards!\n"
-        Tk.curch = -140
-        trapch(Tk.curch)
-        return
-    elif x.item_id == 130:
-        if Item(132).state == 1:
-            Item(132).state = 0
-            yield "A secret panel opens in the east wall!\n"
-        else:
-            yield "Nothing happens\n"
-    elif x.item_id == 131:
-        if Item(134).state == 1:
-            yield "Uncovering a hole behind it.\n"
-            Item(134).state = 0
-    elif x.item_id == 138:
-        if Item(137).state == 0:
-            yield "Ok...\n"
-        else:
-            yield "You hear a gurgling noise and then silence.\n"
-            Item(137).state = 0
-    elif x.item_id in (146, 147):
-        Item(146).state = 1 - Item(146).state
-        yield "Ok...\n"
-    elif x.item_id == 30:
-        Item(28).state = 1 - Item(28).state
-        if Item(28).state:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(28).loc,
-                "\001cThe portcullis falls\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(29).loc,
-                "\001cThe portcullis falls\n\001",
-            ).send()
-        else:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(28).loc,
-                "\001cThe portcullis rises\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(29).loc,
-                "\001cThe portcullis rises\n\001",
-            ).send()
-    elif x.item_id == 149:
-        Item(150).state = 1 - Item(150).state
-        if Item(150).state:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(150).loc,
-                "\001cThe drawbridge rises\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(151).loc,
-                "\001cThe drawbridge rises\n\001",
-            ).send()
-        else:
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(150).loc,
-                "\001cThe drawbridge is lowered\n\001",
-            ).send()
-            Message(
-                None,
-                None,
-                MSG_GLOBAL,
-                Item(151).loc,
-                "\001cThe drawbridge is lowered\n\001",
-            ).send()
-    elif x.item_id == 24:
-        if Item(26).state == 1:
-            Item(26).state = 0
-            yield "A secret door slides quietly open in the south wall!!!\n"
-        else:
-            yield "It moves but nothing seems to happen\n"
-    elif x.item_id == 49:
-        Broadcast("\001dChurch bells ring out around you\n\001").send(user)
-    elif x.item_id == 104:
-        if Player(Tk.mynum).tothlp == -1:
-            raise CommandError("You can't shift it alone, maybe you need help\n")
-        Broadcast("\001dChurch bells ring out around you\n\001").send(user)
-    else:
-        # ELSE RUN INTO DEFAULT
-        if x.tstbit(4):
-            x.state = 0
-            x.oplong()
-            return
-        if x.tstbit(5):
-            x.state = 1 - x.state
-            x.oplong()
-            return
-        yield "Nothing happens\n"
 
 
 def cripplecom(parser):

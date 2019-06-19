@@ -842,8 +842,10 @@ class Actor(Sender, Reader):
 
     # 116
 
-    def push(self):
-        raise NotImplementedError()
+    def push(self, item):
+        if item is None:
+            raise CommandError("That is not here\n")
+        item.push(self)
 
     def cripple(self):
         raise NotImplementedError()

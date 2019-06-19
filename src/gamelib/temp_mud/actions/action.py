@@ -143,10 +143,8 @@ case 108:
 case 110:
 
 case 111:
-       case 113:
-          pushcom();
-          break;
-       case 117: case 113;
+case 113:
+case 117: case 113;
        case 118:
           cripplecom();
           break;
