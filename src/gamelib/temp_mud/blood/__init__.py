@@ -114,7 +114,7 @@ void hitplayer(victim,wpn)
 	in_fight=300;
 	res=randperc();
 	cth=40+3*user.level;
-	if((iswornby(89,victim))||(iswornby(113,victim))||(iswornby(114,victim)))
+	if((Item(89).is_worn_by(victim))||Item(113).is_worn_by(victim)||Item(114).is_worn_by(victim))
         cth-=10;
 	if(cth<0) cth=0;
 	if(cth>res)
@@ -135,7 +135,7 @@ void hitplayer(victim,wpn)
 				if(victim<16)
 				    user.score+=(Player(victim).level*Player(victim).level*100);
 				else
-				    user.score +=10*damof(victim);
+				    user.score += victim.value
 			}
 			Player(victim).die(); /* MARK ALREADY DEAD */
 			in_fight=0;

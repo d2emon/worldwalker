@@ -5,7 +5,7 @@ from . import message_codes
 from .weather import set_weather
 
 
-# Parse
+# New1
 def check_name(name1, name2):
     name1 = name1.lower()
     name2 = name2.lower()

@@ -206,7 +206,7 @@ class WorldItem(ItemData, BaseItem):
 
     @property
     def can_wear(self):
-        raise NotImplementedError()
+        return self.__test_bit(8)
 
     @property
     def can_light(self):

@@ -295,6 +295,15 @@ class Grope(Action):
         return parser.user.grope(parser.get_target())
 
 
+class Deaf(Spell):
+    # 148
+    commands = "deafen",
+
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.deafen(target)
+
+
 class Squeeze(Action):
     # 154
     commands = "squeeze",
@@ -313,23 +322,10 @@ class Cuddle(Action):
         return parser.user.cuddle(parser.get_target())
 
 
-def deafcom():
-    victim = parser.get_spell_target()
-    Message(
-        victim,
-        Tk,
-        MSG_DEAF,
-        Tk.curch,
-        "",
-    ).send()
+class Blind(Spell):
+    # 178
+    commands = "blind",
 
-
-def blindcom():
-    victim = parser.get_spell_target()
-    Message(
-        victim,
-        Tk,
-        MSG_BLIND,
-        Tk.curch,
-        "",
-    ).send()
+    @classmethod
+    def cast(cls, parser, target):
+        return parser.user.blind(target)

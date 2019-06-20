@@ -148,14 +148,6 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
-    def forced(self):
-        raise NotImplementedError()
-
-    @forced.setter
-    def forced(self, value):
-        raise NotImplementedError()
-
-    @property
     def is_forced(self):
         raise NotImplementedError()
 
@@ -363,18 +355,9 @@ class Actor(Sender, Reader):
         return self.Blood.in_fight > 0
 
     def add_force(self, action):
-        if self.forced:
+        if self.force_action is not None:
             yield "The compulsion to {} is overridden\n".format(action)
-        self.forced = True
         self.force_action = action
-
-    def do_forced(self, action):
-        if not self.forced:
-            return
-
-        self.is_forced = True
-        gamecom(self.force_action)
-        self.is_forced = False
 
     def __fade_system(self, actions):
         self.fade()
@@ -1152,8 +1135,9 @@ class Actor(Sender, Reader):
     def smoke(self):
         raise NotImplementedError()
 
-    def deafen(self):
-        raise NotImplementedError()
+    def deafen(self, target):
+        # New1
+        self.send_magic(target, message_codes.DEAF)
 
     def ressurect(self):
         raise NotImplementedError()
@@ -1350,8 +1334,9 @@ class Actor(Sender, Reader):
         if self.is_wizard:
             yield("There           : {}\n".format(self.pronouns['there']))
 
-    def blind(self):
-        raise NotImplementedError()
+    def blind(self, target):
+        # New1
+        self.send_magic(target, message_codes.BLIND)
 
     def patch(self):
         raise NotImplementedError()

@@ -193,9 +193,7 @@ case 144:
        case 115:
           viscom();
           break;
-       case 148:
-          deafcom();
-          break;
+case 148:
        case 149:
           ressurcom();
           break;
@@ -239,9 +237,7 @@ case 174:
 case 175:
 case 176:
 case 177:
-       case 178:
-          blindcom();
-          break;
+case 178:
        case 179:
           edit_world();
           break;

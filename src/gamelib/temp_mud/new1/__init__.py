@@ -33,73 +33,6 @@ def on_flee_event():
 
 
 """
- damof(n)
-    {
-    switch(n)
-       {
-       case 20:
-case 18:;
-case 19:;
-case 21:;
-case 22:;
-          return(6);
-       case 23:
-          return(32);
-       case 24:
-          return(8);
-       case 28:
-          return(6);
-case 30:return(20);
-case 31:return(14);
-case 32:return(15);
-case 33:return(10);
-       default:
-          return(10);
-          }
-    }
- canwear(a)
-    {
-    switch(a)
-       {
-       default:
-          if(Item(a).test_bit(8)) return(1);
-          return(0);
-          }
-    }
- iam(x)
- char *x;
-    {
-    char a[64],b[64];
-    extern char globme[];
-    strcpy(a,x);
-    strcpy(b,globme);
-    lowercase(a);
-    lowercase(b);
-    if(!strcmp(a,b)) return(1);
-    if(strncmp(b,"the ",4)==0)
-       {
-       if(!strcmp(a,b+4)) return(1);
-       }
-    return(0);
-    }
- deafcom()
-    {
-    long a,b;
-    extern char globme[64];
-    b=victim(&a);
-    if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10120,user.location_id,"");
-    }
- 
-blindcom()
-    {
-    long a,b;
-    extern char globme[64];
-    b=victim(&a);
-    if(b== -1) return;
-    user.send_message(Player(a).name,globme,-10105,user.location_id,"");
-    }
-
 teletrap(newch)
 long newch;
 {
@@ -117,7 +50,7 @@ on_flee_event()
 	long ct=0;
 	while(ct<numobs)
 	{
-		if((ct.is_carried_by(user))&&(!iswornby(ct,user)))
+		if((ct.is_carried_by(user))&&(!Item(ct).is_worn_by(user)))
 		{
 			Item(ct).set_location(user.location, 0);
 		}

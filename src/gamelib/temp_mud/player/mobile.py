@@ -61,12 +61,34 @@ class Mobile(BasePlayer):
     def level(self):
         return self.__level
 
-    @classmethod
-    def reset_players(cls):
-        for mobile in MOBILES:
-            mobile.reset()
-        for player in Player.players()[16 + len(MOBILES):]:
-            player.reset()
+    @property
+    def damage(self):
+        if 18 <= self.player_id <= 22:
+            return 6
+        elif self.player_id == 23:
+            return 32
+        elif self.player_id == 24:
+            return 8
+        # elif self.player_id == 25:
+        #     return 32
+        # elif self.player_id == 26:
+        #     return 32
+        # elif self.player_id == 27:
+        #     return 32
+        elif self.player_id == 28:
+            return 6
+        # elif self.player_id == 29:
+        #     return 32
+        elif self.player_id == 30:
+            return 20
+        elif self.player_id == 31:
+            return 14
+        elif self.player_id == 32:
+            return 15
+        elif self.player_id == 33:
+            return 10
+        else:
+            return 10
 
     # Other
     def attack(self, enemy):

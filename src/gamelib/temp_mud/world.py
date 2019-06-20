@@ -27,7 +27,10 @@ class World:
 
     @classmethod
     def resetplayers(cls):
-        raise NotImplementedError()
+        for mobile in MOBILES:
+            mobile.reset()
+        for player in Player.players()[16 + len(MOBILES):]:
+            player.reset()
 
     @classmethod
     def get_message_id(cls, message_id):

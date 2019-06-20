@@ -289,6 +289,15 @@ class User(UserData, BasePlayer, Actor):
         self.save()
         self.chksnp()
 
+    # New1
+    def __do_forced(self):
+        if self.force_action is None:
+            return
+
+        self.is_forced = True
+        gamecom(self.force_action)
+        self.is_forced = False
+
     # Parse
     def on_messages(self):
         self.save_position()
@@ -314,7 +323,7 @@ class User(UserData, BasePlayer, Actor):
             self.strength += 1
             yield from self.update()
 
-        self.Disease.force.check()
+        self.__do_forced()
 
         if self.__drunk_counter > 0:
             self.__drunk_counter -= 1
@@ -410,4 +419,4 @@ class User(UserData, BasePlayer, Actor):
     @property
     def has_shield(self):
         shields = Shield113(), Shield114(), Shield89()
-        return any(item.iswornby(self) for item in shields)
+        return any(item.is_worn_by(self) for item in shields)

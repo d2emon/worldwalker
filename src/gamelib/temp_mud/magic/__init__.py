@@ -59,7 +59,7 @@ if(Item(121).is_carried_by(user)) c+=user.level;
 if(Item(163).is_carried_by(user)) c+=user.level;
     d=randperc();
     if(user.is_wizard) goto willwork;
-    if((iswornby(90,a))||(c<d))
+    if((Item(90).is_worn_by(a))||(c<d))
        {
        bprintf("The spell fails....\n");
        return;
