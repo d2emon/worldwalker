@@ -1,3 +1,4 @@
+from ..services.mobiles import MobilesService
 from ..world import World
 from .base_player import BasePlayer
 
@@ -194,3 +195,14 @@ class Player(BasePlayer):
         if self.is_faded:
             yield " [Absent From Reality]"
         yield "\n"
+
+    # NewUaf1
+    def reset(self):
+        data = MobilesService.get(player_id=self.player_id)
+        self.name = data.get('name')
+        self.location_id = data.get('location_id')
+        self.strength = data.get('strength')
+        self.sex = data.get('sex')
+        self.weapon = data.get('weapon')
+        self.visible = data.get('visible')
+        self.level = data.get('level')

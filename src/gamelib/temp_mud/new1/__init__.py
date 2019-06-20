@@ -52,20 +52,6 @@ MOBILES = [
 ]
 
 
-def resetplayers():
-    for mobile_id, mobile in MOBILES:
-        player = Player(mobile_id + 16)
-        player.name = mobile.name
-        player.location = mobile.location
-        player.strength = mobile.strength
-        player.sex = mobile.sex
-        player.weapon = None
-        player.visible = 0
-        player.level = mobile.level
-    for a in range(35, 48):
-        Player(a).name = ""
-
-
 def teletrap(new_channel):
     Message(
         Tk,
@@ -92,46 +78,8 @@ def on_flee_event():
 
 
 """
- resetplayers()
-    {
-    extern PLAYER pinit[];
-    long a,b,c;
-    a=16;
-    c=0;
-    while(a<35)
-       {
-       strcpy(Player(a).name,pinit[c].p_name);
-       Player(a).location = pinit[c].p_loc
-       Player(a).strength = pinit[c].p_str
-       setpsex(a,pinit[c].p_sex);
-       Player(a).weapon = None
-       Player(a).visible = 0
-       Player(a).level = pinit[c].p_lev);
-       a++;c++;
-       }
-    while(a<48)
-       {
-       strcpy(Player(a).name,"");
-       a++;
-       }
-    }
- 
 PLAYER pinit[48]=
-    { "The Wraith",-1077,60,0,-2,"Shazareth",-1080,99,0,-30,"Bomber",-308,50,0,-10,
-    "Owin",-311,50,0,-11,"Glowin",-318,50,0,-12,
-    "Smythe",-320,50,0,-13
-    ,"Dio",-332,50,0,-14
-    ,"The Dragon",-326,500,0,-2,"The Zombie",-639,20,0,-2
-    ,"The Golem",-1056,90,0,-2,"The Haggis",-341,50,0,-2,"The Piper"
-    ,-630,50,0,-2,"The Rat",-1064,20,0,-2
-    ,"The Ghoul",-129,40,0,-2,"The Figure",-130,90,0,-2,
-    "The Ogre",-144,40,0,-2,"Riatha",-165,50,0,-31,
-    "The Yeti",-173,80,0,-2,"The Guardian",-197,50,0,-2
-    ,"Prave",-201,60,0,-400,"Wraith",-350,60,0,-2
-    ,"Bath",-1,70,0,-401,"Ronnie",-809,40,0,-402,"The Mary",-1,50,0,-403,
-    "The Cookie",-126,70,0,-404,"MSDOS",-1,50,0,-405,
-    "The Devil",-1,70,0,-2,"The Copper"
-    ,-1,40,0,-2
+    { 
     };
  
  

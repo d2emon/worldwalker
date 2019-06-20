@@ -23,12 +23,19 @@ class Mobile(BasePlayer):
         self.__name = None
         self.__location_id = None
         self.__strength = None
+        self.__sex = None
+        self.__weapon = None
+        self.__visible = 0
         self.__level = None
 
     # Reset data
     @property
     def name(self):
         return self.__name
+
+    @name.setter
+    def name(self, value):
+        self.__name = value
 
     @property
     def location(self):
@@ -43,9 +50,23 @@ class Mobile(BasePlayer):
         self.__strength = value
 
     @property
+    def sex(self):
+        return self.__sex
+
+    @sex.setter
+    def sex(self, value):
+        self.__sex = value
+
+    @property
     def level(self):
         return self.__level
-        pass
+
+    @classmethod
+    def reset_players(cls):
+        for mobile in MOBILES:
+            mobile.reset()
+        for player in Player.players()[16 + len(MOBILES):]:
+            player.reset()
 
     # Other
     def attack(self, enemy):
