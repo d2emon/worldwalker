@@ -7,51 +7,6 @@ from ..parse.messages import Message
 from ..support import Item, Player
 
 
-class PlayerData:
-    def __init__(self, name, location, strength, sex, level):
-        self.name = name
-        self.location = location
-        self.strength = strength
-        self.sex = sex
-        self.level = level
-
-
-MOBILES = [
-    # 0-15
-    PlayerData("The Wraith", -1077, 60, 0, -2),
-    PlayerData("Shazareth", -1080, 99, 0, -30),
-    PlayerData("Bomber", -308, 50, 0, -10),
-    PlayerData("Owin", -311, 50, 0, -11),
-    PlayerData("Glowin", -318, 50, 0, -12),
-
-    PlayerData("Smythe", -320, 50, 0, -13),
-    PlayerData("Dio", -332, 50, 0, -14),
-    PlayerData("The Dragon", -326, 500, 0, -2),
-    PlayerData("The Zombie", -639, 20, 0, -2),
-    PlayerData("The Golem", -1056, 90, 0, -2),
-    PlayerData("The Haggis", -341, 50, 0, -2),
-    PlayerData("The Piper", -630, 50, 0, -2),
-    PlayerData("The Rat", -1064, 20, 0, -2),
-    PlayerData("The Ghoul", -129, 40, 0, -2),
-    PlayerData("The Figure", -130, 90, 0, -2),
-
-    PlayerData("The Ogre", -144, 40, 0, -2),
-    PlayerData("Riatha", -165, 50, 0, -31),
-    PlayerData("The Yeti", -173, 80, 0, -2),
-    PlayerData("The Guardian", -197, 50, 0, -2),
-    PlayerData("Prave", -201, 60, 0, -400),
-    PlayerData("Wraith", -350, 60, 0, -2),
-    PlayerData("Bath", -1, 70, 0, -401),
-    PlayerData("Ronnie", -809, 40, 0, -402),
-    PlayerData("The Mary", -1, 50, 0, -403),
-    PlayerData("The Cookie", -126, 70, 0, -404),
-
-    PlayerData("MSDOS", -1, 50, 0, -405),
-    PlayerData("The Devil", -1, 70, 0, -2),
-    PlayerData("The Copper", -1, 40, 0, -2),
-]
-
-
 def teletrap(new_channel):
     Message(
         Tk,
@@ -78,19 +33,6 @@ def on_flee_event():
 
 
 """
- setcarrf(o,n)
-    {
-    extern long objinfo[];
-    objinfo[4*o+3]=n;
-    }
- 
- iswornby(item,chr)
-    {
-    if(!item.is_carried_by(chr)) return(0);
-    if(Item(item).carry_flag!=2) return(0);
-    return(1);
-    }
-
  addforce(x)
  char *x;
     {

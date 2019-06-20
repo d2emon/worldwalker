@@ -41,7 +41,7 @@ class Item:
     __OBMUL = 8
     __NOBS = 196
 
-    CARRY_0 = 0
+    IN_LOCATION = 0
     CARRIED = 1
     WEARING = 2
     IN_CONTAINER = 3
@@ -181,7 +181,7 @@ class Item:
 
     @property
     def owner(self):
-        if self.carry_flag in (self.CARRY_0, self.IN_CONTAINER):
+        if self.carry_flag in (self.IN_LOCATION, self.IN_CONTAINER):
             return None
         return Player(self.location)
 
@@ -269,7 +269,7 @@ class Item:
                 text = "{}{}".format(text, item.item_id)
             if item.is_destroyed:
                 text = "({})".format(text)
-            if item.iswornby(location):
+            if item.is_worn_by(location):
                 text += "<worn> "
             text += " "
             yield text
@@ -313,25 +313,19 @@ class Item:
             None
         )
 
-    def iswornby(self, *args):
-        raise NotImplementedError()
+    def is_worn_by(self, owner):
+        return self.is_carried_by(owner) and self.carry_flag == self.WEARING
 
     def is_carried_by(self, owner):
         # if is_wizard
-        if self.carry_flag not in [self.CARRIED, self.WEARING]:
-            return False
-        return self.location == owner.location_id
+        return self.location == owner.location_id and self.carry_flag in [self.CARRIED, self.WEARING]
 
     def is_contained_in(self, container):
         # if is_wizard
-        if self.carry_flag != self.IN_CONTAINER:
-            return False
-        return self.location == container.item_id
+        return self.location == container.item_id and self.carry_flag == self.IN_CONTAINER
 
-    def is_in_locaton(self, location):
-        if self.carry_flag == self.CARRIED:
-            return False
-        return self.location == location.location_id
+    def is_in_location(self, location):
+        return self.location == location.location_id and self.carry_flag == self.IN_LOCATION
 
     def contain(self, destroyed=False):
         items = [item for item in self.items() if item.is_contained_in(self)]
@@ -858,7 +852,7 @@ class Item137(Item):
 
     def put_in(self, item, actor):
         if self.state == 0:
-            item.set_location(Location(-162), self.CARRY_0)
+            item.set_location(Location(-162), self.IN_LOCATION)
             yield "ok\n"
             return
 
@@ -984,7 +978,7 @@ class ChuteTop(Item):
             raise CommandError("You can't let go of it!\n")
         yield "It vanishes down the chute....\n"
         actor.send_global("The {} comes out of the chute!\n".format(item.name), ChuteBottom.location)
-        item.set_location(ChuteBottom.location, self.CARRY_0)
+        item.set_location(ChuteBottom.location, self.IN_LOCATION)
 
 
 class ChuteBottom(Item):

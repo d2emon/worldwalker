@@ -40,11 +40,3 @@ class Item:
     @property
     def can_wear(self):
         return self.tstbit(8)
-
-    def is_worn_by(self, player):
-        if not iscarrby(self.item_id, player):
-            return False
-        if self.carry_flag != 2:
-            return False
-        return True
-
