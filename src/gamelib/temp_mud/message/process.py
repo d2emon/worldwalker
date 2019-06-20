@@ -211,7 +211,7 @@ def force(user, message):
         yield "\001p{}\001 tried to force you to {}\n".format(message.user_from, message.message)
         return
     yield "\001p{}\001 has forced you to {}\n".format(message.user_from, message.message)
-    user.add_force(message.message)\
+    user.add_force(message.message)
 
 
 # -10104

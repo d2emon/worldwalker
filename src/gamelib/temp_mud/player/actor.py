@@ -89,7 +89,7 @@ def not_dumb_action(f):
 def not_force_action(message):
     def wrapper(f):
         def wrapped(self, *args):
-            if self.Disease.is_force:
+            if self.is_forced:
                 raise CommandError(message)
             return f(self, *args)
         return wrapped
@@ -137,6 +137,30 @@ class Actor(Sender, Reader):
 
     @property
     def __euid(self):
+        raise NotImplementedError()
+
+    @property
+    def force_action(self):
+        raise NotImplementedError()
+
+    @force_action.setter
+    def force_action(self, value):
+        raise NotImplementedError()
+
+    @property
+    def forced(self):
+        raise NotImplementedError()
+
+    @forced.setter
+    def forced(self, value):
+        raise NotImplementedError()
+
+    @property
+    def is_forced(self):
+        raise NotImplementedError()
+
+    @is_forced.setter
+    def is_forced(self, value):
         raise NotImplementedError()
 
     @property
@@ -337,6 +361,20 @@ class Actor(Sender, Reader):
     @property
     def is_fighting(self):
         return self.Blood.in_fight > 0
+
+    def add_force(self, action):
+        if self.forced:
+            yield "The compulsion to {} is overridden\n".format(action)
+        self.forced = True
+        self.force_action = action
+
+    def do_forced(self, action):
+        if not self.forced:
+            return
+
+        self.is_forced = True
+        gamecom(self.force_action)
+        self.is_forced = False
 
     def __fade_system(self, actions):
         self.fade()

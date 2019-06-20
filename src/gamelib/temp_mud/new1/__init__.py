@@ -33,31 +33,6 @@ def on_flee_event():
 
 
 """
- addforce(x)
- char *x;
-    {
-    extern char acfor[];
-    extern long forf;
-    if(forf==1)bprintf("The compulsion to %s is overridden\n",acfor);
-    forf=1;
-    strcpy(acfor,x);
-    }
- 
-long forf=0;
-char acfor[128];
- 
- forchk()
-    {
-    extern long forf;
-    extern char acfor[];
-    extern long isforce;
-    isforce=1;
-    if(forf==1) gamecom(acfor);
-    isforce=0;
-    forf=0;
-    }
- 
-long isforce=0;
  damof(n)
     {
     switch(n)
