@@ -1,6 +1,7 @@
 from gamelib.temp_mud.errors import CommandError
 from gamelib.temp_mud.player import Player
 from gamelib.temp_mud.world import World
+from .world_item import WorldItem
 
 
 """
@@ -37,309 +38,52 @@ Stam:state:loc:flag
 """
 
 
-class Item:
-    __OBMUL = 8
-    __NOBS = 196
-
-    IN_LOCATION = 0
-    CARRIED = 1
-    WEARING = 2
-    IN_CONTAINER = 3
-
-    def __init__(self, item_id):
-        self.item_id = item_id
-
-    @classmethod
-    def items(cls):
-        return (Item(item_id) for item_id in range(World.item_ids))
-
-    @property
-    def __object(self):
-        return World.objects[self.item_id]
-
-    @property
-    def __data(self):
-        return World.objinfo[self.item_id]
-
-    # Support
-    @property
-    def name(self):
-        return self.__object.name
-
-    @property
-    def description(self):
-        return self.__object.description[self.state]
-
-    @property
-    def max_state(self):
-        return self.__object.max_state
-
-    @property
-    def flannel(self):
-        return self.__object.flannel
-
-    @property
-    def base_value(self):
-        return self.__object.value
-
-    @property
-    def location(self):
-        return Location(self.__data[0])
-
-    def set_location(self, value, carry_flag):
-        self.carry_flag = carry_flag
-        self.__data[0] = value.location_id
-
-    # New1
-    @property
-    def state(self):
-        return self.__data[1]
-
-    @state.setter
-    def state(self, value):
-        self.__data[1] = value
-        if self.has_pair:
-            self.pair.__data[1] = value
-
-    # Support
-    @property
-    def carry_flag(self):
-        return self.__data[3]
-
-    @carry_flag.setter
-    def carry_flag(self, value):
-        self.__data[3] = value
-
-    @property
-    def is_destroyed(self):
-        return self.__test_bit(0)
-
-    @property
-    def has_pair(self):
-        return self.__test_bit(1)
-
-    @property
-    def is_openable(self):
-        return self.__test_bit(2)
-
-    @property
-    def is_lockable(self):
-        return self.__test_bit(3)
-
-    @property
-    def is_turnable(self):
-        return self.__test_bit(4)
-
-    @property
-    def is_switchable(self):
-        return self.__test_bit(5)
-
-    @property
-    def is_edible(self):
-        return self.__test_bit(6)
-
-    # 7
-    # 8
-
-    @property
-    def is_lightable(self):
-        return self.__test_bit(9)
-
-    @property
-    def is_extinguishable(self):
-        return self.__test_bit(10)
-
-    @property
-    def is_key(self):
-        return self.__test_bit(11)
-
-    # 12
-
-    @property
-    def is_light(self):
-        return self.__test_bit(13)
-
-    @property
-    def is_container(self):
-        return self.__test_bit(14)
-
-    @property
-    def is_open(self):
-        return self.is_openable and self.state == 0
-
-    @property
-    def is_locked(self):
-        return self.state == 2
-
-    @property
-    def pair_id(self):
-        return self.item_id ^ 1  # other door side
-
-    @property
-    def pair(self):
-        return Item(self.pair_id)
-
-    @property
-    def owner(self):
-        if self.carry_flag in (self.IN_LOCATION, self.IN_CONTAINER):
-            return None
-        return Player(self.location)
-
+class Item(WorldItem):
     # ObjSys
-    @classmethod
-    def __find(
-        cls,
-        item_name,
-        destroyed=False,
-        available=None,  # 1
-        owner=None,  # 2, 3
-        location=None,  # 4
-        container=None,  # 5
-    ):
-        if item_name is None:
-            return None
-
-        item_name = item_name.lower()
-        if item_name == "red":
-            # word = next(parser)
-            return 4
-        if item_name == "blue":
-            # word = next(parser)
-            return 5
-        if item_name == "green":
-            # word = next(parser)
-            return 6
-
-        items = [item for item in cls.items() if item.name.lower == item_name]
-        # wd_it = item_name
-
-        if available:
-            # Patch for shields
-            # if item.item_id == 112 and cls(113).is_carried_by(user):
-            #     return 113
-            # if item.item_id == 112 and cls(114).is_carried_by(user):
-            #     return 114
-            # if user.item_is_available(item):
-            #     return item
-            items = [item for item in items]
-        elif owner is not None:
-            items = [item for item in items if item.is_carried_by(owner)]
-        elif location is not None:
-            items = [item for item in items if item.is_in_locaton(location)]
-        elif container is not None:
-            items = [item for item in items if item.is_contained_in(container)]
-
-        if not destroyed:
-            return [item for item in items if not item.is_destroyed]
-
-        return items
-
-    @classmethod
-    def __find_at(cls, location, carry_flag, destroyed=False):
-        """
-        Carried Loc !
-
-        :param location:
-        :param carry_flag:
-        :param destroyed:
-        :return:
-        """
-        if carry_flag == cls.CARRIED:
-            items = [item for item in cls.items() if item.is_carried_by(location)]
-        elif carry_flag == cls.IN_CONTAINER:
-            items = [item for item in cls.items() if item.is_contained_in(location)]
-        else:
-            items = []
-
-        return [item for item in items if destroyed or not item.is_destroyed]
-
     @classmethod
     def list_items_at(cls, location, carry_flag, debug=False, destroyed=False):
         """
         Carried Loc !
         """
-        items = [item for item in cls.__find_at(location, carry_flag, destroyed)]
+        items = [item for item in cls.find_at(location, carry_flag, destroyed)]
         if len(items) <= 0:
-            yield "Nothing\n"
-            return
-
-        for item in items:
-            text = item.name
-            if debug:
-                text = "{}{}".format(text, item.item_id)
-            if item.is_destroyed:
-                text = "({})".format(text)
-            if item.is_worn_by(location):
-                text += "<worn> "
-            text += " "
-            yield text
+            yield "Nothing"
+        else:
+            yield from (item.get_text(debug) for item in items)
         yield "\n"
 
+    # ObjSys
+    def get_item_text(self, debug=False):
+        text = self.name
+        if debug:
+            text += self.item_id
+        if self.is_destroyed:
+            text = "({})".format(text)
+        if self.is_worn:
+            text += "<worn> "
+        text += " "
+        return text
+
     # Unknown
-    @classmethod
-    def find(
-        cls,
-        name,
-        destroyed=False,
-        mode_0=False,  # 0
-        available=False,  # 1
-        owner=None,  # 2, 3
-        location=None,  # 4
-        container=None,  # 5
-    ):
-        item = next(
-            cls.__find(
-                name,
-                destroyed=destroyed,
-                available=available,
-                owner=owner,
-                location=location,
-                container=container,
-            ),
-            None
-        )
-        if not mode_0:
-            return item
-
-        if item is None:
-            return None
-        name = item.name
-
-        return next(
-            cls.__find(
-                name,
-                destroyed=destroyed,
-            ),
-            None
-        )
-
-    def is_worn_by(self, owner):
-        return self.is_carried_by(owner) and self.carry_flag == self.WEARING
-
-    def is_carried_by(self, owner):
-        # if is_wizard
-        return self.location == owner.location_id and self.carry_flag in [self.CARRIED, self.WEARING]
-
-    def is_contained_in(self, container):
-        # if is_wizard
-        return self.location == container.item_id and self.carry_flag == self.IN_CONTAINER
-
-    def is_in_location(self, location):
-        return self.location == location.location_id and self.carry_flag == self.IN_LOCATION
-
     def contain(self, destroyed=False):
-        items = [item for item in self.items() if item.is_contained_in(self)]
-        return [item for item in items if destroyed or not item.is_destroyed]
+        items = self.items()
+        items = (item for item in items if item.is_contained_in(self))
+        items = (item for item in items if destroyed or not item.is_destroyed)
+        return list(items)
 
-    def destroy(self):
-        self.__set_bit(0)
+    # Actions
+    def show_description(self, debug=False):
+        if debug:
+            return "{{{}}} {}".format(self.item_id, self.description)
+        return self.description
 
     def eat(self, actor):
-        if not self.is_edible:
+        if not self.is_food:
             raise CommandError("That's sure not the latest in health food....\n")
 
         self.destroy()
         yield "Ok....\n"
+
         actor.strength += 12
         yield from actor.update()
 
@@ -350,18 +94,18 @@ class Item:
         raise CommandError("You can't roll that\n")
 
     def open(self, actor):
-        if not self.is_openable:
+        if not self.can_open:
             raise CommandError("You can't open that\n")
         elif self.is_open:
             raise CommandError("It already is\n")
         elif self.is_locked:
             raise CommandError("It's locked!\n")
-        else:
-            self.state = 0
-            yield "Ok\n"
+
+        self.state = 0
+        yield "Ok\n"
 
     def close(self, actor):
-        if not self.is_openable:
+        if not self.can_open:
             raise CommandError("You can't close that\n")
         elif not self.is_open:
             raise CommandError("It is open already\n")
@@ -370,7 +114,7 @@ class Item:
             yield "Ok\n"
 
     def lock(self, actor):
-        if not self.is_lockable:
+        if not self.can_lock:
             raise CommandError("You can't lock that!\n")
         elif self.is_locked:
             raise CommandError("It's already locked\n")
@@ -379,7 +123,7 @@ class Item:
             yield "Ok\n"
 
     def unlock(self, actor):
-        if not self.is_lockable:
+        if not self.can_lock:
             raise CommandError("You can't unlock that\n")
         elif not self.is_locked:
             raise CommandError("Its not locked!\n")
@@ -414,83 +158,33 @@ class Item:
         actor.location.on_put(actor, item, self)
 
     def light(self, actor):
-        if not self.is_lightable:
+        if not self.can_light:
             raise CommandError("You can't light that!\n")
         if self.state == 0:
             raise CommandError("It is lit\n")
 
-        self.state = 0
-        self.__set_bit(13)
+        super().light(actor)
         yield "Ok\n"
 
     def extinguish(self, actor):
+        if not self.can_extinguish:
+            raise CommandError("You can't extinguish that!\n")
         if not self.is_light:
             raise CommandError("That isn't lit\n")
-        if not self.is_extinguishable:
-            raise CommandError("You can't extinguish that!\n")
-        self.state = 1
-        self.__clear_bit(13)
+
+        super().extinguish(actor)
         yield "Ok\n"
 
     def push(self, actor):
         # ELSE RUN INTO DEFAULT
-        if self.is_turnable:
+        if self.can_turn:
             self.state = 0
             yield self.show_description(actor.debug_mode)
-        elif self.is_switchable:
+        elif self.can_toggle:
             self.state = 1 - self.state
             yield self.show_description(actor.debug_mode)
         else:
             yield "Nothing happens\n"
-
-    def show_description(self, debug=False):
-        if debug:
-            return "{{{}}} {}".format(self.item_id, self.description)
-        return self.description
-
-    # Support
-    def create(self):
-        self.__clear_bit(0)
-        return self
-
-    def __set_bit(self, bit_id):
-        self.__data[2][bit_id] = True
-
-    def __clear_bit(self, bit_id):
-        self.__data[2][bit_id] = False
-
-    def __test_bit(self, bit_id):
-        """
-        15=weapon
-        14=container
-        13=Is lit  (state 0 is lit)
-        12=State 0 if taken
-        11=Is A Key
-        10=Can Extinguish (state 1 is extinguished)
-        09=Can Light	(state 0 is lit)
-        08=Can Wear
-        07=
-        06=Is Food	(normal food)
-        05=Push toggles state 1-0-1
-        04=Push sets to state 0
-        03=Can lock/unlock   2=locked
-        02=Can open/close   1=closed 0=open
-        01=Item is paired in state with then item number which is its num XOR 1
-        00=Destroyed
-
-        :param bit_id:
-        :return:
-        """
-        return self.__data[2][bit_id]
-
-    def __set_byte(self, byte_id, value):
-        self.__data[2][byte_id] = value
-
-    def __get_byte(self, byte_id):
-        return self.__data[2][byte_id]
-
-    def test_mask(self, mask):
-        return all(self.__test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
 
     # Events
     def on_dig(self, actor):
@@ -515,8 +209,7 @@ class Item:
         return self
 
     def on_taken(self, actor):
-        if self.__test_bit(12):
-            self.state = 0
+        super().on_taken(actor)
 
     def on_wear(self, actor):
         pass
@@ -527,15 +220,15 @@ class Door(Item):
         super().__init__(door_id - 1000)
 
     @property
-    def is_open(self):
-        return self.state == 0
+    def can_open(self):
+        return True
 
     @property
     def is_invisible(self):
         return self.name != "door" or not self.description
 
     def go_through(self, actor):
-        new_location = self.pair.location if self.is_open else 0
+        new_location = self.pair.location if self.is_open else Location(0)
         if new_location is not None and new_location.location_id > 0:
             return new_location
 
@@ -548,7 +241,7 @@ class Door(Item):
 
 class Shield(Item):
     def on_wear(self, actor):
-        shields = [Shield89, Shield113, Shield114]
+        shields = [Shield89(), Shield113(), Shield114()]
         if any(shield.is_worn_by(actor) for shield in shields):
             raise CommandError("You can't use TWO shields at once...\n")
 
