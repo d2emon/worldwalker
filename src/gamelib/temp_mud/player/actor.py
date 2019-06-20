@@ -245,9 +245,6 @@ class Actor(Sender, Reader):
     def loose(self, *args):
         raise NotImplementedError()
 
-    def on_flee(self, *args):
-        raise NotImplementedError()
-
     def on_look(self, *args):
         raise NotImplementedError()
 
@@ -371,6 +368,11 @@ class Actor(Sender, Reader):
 
     def list_items(self):
         return Item.list_items_at(self, Item.CARRIED, self.debug, self.is_wizard)
+
+    def on_flee(self):
+        # New1
+        items = [item for item in ITEMS if item.is_carried_by(self) and not item.is_worn_by(self)]
+        map(lambda item: item.set_location(self, item.IN_LOCATION), items)
 
     def __silly_sound(self, message):
         self.send_silly("\001P{user.name}\001\001d " + message + "\n\001")

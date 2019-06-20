@@ -201,8 +201,8 @@ else
              if((Item(3 + Item(7).state).is_carried_by(user))&&(Item(3+Item(7).state).test_bit(13)))
                 {
                 bprintf("Everything shimmers and then solidifies into a different view!\n");
-                Item(8_.destroy()
-                teletrap(-1074);
+                Item(8).destroy()
+                user.teleport(-1074);
                 return;
        case 85:
           if(!Item(83).get_byte(0))

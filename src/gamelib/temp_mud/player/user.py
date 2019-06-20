@@ -420,3 +420,9 @@ class User(UserData, BasePlayer, Actor):
     def has_shield(self):
         shields = Shield113(), Shield114(), Shield89()
         return any(item.is_worn_by(self) for item in shields)
+
+    # New1
+    def teleport(self, location):
+        self.send_global("\001s{name}\001{name} has left.\n\001".format(name=self.name))
+        self.send_global("\001s{name}\001{name} has arrived.\n\001".format(name=self.name))
+        self.location = location
