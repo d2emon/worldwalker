@@ -78,54 +78,6 @@ def on_flee_event():
 
 
 """
-PLAYER pinit[48]=
-    { 
-    };
- 
- 
- 
- wearcom()
-    {
-    long a,b;
-    b=ohereandget(&a);
-    if(b== -1) return(-1);
-    if(!a.is_carried_by(user))
-       {
-       bprintf("You are not carrying this\n");
-       return;
-       }
-    if(iswornby(a,user))
-       {
-       bprintf("You are wearing this\n");
-       return;
-       }
-    if(((iswornby(89,user))||(iswornby(113,user))||(iswornby(114,user)))&&
-         ((a==89)||(a==113)||(a==114)))
-         {
-         	bprintf("You can't use TWO shields at once...\n");
-         	return;
-        }
-    if(!canwear(a))
-       {
-       bprintf("Is this a new fashion ?\n");
-       return;
-       }
-    setcarrf(a,2);
-    bprintf("OK\n");
-    }
- 
- removecom()
-    {
-    long a,b;
-    b=ohereandget(&a);
-    if(b== -1) return;
-    if(!iswornby(a,user))
-       {
-       bprintf("You are not wearing this\n");
-       }
-    setcarrf(a,1);
-    }
- 
  setcarrf(o,n)
     {
     extern long objinfo[];

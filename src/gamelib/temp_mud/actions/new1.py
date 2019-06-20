@@ -1,6 +1,26 @@
 from .action import Action, Spell
 
 
+class Wear(Action):
+    # 100
+    commands = "wear",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = parser.get_item()
+        return parser.user.wear(item)
+
+
+class Remove(Action):
+    # 101
+    commands = "remove",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = parser.get_item()
+        return parser.user.remove_clothes(item)
+
+
 class Put(Action):
     # 102
     commands = "put",
@@ -291,28 +311,6 @@ class Cuddle(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.cuddle(parser.get_target())
-
-
-def wearcom(parser):
-    item = parser.get_item()
-    if not iscarrby(item.item_id, Tk.mynum):
-        raise CommandError("You are not carrying this\n")
-    if item.is_worn_by(Tk.mynum):
-        raise CommandError("You are wearing this\n")
-    if (Item(89).is_worn_by(Tk.mynum) or Item(113).is_worn_by(Tk.mynum) or Item(114).is_worn_by(Tk.mynum)) \
-            and (item.item_id == 89 or item.item_id == 113 or item.item_id == 114):
-        raise CommandError("You can't use TWO shields at once...\n")
-    if not item.can_wear:
-        raise CommandError("Is this a new fashion ?\n")
-    item.carry_flag = 2
-    yield "OK\n"
-
-
-def removecom(parser):
-    item = parser.get_item()
-    if item.is_worn_by(Tk.mynum):
-        raise CommandError("You are not wearing this\n")
-    item.carry_flag = 1
 
 
 def deafcom():

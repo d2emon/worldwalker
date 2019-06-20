@@ -124,12 +124,8 @@ case 65:
           break;
 
 case 100:
-          wearcom();
-          break;
 
 case 101:
-          removecom();
-          break;
 case 102:
 case 103:
 case 104:

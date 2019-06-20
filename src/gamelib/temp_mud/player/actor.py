@@ -829,12 +829,24 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     # 100
-    def wear(self):
-        raise NotImplementedError()
+    def wear(self, item):
+        if not item.is_carried_by(self):
+            raise CommandError("You are not carrying this\n")
+        if item.is_worn_by(self):
+            raise CommandError("You are wearing this\n")
+
+        item.on_wear(self)
+        if not item.can_wear:
+            raise CommandError("Is this a new fashion ?\n")
+
+        item.carry_flag = 2
+        yield "OK\n"
 
     # 101 - 110
-    def remove_clothes(self):
-        raise NotImplementedError()
+    def remove_clothes(self, item):
+        if item.is_worn_by(self):
+            raise CommandError("You are not wearing this\n")
+        item.carry_flag = item.CARRIED
 
     def put(self, item, container):
         # New1

@@ -1,6 +1,7 @@
 from .action import ActionList
-from .new1 import Put, Wave, Open, Close, Lock, Unlock, Force, Light, Extinguish, Push, Cripple, Cure, Dumb, Change, \
-    Missile, Shock, Fireball, Blow, Sigh, Kiss, Hug, Slap, Tickle, Scream, Bounce, Stare, Grope, Squeeze, Cuddle
+from .new1 import Wear, Remove, Put, Wave, Open, Close, Lock, Unlock, Force, Light, Extinguish, Push, Cripple, Cure, \
+    Dumb, Change, Missile, Shock, Fireball, Blow, Sigh, Kiss, Hug, Slap, Tickle, Scream, Bounce, Stare, Grope, \
+    Squeeze, Cuddle
 from .objsys import Take, Drop, Inventory, Who, Users
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Look, Reset, Lightning, Eat, Play, \
     Shout, Say, Tell, Score, Exorcise, Give, Steal, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, Converse, \
@@ -78,9 +79,9 @@ class VerbsList(ActionList):
 
             # ? 67-99
 
-            # 100
+            Wear,
 
-            # 101
+            Remove,
             Put,
             Wave,
             Blizzard,

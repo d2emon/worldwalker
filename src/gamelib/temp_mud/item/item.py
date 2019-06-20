@@ -457,6 +457,7 @@ class Item:
     # Support
     def create(self):
         self.__clear_bit(0)
+        return self
 
     def __set_bit(self, bit_id):
         self.__data[2][bit_id] = True
@@ -523,6 +524,9 @@ class Item:
         if self.__test_bit(12):
             self.state = 0
 
+    def on_wear(self, actor):
+        pass
+
 
 class Door(Item):
     def __init__(self, door_id):
@@ -546,6 +550,13 @@ class Door(Item):
             return None
         else:
             raise CommandError("The door is not open\n")
+
+
+class Shield(Item):
+    def on_wear(self, actor):
+        shields = [Shield89, Shield113, Shield114]
+        if any(shield.is_worn_by(actor) for shield in shields):
+            raise CommandError("You can't use TWO shields at once...\n")
 
 
 class Umbrella(Item):
@@ -717,7 +728,7 @@ class Item75(Item):
         yield "very refreshing\n"
 
 
-class Shield89(Item):
+class Shield89(Shield):
     def __init__(self):
         super().__init__(89)
 
@@ -755,18 +766,12 @@ class Shields(Item):
         if container is None:
             return self
 
-        if Shield113().is_destroyed:
-            return Shield113().on_take(actor, container)
-        elif Shield114().is_destroyed:
-            return Shield114().on_take(actor, container)
-        else:
+        shields = [Shield113(), Shield114()]
+        shield = next((shield.is_destroyed for shield in shields), None)
+        if shield is None:
             raise CommandError("The shields are all to firmly secured to the walls\n")
 
-
-class Shield(Item):
-    def on_take(self, actor, container):
-        self.__clear_bit(0)
-        return self
+        return shield.create()
 
 
 class Shield113(Shield):
