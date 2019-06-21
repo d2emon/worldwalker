@@ -6,44 +6,6 @@ def random_percent():
 
 
 """
- goloccom()
-    {
-    extern char globme[];
-    char n1[128];
-    char bf[128];
-    extern char mout_ms[],min_ms[];
-    extern char wordbuf[];
-    long a;
-    FILE *b;
-    if(not user.is_wizard)
-       {
-       bprintf("huh ?\n");
-       return;
-       }
-    if(brkword()== -1)
-       {
-       bprintf("Go where ?\n");
-       return;
-       }
-    strcpy(n1,wordbuf);
-    if(brkword()== -1) strcpy(wordbuf,"");
-    a=Location.find(user, n1, wordbuf);
-    if((a>=0)||((b=openroom(a,"r"))==0))
-       {
-       bprintf("Unknown Room\n");
-       return;
-       }
-    fclose(b);
-    sprintf(bf,"\001s%%s\001%%s %s\n\001",mout_ms);
-    user.silly(bf);
-    user.location_id = a
-    sprintf(bf,"\001s%%s\001%%s %s\n\001",min_ms);    
-    user.silly(bf);
-    }
-
-
-
-
  wizcom()
     {
     extern char globme[],wordbuf[];

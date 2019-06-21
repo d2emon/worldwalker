@@ -905,8 +905,20 @@ class Actor(Sender, Reader):
         # 62-65, 104
         Weather().weather_id = weather_id
 
-    def go_to(self):
-        raise NotImplementedError()
+    @wizard_action("huh ?\n")
+    def go_to_location(self, zone, location_id):
+        location = Location.find(self, zone, location_id)
+        try:
+            if location.location_id >= 0:
+                raise ServiceError()
+            service = location.load("r")
+            service.disconnect()
+        except ServiceError:
+            raise CommandError("Unknown Room\n")
+
+        self.__silly_visual(self.mout_ms)
+        self.location = location
+        self.__silly_visual(self.min_ms)
 
     # 100
     def wear(self, item):

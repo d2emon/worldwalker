@@ -113,9 +113,7 @@ case 62:
 case 63:
 case 64:
 case 65:
-       case 66:
-          goloccom();
-          break;
+case 66:
 
 case 100:
 
