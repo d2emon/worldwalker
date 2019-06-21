@@ -3,15 +3,6 @@
 """
  crashcom(  )
     {
-    if( not user.is_wizard )
-       {
-       bprintf( "Hmmm....\n" ) ;
-       bprintf( "I expect it will sometime\n" ) ;
-       return ;
-       }
-    bprintf( "Bye Bye Cruel World...\n" ) ;
-    user.send_message( "", "", -666, 0, "" ) ;
-    rescom(  ) ;
     }
   @not_dumb_action
  singcom(  )

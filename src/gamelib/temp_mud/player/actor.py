@@ -1089,8 +1089,11 @@ class Actor(Sender, Reader):
                 yield " : {}".format(location.name)
             yield "\n"
 
+    @wizard_action("Hmmm....\nI expect it will sometime\n")
     def crash(self):
-        raise NotImplementedError()
+        yield "Bye Bye Cruel World...\n"
+        self.send_evil()
+        yield from self.reset_world()
 
     def sing(self):
         raise NotImplementedError()

@@ -36,6 +36,14 @@ class Sender:
             None,
         )
 
+    def send_evil(self):
+        self.send_message(
+            None,
+            message_codes.TOO_EVIL,
+            None,
+            None,
+        )
+
     def send_exorcise(self, target):
         self.send_message(
             target,

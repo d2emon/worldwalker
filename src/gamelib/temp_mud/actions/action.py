@@ -161,9 +161,7 @@ case 133:
           break;
 case 135:
 case 136:
-       case 137:
-          crashcom();
-          break;
+case 137:
        case 138:
           singcom();
           break;
