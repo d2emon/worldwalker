@@ -86,11 +86,7 @@ case 25:
           break;
 
 case 31:
-          delcom();
-          break;
-       case 32:
-          passcom();
-          break;
+case 32:
 case 33:
        case 34:
           weapcom();

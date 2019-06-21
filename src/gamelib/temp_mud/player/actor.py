@@ -706,11 +706,15 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     # 31 - 35
-    def delete_player(self):
-        raise NotImplementedError()
+    @wizard_action("What ?\n")
+    def delete_player(self, target):
+        # Magic
+        yield "Selection from main menu only\n"
+        yield "failed\n"
 
     def password(self):
-        raise NotImplementedError()
+        # Magic
+        yield "To change your password select option 2 from the main menu\n"
 
     @wizard_action("You can only summon people\n")
     def summon_item(self, item):
@@ -1368,7 +1372,7 @@ class Actor(Sender, Reader):
     @god_action("I don't know that verb\n")
     def debug(self):
         # Parse
-        return self.debug2()
+        yield "No debugger available\n"
 
     def jump(self):
         raise NotImplementedError()

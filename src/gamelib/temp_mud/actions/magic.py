@@ -1,6 +1,24 @@
 from .action import Action
 
 
+class DeletePlayer(Action):
+    # 31
+    commands = "delete",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.player.delete_player(parser.require_next("Who ?\n"))
+
+
+class ChangePassword(Action):
+    # 32
+    commands = "pass", "password",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.player.change_password()
+
+
 class Summon(Action):
     # 33
     commands = "summon",

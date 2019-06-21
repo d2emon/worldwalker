@@ -6,28 +6,6 @@ def random_percent():
 
 
 """
- delcom()
-    {
-    extern char wordbuf[];
-    if(not user.is_wizard)
-       {
-       bprintf("What ?\n");
-       return;
-       }
-    if(brkword()== -1)
-       {
-       bprintf("Who ?\n");
-       return;
-       }
-    if(delu2(wordbuf)== -1)bprintf("failed\n");
-    }
-
- passcom()
-    {
-    extern char globme[];
-    chpwd(globme);
-    }
-
  goloccom()
     {
     extern char globme[];
