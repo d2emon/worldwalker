@@ -366,6 +366,17 @@ class Actor(Sender, Reader):
         self.check_kicked()
         yield from self.read_messages()
 
+    def get_dragon(self):
+        # Mobile
+        if self.is_wizard:
+            return False
+        dragon = Player.find("dragon")
+        if dragon is None:
+            return False
+        if dragon.location.location_id == self.location.location_id:
+            return False
+        return True
+
     def list_items(self):
         return Item.list_items_at(self, Item.CARRIED, self.debug, self.is_wizard)
 
@@ -446,7 +457,7 @@ class Actor(Sender, Reader):
         if item.flannel == 1:
             raise CommandError("You can't take that!\n")
 
-        if self.dragget():
+        if self.get_dragon():
             return
 
         if self.overweight:

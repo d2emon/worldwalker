@@ -144,7 +144,7 @@ class Item(WorldItem):
             raise CommandError("You can't do that\n")
         if item.flannel:
             raise CommandError("You can't take that !\n")
-        if dragget():
+        if actor.get_dragon():
             return
         item.on_put(actor, self)
 

@@ -107,6 +107,10 @@ class User(UserData, BasePlayer, Actor):
     def helping(self):
         raise NotImplementedError()
 
+    @helping.setter
+    def helping(self, value):
+        raise NotImplementedError()
+
     # Other properties
     @property
     def is_mobile(self):
@@ -469,10 +473,37 @@ class User(UserData, BasePlayer, Actor):
                 Player.find("wraith"),
             )
         enemies = (enemy for enemy in enemies if enemy is not None)  # No such being
-        map(lambda enemy: enemy.check_fight(self),  enemies)
+        yield from map(lambda enemy: enemy.check_fight(self),  enemies)
 
         items = (item for item in ITEMS if item.is_carried_by(self))
-        map(lambda item: item.on_look(self),  items)
+        yield from map(lambda item: item.on_look(self),  items)
 
         if self.helping is not None:
-            self.check_help()
+            yield from self.check_help()
+
+    def drop_pepper(self):
+        self.send_global("You start sneezing ATISCCHHOOOOOO!!!!\n")
+        if not Player32.exists or Player32.location.location_id != self.location.location_id:
+            return
+
+        # Ok dragon and pepper time
+        if Item89.is_worn_by(self):
+            # Fried dragon
+            Player32.remove()  # No dragon
+            self.score += 100
+            return self.update()
+
+        # Whoops !
+        yield "The dragon sneezes forth a massive ball of flame.....\n"
+        yield "Unfortunately you seem to have been fried\n"
+        raise LooseError("Whoops.....   Frying tonight")
+
+    def check_help(self):
+        helping = self.helping
+        if not self.__in_setup:
+            return
+        if helping.exists and helping.location.location_id == self.location.location_id:
+            return
+
+        yield "You can no longer help \001c{}\001\n".format(helping.name)
+        self.helping = None
