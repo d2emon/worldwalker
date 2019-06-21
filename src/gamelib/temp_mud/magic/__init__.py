@@ -1,111 +1,11 @@
-def randperc(*args):
-    raise NotImplementedError()
+import random
+
+
+def random_percent():
+    return random.randrange(100)
 
 
 """
-#include <stdio.h>
-#include "files.h"
-
-extern char globme[];
-extern char wordbuf[];
-extern FILE *openroom();
-
-randperc()
-{
-    long x;
-    time(&x);
-    srand(x);
-    x=rand();
-    return(x%100);
-}
-
-sumcom()
-    {
-    long a,b;
-    extern char wordbuf[];
-    extern char globme[];
-    char seg[128];
-    char mes[128];
-    char ms[128];
-    long c,d,x;
-    if(brkword()== -1)
-       {
-       bprintf("Summon who ?\n");
-       return;
-       }
-    a = Item.find(
-        wordbuf,
-        available=True,
-        mode_0=True,
-        destroyed=parser.user.is_wizard,
-    )
-    if(a!= -1) goto sumob;
-    a=parser.user.find(wordbuf);
-    if(a== -1)
-       {
-       bprintf("I dont know who that is\n");
-       return;
-       }
-    if(user.strength<10)
-       {
-       bprintf("You are too weak\n");
-       return;
-       }
-    if(not user.is_wizard) user.strength -= 2;
-    c=user.level*2;
-    if(user.is_wizard) c=101;
-if(Item(111).is_carried_by(user)) c+=user.level;
-if(Item(121).is_carried_by(user)) c+=user.level;
-if(Item(163).is_carried_by(user)) c+=user.level;
-    d=randperc();
-    if(user.is_wizard) goto willwork;
-    if((Item(90).is_worn_by(a))||(c<d))
-       {
-       bprintf("The spell fails....\n");
-       return;
-       }
-    if((a==parser.user.find("wraith"))||((Item(32).is_carried_by(a))||(Item(159).is_carried_by(a))||Item(174).is_carried_by(a)))
-       {
-       bprintf("Something stops your summoning from succeeding\n");
-       return;
-       }
-    if(a==user)
-       {
-       bprintf("Seems a waste of effort to me....\n");
-       return;
-       }
-    if((user.location_id>=-1082)&&(user.location_id<=-1076))
-       {
-       bprintf("Something about this place makes you fumble the magic\n");
-       return;
-       }
-willwork:bprintf("You cast the summoning......\n");
-    if(a<16)
-       {
-       user.send_message(Player(a).name,globme,-10020,user.location_id,"");
-       return;
-       }
-    if((a==17)||(a==23)) return;
-    a.dump_items()
-    sprintf(seg,"\001s%s\001%s has arrived\n\001",Player(a).name,Player(a).name);
-    user.send_message("","",-10000,user.location_id,seg);
-    Player(a).location = user.location_id;
-    return;
-    sumob:;
-    if(not user.is_wizard)
-       {
-       bprintf("You can only summon people\n");
-       return;
-       }
-    x=Item(a).location;
-    if(Item(a).carry_flag>0) x=Player(x).location;
-    sprintf(ms,"\001p%s\001 has summoned the %s\n",globme,Item(a).name);
-    user.send_message(globme,globme,-10000,x,ms);
-    bprintf("The %s flies into your hand ,was ",Item(a).name);
-    desrm(Item(a).location, Item(a).carry_flag);
-    Item(a).set_location(user,1);
-    }
-
  delcom()
     {
     extern char wordbuf[];

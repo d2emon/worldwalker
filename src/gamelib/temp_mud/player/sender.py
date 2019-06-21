@@ -104,6 +104,14 @@ class Sender:
             message,
         )
 
+    def send_summon(self, target):
+        self.send_message(
+            target,
+            message_codes.DEAF,
+            self.location,
+            None,
+        )
+
     def send_wizard(self, message):
         self.send_message(
             self,

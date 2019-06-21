@@ -117,6 +117,10 @@ class Location:
 
     # Unknown
     @property
+    def anti_summon(self):
+        return -1076 >= self.location_id >= -1082
+
+    @property
     def __items(self):
         return [item for item in ITEMS if item.is_in_location(self)]
 

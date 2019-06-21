@@ -91,9 +91,7 @@ case 31:
        case 32:
           passcom();
           break;
-       case 33:
-          sumcom();
-          break;
+case 33:
        case 34:
           weapcom();
           break;

@@ -1,6 +1,7 @@
 from ..errors import CommandError, CrapupError, LooseError, ServiceError
 from ..item.item import Item, ITEMS
 from ..location import Location
+from ..magic import random_percent
 from ..message import message_codes
 from ..parser import Parser
 from ..syslog import syslog
@@ -19,10 +20,6 @@ CREDITS = None
 
 
 def execl(*args):
-    raise NotImplementedError()
-
-
-def randperc():
     raise NotImplementedError()
 
 
@@ -684,7 +681,7 @@ class Actor(Sender, Reader):
         if self.overweight:
             raise CommandError("You can't carry any more\n")
 
-        roll = randperc()
+        roll = random_percent()
         chance = (10 + self.level - target.level) * 5
         if roll >= chance:
             raise CommandError("Your attempt fails\n")
@@ -715,8 +712,53 @@ class Actor(Sender, Reader):
     def password(self):
         raise NotImplementedError()
 
-    def summon(self):
-        raise NotImplementedError()
+    @wizard_action("You can only summon people\n")
+    def summon_item(self, item):
+        # Magic
+        self.send_global("\001p{}\001 has summoned the {}\n".format(self.name, item.name))
+        yield "The {} flies into your hand ,was ".format(item.name)
+        desrm(item.location, item.carry_flag)
+        item.set_location(self, item.CARRIED)
+
+    def summon_player(self, target):
+        # Magic
+        if self.strength < 10:
+            raise CommandError("You are too weak\n")
+        if not self.is_wizard:
+            self.strength -= 2
+
+        if self.is_wizard:
+            chance = 101
+        else:
+            chance = self.level * 2
+
+        if Item111.is_carried_by(self):
+            chance += self.level
+        if Item121.is_carried_by(self):
+            chance += self.level
+        if Item163.is_carried_by(self):
+            chance += self.level
+
+        roll = random_percent()
+        if not self.is_wizard:
+            if Item90.is_worn_by(target) or chance < roll:
+                raise CommandError("The spell fails....\n")
+            items = (MagicSword, Item159, Item174)
+            if target.player_id == self.find("wraith") or any(item.is_worn_by(target) for item in items):
+                raise CommandError("Something stops your summoning from succeeding\n")
+            if target.player_id == self.player_id:
+                raise CommandError("Seems a waste of effort to me....\n")
+            if self.location.anti_summon:
+                raise CommandError("Something about this place makes you fumble the magic\n")
+
+        yield "You cast the summoning......\n"
+        if not target.is_mobile:
+            return self.send_summon(target)
+        if target.player_id in (17, 23):
+            return
+        target.dump_items()
+        self.send_global("\001s{name}\001{name} has arrived\n\001".format(name=target.name))
+        target.location = self.location
 
     def wield(self):
         raise NotImplementedError()
@@ -780,7 +822,7 @@ class Actor(Sender, Reader):
     @wizard_action("You are just not up to this yet\n")
     def pose(self):
         # Weather
-        pose_id = randperc() % 5
+        pose_id = random_percent() % 5
 
         yield "POSE :{}\n".format(pose_id)
 
