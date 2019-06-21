@@ -188,6 +188,26 @@ class Mobile(BasePlayer):
     def check_kicked(self):
         raise NotImplementedError()
 
+    # Mobile
+    def check_fight(self, enemy):
+        self.move()  # Maybe move it
+
+        if not self.exists:
+            return
+        if enemy.location != self.location:
+            return
+        if enemy.visible:
+            # I'm invisible
+            return
+        if randperc() > 40:
+            return
+        if self.player_id == Player.find("yeti").player_id and any(item.is_light for item in enemy.available_items):
+            return
+        self.attack(enemy)
+
+    def move(self):
+        pass
+
 
 class Golem(Mobile):
     def __init__(self):

@@ -189,9 +189,6 @@ class User(UserData, BasePlayer, Actor):
     def chksnp(self, *args):
         raise NotImplementedError()
 
-    def on_look(self, *args):
-        raise NotImplementedError()
-
     # ObjSys
     def item_is_here(self, item):
         if not self.is_wizard and item.is_destroyed:
@@ -426,3 +423,55 @@ class User(UserData, BasePlayer, Actor):
         self.send_global("\001s{name}\001{name} has left.\n\001".format(name=self.name))
         self.send_global("\001s{name}\001{name} has arrived.\n\001".format(name=self.name))
         self.location = location
+
+    # Mobile
+    def on_timing(self):
+        if randperc() > 80:
+            self.on_look()
+
+    def on_look(self):
+        enemies = (
+            # Player.find("wraith"),
+            Player.find("shazareth"),
+            Player.find("bomber"),
+            Player.find("owin"),
+            Player.find("glowin"),
+
+            Player.find("smythe"),
+            Player.find("dio"),
+            # ["The Dragon", -326, 500, 0, -2],
+            # Player.find("zombie"),
+            # ["The Golem", -1056, 90, 0, -2],
+            # ["The Haggis", -341, 50, 0, -2],
+            # ["The Piper", -630, 50, 0, -2],
+            Player.find("rat"),
+            Player.find("ghoul"),
+            # ["The Figure", -130, 90, 0, -2],
+
+            Player.find("ogre"),
+            Player.find("riatha"),
+            Player.find("yeti"),
+            Player.find("guardian"),
+            # ["Prave", -201, 60, 0, -400],
+            # Player.find("wraith"),
+            # ["Bath", -1, 70, 0, -401],
+            # ["Ronnie", -809, 40, 0, -402],
+            # ["The Mary", -1, 50, 0, -403],
+            # ["The Cookie", -126, 70, 0, -404],
+
+            # ["MSDOS", -1, 50, 0, -405],
+            # ["The Devil", -1, 70, 0, -2],
+            # ["The Copper", -1, 40, 0, -2],
+        )
+        if not Item45().is_carried_by(self):
+            enemies = enemies + (
+                Player.find("zombie"),
+                Player.find("wraith"),
+            )
+        enemies = (enemy for enemy in enemies if enemy is not None)  # No such being
+        map(lambda enemy: enemy.check_fight(self),  enemies)
+
+        if not MagicSword().is_carried_by(self):
+            MagicSword().do_rune()
+        if self.helping is not None:
+            self.check_help()

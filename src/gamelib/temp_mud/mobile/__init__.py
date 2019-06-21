@@ -1,57 +1,6 @@
-def dragget(*args):
-    raise NotImplementedError()
 
 
 """
-on_timing()
-{
-	if(randperc()>80) onlook();
-}
-
-onlook(  )
-    {
-long a ;
-chkfight( Player.find( "shazareth" ) ) ;
-if( !Item(45).is_carried_by(user) )chkfight( Player.find( "wraith" ) ) ;
-chkfight( Player.find( "bomber" ) ) ;
-chkfight( Player.find( "owin" ) ) ;
-chkfight( Player.find( "glowin" ) ) ;
-chkfight( Player.find( "smythe" ) ) ;
-chkfight( Player.find( "dio" ) ) ;
-if( !Item(45).is_carried_by(user) ) chkfight( Player.find( "zombie" ) ) ;
-chkfight( Player.find( "rat" ) ) ;
-chkfight( Player.find( "ghoul" ) ) ;
-chkfight( Player.find( "ogre" ) ) ;
-chkfight( Player.find( "riatha" ) ) ;
-chkfight( Player.find( "yeti" ) ) ;
-chkfight( Player.find( "guardian"));
-if( Item(32).is_carried_by(user) ) dorune(  ) ;
-if(user.helping is not None) helpchkr();
-    }
- 
- chkfight( x )
-    {
-    if( x<0 ) return ; /* No such being */
-    consid_move( x); /* Maybe move it */
-    if( not Player( x ).exists ) return ;
-    if( Player( x ).location!=user.location_id ) return ;
-    if( user.visible ) return ; /* Im invis */
-    if(randperc()>40) return;
-if( ( x==Player.find( "yeti" ) )&&( user.has_any([
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 1, 0, 0,
-])  ) ) )
-{
-return ;
-}
-    x.attack(user)
-    }
- 
- consid_move(x)
- {;}
- 
  crashcom(  )
     {
     if( not user.is_wizard )
