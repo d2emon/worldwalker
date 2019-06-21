@@ -1114,8 +1114,11 @@ class Actor(Sender, Reader):
         self.send_social(target, "gropes you")
         yield "<Well what sort of noise do you want here ?>\n"
 
-    def spray(self):
-        raise NotImplementedError()
+    def spray(self, item, target):
+        # Mobile
+        if item is None:
+            raise CommandError("With what ?\n")
+        return item.spray(self, target)
 
     # 141 - 150
     def groan(self):

@@ -1,46 +1,4 @@
-
-
 """
- spraycom(  )
-    {
-    long a, b ;
-    long c ;
-    char bk[ 128 ] ;
-    extern long wordbuf[  ] ;
-    a = parser.get_target()
-    if( a== -1 ) return ;
-    if( brkword(  )== -1 )
-       {
-       bprintf( "With what ?\n" ) ;
-       return ;
-       }
-    if( !strcmp( wordbuf, "with" ) )
-       {
-       if( brkword(  )== -1 )
-          {
-          bprintf( "With what ?\n" ) ;
-          return ;
-          }
-       }
-    c = Item.find(
-	    wordbuf,
-	    available=True,
-	    destroyed=parser.user.is_wizard,
-	)
-    if( c== -1 )
-       {
-       bprintf( "With what ?\n" ) ;
-       return ;
-       }
-    switch( c )
-       {
-       default:
-          bprintf( "You can't do that\n" ) ;
-          break ;
-          }
-    return ;
-    }
- 
  /* More new stuff */
  
  dircom(  )

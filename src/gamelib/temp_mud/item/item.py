@@ -186,6 +186,9 @@ class Item(WorldItem):
         else:
             yield "Nothing happens\n"
 
+    def spray(self, actor, target):
+        raise CommandError("You can't do that\n")
+
     # Events
     def on_dig(self, actor):
         return None

@@ -164,9 +164,7 @@ case 136:
 case 137:
 case 138:
 case 139:
-       case 140:
-          spraycom();
-          break;
+case 140:
 
 case 141:
 case 142:
