@@ -162,9 +162,7 @@ case 133:
 case 135:
 case 136:
 case 137:
-       case 138:
-          singcom();
-          break;
+case 138:
 case 139:
        case 140:
           spraycom();

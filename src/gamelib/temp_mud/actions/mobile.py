@@ -8,3 +8,12 @@ class Crash(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.crash()
+
+
+class Sing(Action):
+    # 138
+    commands = "crash",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.sing()

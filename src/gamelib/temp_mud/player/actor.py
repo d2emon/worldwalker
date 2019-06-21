@@ -1091,12 +1091,16 @@ class Actor(Sender, Reader):
 
     @wizard_action("Hmmm....\nI expect it will sometime\n")
     def crash(self):
+        # Mobile
         yield "Bye Bye Cruel World...\n"
         self.send_evil()
         yield from self.reset_world()
 
+    @not_dumb_action
     def sing(self):
-        raise NotImplementedError()
+        # Mobile
+        self.__silly_sound("sings in Gaelic")
+        yield "You sing\n"
 
     @not_force_action("You can't be forced to do that\n")
     def grope(self, target):
