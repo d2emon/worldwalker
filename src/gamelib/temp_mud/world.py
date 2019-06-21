@@ -74,9 +74,18 @@ class World:
 
     @classmethod
     def reset(cls):
+        user.broadcast("Reset in progress....\nReset Completed....\n")
         cls.objects = cls.__reset_objects
         cls.__reset_time = datetime.now()
         cls.resetplayers()
+
+    @classmethod
+    def system_reset(cls):
+        if scale() != 2:
+            raise CommandError("There are other people on.... So it wont work!\n")
+        if cls.__reset_time and datetime.now() - cls.__reset_time < 3600:
+            raise CommandError("Sorry at least an hour must pass between resets\n")
+        cls.reset()
 
     # Parse
     @classmethod

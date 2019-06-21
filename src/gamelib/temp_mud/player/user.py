@@ -471,7 +471,8 @@ class User(UserData, BasePlayer, Actor):
         enemies = (enemy for enemy in enemies if enemy is not None)  # No such being
         map(lambda enemy: enemy.check_fight(self),  enemies)
 
-        if not MagicSword().is_carried_by(self):
-            MagicSword().do_rune()
+        items = (item for item in ITEMS if item.is_carried_by(self))
+        map(lambda item: item.on_look(self),  items)
+
         if self.helping is not None:
             self.check_help()

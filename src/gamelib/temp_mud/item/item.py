@@ -217,6 +217,9 @@ class Item(WorldItem):
     def on_wear(self, actor):
         pass
 
+    def on_look(self, actor):
+        pass
+
 
 class Door(Item):
     def __init__(self, door_id):
@@ -400,6 +403,26 @@ class MagicSword(Item):
 
     def on_put(self, actor, container):
         raise CommandError("You can't let go of it!\n")
+
+    def on_look(self, actor):
+        if actor.Blood.in_fight:
+            return
+        players = (Player(player_id) for player_id in range(32) if player_id != actor.player_id)
+        players = (player for player in players if player.exists)
+        players = (player for player in players if not player.is_wizard)
+        players = (player for player in players if player.location.location_id == actor.location.location_id)
+        player = next(players, None)
+        if player is None:
+            return
+
+        if randperc() < 9 * actor.level:
+            return
+        if Player.find(player.name) is None:
+            return
+
+        yield "The runesword twists in your hands lashing out savagely\n"
+
+        actor.hit_player(player, self)
 
 
 class Bell(Item):
