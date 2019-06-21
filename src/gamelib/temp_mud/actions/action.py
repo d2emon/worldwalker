@@ -168,9 +168,7 @@ case 140:
 
 case 141:
 case 142:
-       case 143:
-          dircom();
-          break;
+case 143:
 case 144:
        case 145:
           wizlist();

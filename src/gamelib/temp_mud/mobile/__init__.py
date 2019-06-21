@@ -1,33 +1,4 @@
 """
- /* More new stuff */
- 
- dircom(  )
-    {
-    long a ;
-    char b[ 40 ] ;
-    char d[ 40 ] ;
-    long c ;
-    extern long numobs ;
-    if( not user.is_wizard )
-       {
-       bprintf( "That's a wiz command\n" ) ;
-       return ;
-       }
-    a=0 ;
-    while( a<numobs )
-       {
-       c=Zone.find( Item( a ).location, b ) ;
-       sprintf( d, "%s%d", b, c ) ;
-       if( Item( a ).carry_flag ) strcpy( d, "CARRIED" ) ;
-       if( Item( a ).carry_flag==3 ) strcpy( d, "IN ITEM" ) ;
-       bprintf( "%-13s%-13s", Item( a ).name, d ) ;
-       if( a%3==2 )bprintf( "\n" ) ;
-       if( a%18==17 ) pbfr(  ) ;
-       a++ ;
-       }
-    bprintf( "\n" ) ;
-    }
- 
  sys_reset(  )
     {
     char xx[ 128 ] ;

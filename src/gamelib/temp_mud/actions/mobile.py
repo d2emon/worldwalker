@@ -35,3 +35,12 @@ class Spray(Action):
             destroyed=parser.user.is_wizard,
         )
         return parser.user.spray(item, target)
+
+
+class Directory(Action):
+    # 143
+    commands = "directory",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.directory()

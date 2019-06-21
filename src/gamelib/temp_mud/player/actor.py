@@ -1131,8 +1131,24 @@ class Actor(Sender, Reader):
         self.__silly_sound("starts making moaning noises")
         yield "You start to moan\n"
 
+    @wizard_action("That's a wiz command\n")
     def directory(self):
-        raise NotImplementedError()
+        # Mobile
+        for item in ITEMS:
+            if item.is_carried or item.is_worn:
+                d = "CARRIED"
+            elif item.is_contained:
+                d = "IN ITEM"
+            else:
+                location = item.location
+                zone = Zone.find(location)
+                d = "{}{}".format(zone.name, zone.in_zone(location))
+            yield "{}\t{}".format(item.name, d)
+            if item.item_id % 3 == 2:
+                yield "\n"
+            if item.item_id % 18 == 17:
+                self.show_buffer()
+        yield "\n"
 
     def yawn(self):
         # Weather

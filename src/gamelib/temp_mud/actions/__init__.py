@@ -1,5 +1,5 @@
 from .action import ActionList
-from .mobile import Crash, Sing, Spray
+from .mobile import Crash, Sing, Spray, Directory
 from .new1 import Wear, Remove, Put, Wave, Open, Close, Lock, Unlock, Force, Light, Extinguish, Push, Cripple, Cure, \
     Dumb, Change, Missile, Shock, Fireball, Blow, Sigh, Kiss, Hug, Slap, Tickle, Scream, Bounce, Stare, Grope, \
     Deaf, Squeeze, Cuddle, Blind
@@ -128,7 +128,7 @@ class VerbsList(ActionList):
 
             Groan,
             Moan,
-            # 143
+            Directory,
             Yawn,
             # 145
             # 146
