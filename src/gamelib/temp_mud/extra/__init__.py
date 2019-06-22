@@ -183,7 +183,7 @@ else
              }
           break;
        case 7:
-          Item(7).state = randperc()%3+1
+          Item(7).state = random_percent() % 3 + 1
           switch(Item(7).state)
              {
              case 1:
@@ -372,7 +372,7 @@ wherecom()
  return;
  }
  if(not user.is_wizard) user.strength -= 2;
- rnd=randperc();
+ rnd = random_percent()
  cha=10*user.level;
 if((Item(111).is_carried_by(user))||(Item(121).is_carried_by(user))||(Item(163).is_carried_by(user)))
    cha=100;

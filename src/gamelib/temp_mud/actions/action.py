@@ -337,7 +337,7 @@ class Spell(Action):
 
         if not parser.user.is_wizard:
             parser.user.strength -= 2
-            if randperc() > spell_level * parser.user.level:
+            if random_percent() > spell_level * parser.user.level:
                 yield ("You fumble the magic\n")
                 if not cls.reflect:
                     raise CommandError()

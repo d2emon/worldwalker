@@ -163,7 +163,7 @@ class User(UserData, BasePlayer, Actor):
     # Tk
     @classmethod
     def start_location(cls):
-        return Location(-5 if randperc() > 50 else -183)
+        return Location(-5 if random_percent() > 50 else -183)
 
     # New1
     def get_damage(self, damage):
@@ -320,7 +320,7 @@ class User(UserData, BasePlayer, Actor):
 
         self.__update_fight()
 
-        if Item(18).iswornby(self) or randperc() < 10:
+        if Item(18).iswornby(self) or random_percent() < 10:
             self.strength += 1
             yield from self.update()
 
@@ -430,7 +430,7 @@ class User(UserData, BasePlayer, Actor):
 
     # Mobile
     def on_timing(self):
-        if randperc() > 80:
+        if random_percent() > 80:
             self.on_look()
 
     def on_look(self):

@@ -112,7 +112,7 @@ void hitplayer(victim,wpn)
 	}
 	fighting=victim;
 	in_fight=300;
-	res=randperc();
+	res=random_percent();
 	cth=40+3*user.level;
 	if((Item(89).is_worn_by(victim))||Item(113).is_worn_by(victim)||Item(114).is_worn_by(victim))
         cth-=10;
@@ -122,7 +122,7 @@ void hitplayer(victim,wpn)
 	       bprintf("You hit \001p%s\001 ",Player(victim).name);
  	       if(wpn!= -1)bprintf("with the %s",Item(wpn).name);
 	       bprintf("\n");
-	       ddn=randperc()%(dambyitem(wpn));
+	       ddn=random_percent()%(dambyitem(wpn));
 	       x[0]=user;
 	       x[1]=ddn;
 	       x[2]=wpn;

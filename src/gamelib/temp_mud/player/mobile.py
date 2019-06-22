@@ -96,7 +96,7 @@ class Mobile(BasePlayer):
             return
         if not 0 <= self.player_id <= 47:
             return
-        chance = randperc()
+        chance = random_percent()
         defense = 3 * (15 - enemy.level) + 20
 
         shields = [Item(89), Item(113), Item(114)]
@@ -104,7 +104,7 @@ class Mobile(BasePlayer):
             defense -= 10
 
         if chance < defense:
-            damage = randperc() * self.damof
+            damage = random_percent() * self.damof
         else:
             damage = -1
 
@@ -199,7 +199,7 @@ class Mobile(BasePlayer):
         if enemy.visible:
             # I'm invisible
             return
-        if randperc() > 40:
+        if random_percent() > 40:
             return
         if self.player_id == Player.find("yeti").player_id and any(item.is_light for item in enemy.available_items):
             return

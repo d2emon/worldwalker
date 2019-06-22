@@ -415,7 +415,7 @@ class MagicSword(Item):
         if player is None:
             return
 
-        if randperc() < 9 * actor.level:
+        if random_percent() < 9 * actor.level:
             return
         if Player.find(player.name) is None:
             return

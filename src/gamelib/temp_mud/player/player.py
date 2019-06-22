@@ -135,7 +135,7 @@ class Player(BasePlayer):
 
     @property
     def helpers(self):
-        return (player for player in self.players() if player.is_helping(self))
+        return (player for player in self.players() if not player.is_mobile and player.is_helping(self))
 
     # ObjSys
     @classmethod

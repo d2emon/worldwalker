@@ -51,7 +51,7 @@ class Weather(Item):
         return self
 
     def __next__(self):
-        chance = randperc()
+        chance = random_percent()
         if chance < 50:
             self.weather_id = 1
         elif chance > 90:

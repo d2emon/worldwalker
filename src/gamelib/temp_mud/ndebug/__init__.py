@@ -1,1 +1,0 @@
-MAX_USERS = 16
