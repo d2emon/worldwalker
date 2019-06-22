@@ -1,5 +1,5 @@
 from .action import ActionList
-from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, Wizards
+from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, BecomeInvisible, BecomeVisible, Wizards
 from .mobile import Crash, Sing, Spray, Directory
 from .new1 import Wear, Remove, Put, Wave, Open, Close, Lock, Unlock, Force, Light, Extinguish, Push, Cripple, Cure, \
     Dumb, Change, Missile, Shock, Fireball, Blow, Sigh, Kiss, Hug, Slap, Tickle, Scream, Bounce, Stare, Grope, \
@@ -97,8 +97,8 @@ class VerbsList(ActionList):
             Extinguish,
             # - 112
             # 113 -> 117
-            # - 114
-            # - 115
+            BecomeInvisible,
+            BecomeVisible,
             # - 116
             Push,
             Cripple,

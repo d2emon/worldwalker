@@ -11,6 +11,10 @@ class Sender:
     def name(self):
         raise NotImplementedError()
 
+    @property
+    def visible(self):
+        raise NotImplementedError()
+
     # Tk
     def send_message(self, to_user, code, channel_id, message):
         Message(to_user, self, code, channel_id, message).send(self)
@@ -110,6 +114,17 @@ class Sender:
             message_codes.DEAF,
             self.location,
             None,
+        )
+
+    def send_visible(self):
+        self.send_message(
+            None,
+            message_codes.VISIBLE,
+            None,
+            [
+                self,
+                self.visible,
+            ],
         )
 
     def send_wizard(self, message):

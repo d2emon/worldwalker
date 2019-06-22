@@ -130,6 +130,8 @@ case 110:
 
 case 111:
 case 113:
+case 114:
+case 115:
 case 117: case 113;
 case 118:
 case 119:
@@ -168,12 +170,6 @@ case 144:
           break;
        case 147:
           lightcom();
-          break;
-       case 114:
-          inviscom();
-          break;
-       case 115:
-          viscom();
           break;
 case 148:
        case 149:

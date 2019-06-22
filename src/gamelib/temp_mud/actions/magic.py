@@ -53,6 +53,24 @@ class GoToLocation(Action):
         return parser.user.go_to_location(zone, location_id)
 
 
+class BecomeInvisible(Action):
+    # 114
+    commands = "invisible",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.useer.become_invisible(int(next(parser)))
+
+
+class BecomeVisible(Action):
+    # 115
+    commands = "visible",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.useer.become_visible()
+
+
 class Wizards(Action):
     # 134
     commands = "wiz",

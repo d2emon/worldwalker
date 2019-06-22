@@ -6,56 +6,6 @@ def random_percent():
 
 
 """
- viscom()
-    {
-    long f;
-    extern char globme[];
-    long ar[4];
-    if(not user.is_wizard)
-       {
-       bprintf("You can't just do that sort of thing at will you know.\n");
-       return;
-       }
-    if(!user.visible)
-       {
-       bprintf("You already are visible\n");
-       return;
-       }
-    user.visible = 0
-    ar[0]=user;
-    ar[1]=user.visible
-    user.send_message("","",-9900,0,ar);
-    bprintf("Ok\n");
-    user.silly("\001s%s\001%s suddenely appears in a puff of smoke\n\001");
-    }
-
- inviscom()
-    {
-    extern char globme[];
-    extern char wordbuf[];
-    long f,x;
-    long ar[4];
-    if(not user.is_wizard)
-       {
-       bprintf("You can't just turn invisible like that!\n");
-       return;
-       }
-    x=10;
-    if(user.is_god) x=10000;
-    if((user.level==10033)&&(brkword()!=-1)) x=numarg(wordbuf);
-    if(user.visible==x)
-       {
-       bprintf("You are already invisible\n");
-       return;
-       }
-    user.visible = x
-    ar[0]=user;
-    ar[1]=user.visible
-    user.send_message("","",-9900,0,ar);
-    bprintf("Ok\n");
-    user.silly("\001c%s vanishes!\n\001");
-    }
-
  ressurcom()
     {
     long bf[32];

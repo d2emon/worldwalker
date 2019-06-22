@@ -223,6 +223,14 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
+    def visible(self):
+        raise NotImplementedError()
+
+    @visible.setter
+    def visible(self, value):
+        raise NotImplementedError()
+
+    @property
     def __uid(self):
         raise NotImplementedError()
 
@@ -992,11 +1000,32 @@ class Actor(Sender, Reader):
 
     # 113
 
-    def become_invisible(self):
-        raise NotImplementedError()
+    @wizard_action("You can't just turn invisible like that!\n")
+    def become_invisible(self, value=None):
+        if self.level == 10033 and value is not None:
+            pass
+        elif self.is_god:
+            value = 10000
+        else:
+            value = 10
 
+        if self.visible == value:
+            raise CommandError("You are already invisible\n")
+        self.visible = value
+
+        self.send_visible()
+        yield "Ok\n"
+        self.send_silly("\001c{user.name} vanishes!\n\001")
+
+    @wizard_action("You can't just do that sort of thing at will you know.\n")
     def become_visible(self):
-        raise NotImplementedError()
+        if not self.visible:
+            raise CommandError("You already are visible\n")
+
+        self.visible = 0
+        self.send_visible()
+        yield "Ok\n"
+        self.__silly_visual("suddenely appears in a puff of smoke")
 
     # 116
 
