@@ -1268,8 +1268,16 @@ class Actor(Sender, Reader):
         # New1
         self.send_magic(target, message_codes.DEAF)
 
-    def ressurect(self):
-        raise NotImplementedError()
+    @wizard_action("Huh ?\n")
+    def ressurect(self, item):
+        if item is None:
+            raise CommandError("You can only ressurect objects\n")
+        if not item.is_destroyed:
+            raise CommandError("That already exists\n")
+
+        item.create()
+        item.set_location(self.location, item.IN_LOCATION)
+        self.send_global("The {} suddenly appears\n".format(item.name))
 
     def log(self):
         raise NotImplementedError()

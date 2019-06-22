@@ -172,9 +172,7 @@ case 144:
           lightcom();
           break;
 case 148:
-       case 149:
-          ressurcom();
-          break;
+case 149:
        case 150:
           logcom();
           break;

@@ -59,7 +59,7 @@ class BecomeInvisible(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.useer.become_invisible(int(next(parser)))
+        return parser.user.become_invisible(int(next(parser)))
 
 
 class BecomeVisible(Action):
@@ -68,7 +68,7 @@ class BecomeVisible(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.useer.become_visible()
+        return parser.user.become_visible()
 
 
 class Wizards(Action):
@@ -77,4 +77,19 @@ class Wizards(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.useer.wizards(parser.full())
+        return parser.user.wizards(parser.full())
+
+
+class Ressurect(Action):
+    # 149
+    commands = "resurrect",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = Item.find(
+            parser.require_next("Yes but what ?\n"),
+            available=True,
+            mode_0=True,
+            destroyed=parser.user.is_wizard,
+        )
+        return parser.user.ressurect(item)
