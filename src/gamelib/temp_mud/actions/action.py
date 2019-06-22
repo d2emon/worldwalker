@@ -148,9 +148,7 @@ case 130:
 case 131:
 case 132:
 case 133:
-       case 134:
-          wizcom();
-          break;
+case 134:
 case 135:
 case 136:
 case 137:

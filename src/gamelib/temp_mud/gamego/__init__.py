@@ -122,7 +122,7 @@ sig_occur()
 	interrupt=1;
 	parser.read_messages(*parser.user.read_messages());
 	interrupt=0;
-	on_timing();
+	user.on_time()
           World.save()
 	key_reprint();
 	sig_alon();

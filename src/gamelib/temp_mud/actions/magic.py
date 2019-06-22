@@ -7,7 +7,7 @@ class DeletePlayer(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.player.delete_player(parser.require_next("Who ?\n"))
+        return parser.user.delete_player(parser.require_next("Who ?\n"))
 
 
 class ChangePassword(Action):
@@ -16,7 +16,7 @@ class ChangePassword(Action):
 
     @classmethod
     def action(cls, command, parser):
-        return parser.player.change_password()
+        return parser.user.change_password()
 
 
 class Summon(Action):
@@ -34,12 +34,12 @@ class Summon(Action):
             destroyed=parser.user.is_wizard,
         )
         if item is not None:
-            return parser.player.summon_item(item)
+            return parser.user.summon_item(item)
 
         player = parser.user.find(name)
         if player is None:
             raise CommandError("I dont know who that is\n")
-        return parser.player.summon_player(player)
+        return parser.user.summon_player(player)
 
 
 class GoToLocation(Action):
@@ -50,4 +50,13 @@ class GoToLocation(Action):
     def action(cls, command, parser):
         zone = parser.require_next("Go where ?\n")
         location_id = next(parser)
-        return parser.player.go_to_location(zone, location_id)
+        return parser.user.go_to_location(zone, location_id)
+
+
+class Wizards(Action):
+    # 134
+    commands = "wiz",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.useer.wizards(parser.full())

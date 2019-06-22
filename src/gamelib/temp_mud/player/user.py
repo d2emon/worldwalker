@@ -429,7 +429,7 @@ class User(UserData, BasePlayer, Actor):
         self.location = location
 
     # Mobile
-    def on_timing(self):
+    def on_time(self):
         if random_percent() > 80:
             self.on_look()
 

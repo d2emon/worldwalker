@@ -6,21 +6,6 @@ def random_percent():
 
 
 """
- wizcom()
-    {
-    extern char globme[],wordbuf[];
-    char bf[128];
-    if(not user.is_wizard)
-       {
-       bprintf("Such advanced conversation is beyond you\n");
-       return;
-       }
-    getreinput(wordbuf);
-    sprintf(bf,"\001p%s\001 : %s\n",globme,wordbuf);
-    user.send_message(globme,globme,-10113,user.location_id,bf);
-    user.force_read = True
-    }
-
  viscom()
     {
     long f;

@@ -1129,8 +1129,11 @@ class Actor(Sender, Reader):
         self.__silly_visual("bounces around")
         yield "B O I N G !!!!\n"
 
-    def wiz(self):
-        raise NotImplementedError()
+    @wizard_action("Such advanced conversation is beyond you\n")
+    def wizards(self, message):
+        # Magic
+        self.send_wizard("\001p{}\001 : {}\n".format(self.name, message))
+        self.force_read = True
 
     def stare(self, target):
         # New1
