@@ -29,7 +29,7 @@ if(!strcmp(x,"Phantom")) sprintf(globme,"The %s",x);
 else strcpy(globme,x);
 printf("Hello %s\n",globme);
 syslog("GAME ENTRY: %s[%s]",globme,cuserid(NULL));
-keysetup();
+Keys.on()
 talker(globme);
 }
 
@@ -43,7 +43,7 @@ static char *dashes =
 "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-";
 pbfr();
 pr_due=0;  /* So we dont get a prompt after the exit */
-keysetback();
+Keys.off()
 printf("\n%s\n\n%s\n\n%s\n", dashes, str, dashes);
 exit(0);
 }
@@ -123,8 +123,10 @@ sig_occur()
 	parser.read_messages(*parser.user.read_messages());
 	interrupt=0;
 	user.on_time()
-          World.save()
-	key_reprint();
+
+    World.save()
+    Keys.reprint()
+
 	sig_alon();
 }
 
@@ -145,7 +147,7 @@ sig_oops()
 {
 	sig_aloff();
 	user.loose()
-	keysetback();
+    Keys.off()
 	exit(255);
 }
 

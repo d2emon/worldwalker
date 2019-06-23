@@ -114,8 +114,7 @@ class World:
     def tss(cls, command):
         World.save()
 
-        with cls.__keys():
-            return cls.__system(command)
+        return Keys.system(command)
 
     @classmethod
     def honeyboard(cls):

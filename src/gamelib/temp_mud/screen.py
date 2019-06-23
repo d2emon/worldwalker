@@ -52,9 +52,9 @@ class Screen:
     # Tk
     def __get_input(self):
         # sig_alon()
-        # key_input(self.parser.prompt)[:80]
+        value = Keys.get_command(self.parser.prompt, 80)
         # sig_aloff()
-        return self.__key_buffer
+        return value
 
     def get_command(self):
         self.bottom()
@@ -84,12 +84,10 @@ class Screen:
         self.buffer.add("Sex (M/F) : ")
         self.buffer.show()
 
-        # Keys.setback()
         sex = {
             'm': User.SEX_MALE,
             'f': User.SEX_FEMALE,
-        }.get(input()[:2].lower())
-        # Keys.setup()
+        }.get(Keys.sex())
 
         if sex is None:
             self.buffer.add("M or F")

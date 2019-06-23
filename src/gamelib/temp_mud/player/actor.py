@@ -1352,7 +1352,7 @@ class Actor(Sender, Reader):
 
         self.send_wizard("{} has quit, via BECOME\n".format(self.name))
 
-        # keysetback()
+        Keys.off()
         self.loose()
         World.save()
 
