@@ -52,8 +52,6 @@ class User(UserData, BasePlayer, Actor):
         self.__rdes = 0
         self.zapped = False
 
-        self.__last_interrupt = 0
-
         self.__invisibility_counter = 0
         self.__drunk_counter = 0
         self.__to_update = False
@@ -62,10 +60,7 @@ class User(UserData, BasePlayer, Actor):
         self.has_farted = False
 
         # Unknown
-        self.__interrupt = None
         self.__wpnheld = None
-
-        self.NewUaf = None
 
         # makebfr()
         self.reset_position()
@@ -275,7 +270,7 @@ class User(UserData, BasePlayer, Actor):
 
     # Tk
     def loose(self):
-        # sig_aloff()
+        Signals.active = False
         # No interruptions while you are busy dying
         # ABOUT 2 MINUTES OR SO
         self.__in_setup = False
@@ -300,14 +295,10 @@ class User(UserData, BasePlayer, Actor):
         self.is_forced = False
 
     # Parse
-    def on_messages(self):
-        self.save_position()
+    def on_messages(self, **kwargs):
+        interrupt = kwargs.get('interrupt', False)
 
-        time = datetime.now()
-        if (time - self.__last_interrupt).total_seconds() > 2:
-            self.__interrupt = True
-        if self.__interrupt:
-            self.__last_interrupt = time
+        self.save_position()
 
         self.__update_invisibility()
 
@@ -318,7 +309,7 @@ class User(UserData, BasePlayer, Actor):
         if self.__is_summoned:
             self.__summoned(self.summoned_location)
 
-        self.__update_fight()
+        self.__update_fight(interrupt)
 
         if Item(18).iswornby(self) or random_percent() < 10:
             self.strength += 1
@@ -334,7 +325,6 @@ class User(UserData, BasePlayer, Actor):
         self.__is_summoned = False
         self.__rdes = 0
         self.__vdes = 0
-        self.__interrupt = False
 
     def save_position(self):
         if abs(self.position - self.__position_saved) < 10:
@@ -400,7 +390,7 @@ class User(UserData, BasePlayer, Actor):
         if self.__invisibility_counter == 1:
             self.visible = 0
 
-    def __update_fight(self):
+    def __update_fight(self, interrupt):
         if not self.Blood.in_fight:
             return
         enemy = self.Blood.get_enemy()
@@ -408,9 +398,13 @@ class User(UserData, BasePlayer, Actor):
             self.Blood.stop_fight()
         if not enemy.exists:
             self.Blood.stop_fight()
-        if self.in_fight and self.__interrupt:
-            self.Blood.in_fight = 0
-            enemy.hitplayer(self.__wpnheld)
+        if not self.Blood.in_fight:
+            return
+        if not interrupt:
+            return
+
+        self.Blood.in_fight = 0
+        enemy.hitplayer(self.__wpnheld)
 
     def broadcast(self, message):
         self.force_read = True

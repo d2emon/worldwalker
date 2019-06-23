@@ -270,7 +270,7 @@ void  bloodrcv(array,isme)
           user.send_message(globme,globme,-10000,user.location_id,ms);
           sprintf(ms,"[ \001p%s\001 has been slain by \001p%s\001 ]\n",globme,Player(array[0]).name);
           user.send_message(globme,globme,-10113,user.location_id,ms);
-          crapup("Oh dear... you seem to be slightly dead\n");
+          raise CrapupError("Oh dear... you seem to be slightly dead\n")
           }
        me_cal=1; /* Queue an update when ready */
        }

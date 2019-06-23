@@ -30,7 +30,7 @@ class Reader:
         except ServiceError:
             raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
 
-    def read_messages(self, unique=False, reset_after_read=False):
+    def read_messages(self, unique=False, reset_after_read=False, **kwargs):
         if unique and self.force_read:
             return
 
@@ -38,7 +38,7 @@ class Reader:
             yield from self.before_message(message)
             yield from handle(self, message)
 
-        yield from self.on_messages()
+        yield from self.on_messages(**kwargs)
 
         if reset_after_read:
             self.reset_position()
@@ -48,5 +48,5 @@ class Reader:
             self.force_read = False
 
     # Events
-    def on_messages(self):
+    def on_messages(self, **kwargs):
         pass

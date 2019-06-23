@@ -1,5 +1,7 @@
+from datetime import datetime
 from .buffer import Buffer
 from .errors import CrapupError, ServiceError
+from .keys import Keys
 from .parser import Parser
 from .player.user import User
 from .world import World
@@ -7,7 +9,13 @@ from .world import World
 
 class Screen:
     def __init__(self, username, tty=0):
+        # Signals
+        self.__active = False
+        self.__last_interrupt = None
         self.__program_name = None
+
+        Keys.on()
+
         self.tty = tty
 
         self.__key_buffer = ""
@@ -31,12 +39,26 @@ class Screen:
         self.user.in_setup = True
 
     @property
+    def interrupt(self):
+        time = datetime.now()
+        if not self.__last_interrupt or (time - self.__last_interrupt).total_seconds() <= 2:
+            return False
+        self.__last_interrupt = time
+        return True
+
+    @property
     def program_name(self):
         return self.__program_name
 
     @program_name.setter
     def program_name(self, value):
         raise NotImplementedError()
+
+    def block(self):
+        self.__signal(SIGALRM, None)
+
+    def unblock(self):
+        self.__signal(SIGALRM, self.on_timer)
 
     def top(self):
         if self.tty != 4:
@@ -51,9 +73,9 @@ class Screen:
 
     # Tk
     def __get_input(self):
-        # sig_alon()
+        self.__active = True
         value = Keys.get_command(self.parser.prompt, 80)
-        # sig_aloff()
+        self.__active = False
         return value
 
     def get_command(self):
@@ -87,7 +109,7 @@ class Screen:
         sex = {
             'm': User.SEX_MALE,
             'f': User.SEX_FEMALE,
-        }.get(Keys.sex())
+        }.get(Keys.get_sex())
 
         if sex is None:
             self.buffer.add("M or F")
@@ -96,8 +118,54 @@ class Screen:
         return {'sex': sex}
 
     def main(self):
+        while True:
+            self.buffer.show()
+            self.get_command()
+            self.buffer.add(*self.user.read_messages(unique=True))
+            World.save()
+            self.buffer.show()
+
+    def error_message(self, message):
+        dashes = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
         self.buffer.show()
-        self.get_command()
-        self.buffer.add(*self.user.read_messages(unique=True))
+        self.buffer.to_show = False  # So we dont get a prompt after the exit
+
+        print("\n".join([
+            "",
+            dashes,
+            "",
+            message,
+            "",
+            dashes,
+        ]))
+        raise SystemExit(0)
+
+    # Events
+    def on_crapup(self, message):
+        return self.error_message(message)
+
+    def on_error(self):
+        self.user.loose()
+        raise SystemExit(255)
+
+    def on_timer(self):
+        if not self.__active:
+            return
+
+        self.__active = False
+        World.load()
+
+        self.parser.read_messages(*self.user.read_messages(interrupt=self.interrupt))
+        self.user.on_time()
+
         World.save()
-        self.buffer.show()
+        Keys.reprint()
+        self.__active = True
+
+    def on_quit(self):
+        print("^C\n")
+        if self.user.in_fight:
+            return
+
+        self.user.loose()
+        return self.error_message("Byeeeeeeeeee  ...........")

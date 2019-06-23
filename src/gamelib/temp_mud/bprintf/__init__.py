@@ -18,7 +18,7 @@ char *args,*arg1,*arg2,*arg3,*arg4,*arg5,*arg6,*arg7;
 if(strlen(x)>235)
 {
 syslog("Bprintf Short Buffer overflow");
-crapup("Internal Error in BPRINTF");
+    raise CrapupError("Internal Error in BPRINTF")
 }
     /* Now we have a string of chars expanded */
     quprnt(x);
@@ -144,7 +144,7 @@ if(s>=mx)
 {
 syslog("IO_TOcontinue overrun");
 strcpy(str,"");
-crapup("Buffer OverRun in IO_TOcontinue");
+    raise CrapupError("Buffer OverRun in IO_TOcontinue");
 }
     return(ct+1);
     }
@@ -196,7 +196,7 @@ void makebfr()
     extern char *sysbuf;
     extern char *malloc();
     sysbuf=malloc(4096); /* 4K of chars should be enough for worst case */
-    if(sysbuf==NULL) crapup("Out Of Memory");
+    if(sysbuf==NULL) raise CrapupError("Out Of Memory");
     sysbuf[0]=0;
     }
     
@@ -230,9 +230,7 @@ long pr_qcr;
 
 void pbfr()
     {
-    FILE *fln;
-    long mu;
-    block_alarm();
+    Signals.block()
           World.save()
     if(strlen(sysbuf)) pr_due=1;
     if((strlen(sysbuf))&&(pr_qcr)) putchar('\n');
@@ -256,7 +254,7 @@ iskb=0;
     dcprnt(sysbuf,stdout);
     sysbuf[0]=0; /* clear buffer */
     if(snoopt!=-1) viewsnoop();
-    unblock_alarm();
+    Signals.unblock()
     }
 
 long iskb=1;

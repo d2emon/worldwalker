@@ -1,180 +1,27 @@
 """
-#include <stdio.h>
-
-/*
-
-     Two Phase Game System
-
-*/
-char **argv_p;
-
-main(argc,argv)
-char *argv[];
-{
-char x[32];
-extern char globme[];
-extern long tty;
-sig_init();
-argv_p= argv;
-if(argc!=2)
-{
-	printf("Args!\n");
-	exit(0);
-}
-printf("Entering Game ....\n");
-strcpy(x,argv[1]);
-tty=0;
-/*if(tty==4) {initbbc();initscr();topscr();}*/
-if(!strcmp(x,"Phantom")) sprintf(globme,"The %s",x);
-else strcpy(globme,x);
-printf("Hello %s\n",globme);
-syslog("GAME ENTRY: %s[%s]",globme,cuserid(NULL));
-Keys.on()
-talker(globme);
-}
-
-char privs[4];
-
-crapup(str)
-char *str;
-{
-extern long pr_due;
-static char *dashes =
-"-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-";
-pbfr();
-pr_due=0;  /* So we dont get a prompt after the exit */
-Keys.off()
-printf("\n%s\n\n%s\n\n%s\n", dashes, str, dashes);
-exit(0);
-}
-
-listfl(name)
-char *name;
-{
-FILE *a;
-char b[128];
-a=connect(name,"r+");
-while(fgets(b,128,a)) printf("%s\n",b);
-a.disconnect()
-}
-
-char *getkbd(s,l)   /* Getstr() with length limit and filter ctrl */
- char *s;
- int l;
-    {
-    char c,f,n;
-    f=0;c=0;
-    while(c<l)
-       {
-       regec:n=getchar();
-       if ((n<' ')&&(n!='\n')) goto regec;
-       if (n=='\n') {s[c]=0;f=1;c=l-1;}
-       else
-          s[c]=n;
-       c++;
-       }
-    if (f==0) {s[c]=0;while(getchar()!='\n');}
-    return(s);
-    }
-
-#include <signal.h>
-
-long sig_active=0;
-
-sig_alon()
-{
-	extern int sig_occur();
-	sig_active=1;
-	signal(SIGALRM,sig_occur);
-	alarm(2);
-}
-
-
-
-unblock_alarm()
-{
-	extern int sig_occur();
-	signal(SIGALRM,sig_occur);
-	if(sig_active) alarm(2);
-}
-
-block_alarm()
-{
-	signal(SIGALRM,SIG_IGN);
-}
-
-
-sig_aloff()
-{
-	sig_active=0;
-	signal(SIGALRM,SIG_IGN);
-	alarm(2147487643);
-}
-
-long interrupt=0;
-
-sig_occur()
-{
-	extern char globme[];
-	if(sig_active==0) return;
-	sig_aloff();
-          World.load()
-	interrupt=1;
-	parser.read_messages(*parser.user.read_messages());
-	interrupt=0;
-	user.on_time()
-
-    World.save()
-    Keys.reprint()
-
-	sig_alon();
-}
-
-
-sig_init()
-{
-	extern int sig_oops();
-	extern int sig_ctrlc();
-	signal(SIGHUP,sig_oops);
-	signal(SIGINT,sig_ctrlc);
-	signal(SIGTERM,sig_ctrlc);
-	signal(SIGTSTP,SIG_IGN);
-	signal(SIGQUIT,SIG_IGN);
-        signal(SIGCONT,sig_oops);
-}
-
-sig_oops()
-{
-	sig_aloff();
-	user.loose()
-    Keys.off()
-	exit(255);
-}
-
-sig_ctrlc()
-{
-	extern in_fight;
-	printf("^C\n");
-	if(in_fight) return;
-	sig_aloff();
-	raise LooseError("Byeeeeeeeeee  ...........");
-}
-
-
-set_progname(n,text)
-char *text;
-{
-	/*
-	int x=0;
-	int y=strlen(argv_p[n])+strlen(argv_p[1]);
-	y++;
-	if(strcmp(argv_p[n],text)==0) return;
-
-	while(x<y)
-	   argv_p[n][x++]=0;
-	strcpy(argv_p[n],text);
-	*/
-}
-
-
+Two Phase Game System
 """
+from ..errors import CrapupError
+from ..keys import Keys
+from ..screen import Screen
+from ..syslog import syslog
+
+
+def main(user_id, name):
+    if name == "Phantom":
+        name = "The " + name
+
+    print("Entering Game ....\n")
+    print("Hello {}\n".format(name))
+    syslog("GAME ENTRY: {}[{}]".format(name, user_id))
+
+    screen = Screen(name)
+    with Keys:
+        try:
+            screen.main()
+        except KeyboardInterrupt:
+            return screen.on_quit()
+        except CrapupError as e:
+            return screen.on_crapup(e)
+        except SystemExit:
+            return screen.on_error()

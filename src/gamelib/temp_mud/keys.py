@@ -9,27 +9,19 @@ class Keys:
     input_mode = False
 
     @classmethod
+    def __enter__(cls):
+        cls.on()
+        return cls
+
+    @classmethod
+    def __exit__(cls):
+        cls.off()
+
+    @classmethod
     def Bprintf(cls, *args):
         # pr_due    to_show
         # pr_qcr    break_ line
         raise NotImplementedError()
-
-    @classmethod
-    def get_keyboard(cls, *args):
-        # getkbd
-        raise NotImplementedError()
-
-    @classmethod
-    def __system(cls, *args):
-        raise NotImplementedError()
-
-    @classmethod
-    def buffer_prompt(cls, message=None, max_length=None):
-        if message is not None:
-            cls.Bprintf.add(message)
-        cls.Bprintf.show()
-        if max_length is not None:
-            return cls.get_keyboard(max_length)
 
     @classmethod
     def on(cls):
@@ -50,31 +42,42 @@ class Keys:
         pass
 
     @classmethod
-    def __enter__(cls):
-        cls.off()
-        return cls
+    def __system(cls, *args):
+        raise NotImplementedError()
 
     @classmethod
-    def __exit__(cls):
-        cls.on()
+    def __get_keyboard(cls, max_length):
+        """
+        Getstr() with length limit and filter ctrl
+
+        :param max_length:
+        :return:
+        """
+        return input()[:max_length]
+
+    @classmethod
+    def buffer_prompt(cls, message=None, max_length=None):
+        if message is not None:
+            cls.Bprintf.add(message)
+        cls.Bprintf.show()
+        if max_length is not None:
+            return cls.__get_keyboard(max_length)
 
     @classmethod
     def frobnicate(cls):
-        with cls:
-            bf1 = cls.buffer_prompt("New Level: ", 6)
-            bf2 = cls.buffer_prompt("New Score: ", 8)
-            bf3 = cls.buffer_prompt("New Strength: ", 8)
-        return bf1, bf2, bf3
+        def data():
+            yield cls.buffer_prompt("New Level: ", 6)
+            yield cls.buffer_prompt("New Score: ", 8)
+            yield cls.buffer_prompt("New Strength: ", 8)
+        return cls.get_input(lambda: data())
 
     @classmethod
-    def sex(cls):
-        with cls:
-            return input()[:2].lower()
+    def get_sex(cls):
+        return cls.get_input(lambda: cls.__get_keyboard(2).lower())
 
     @classmethod
     def system(cls, command):
-        with cls:
-            return cls.__system(command)
+        return cls.get_input(lambda: cls.__system(command))
 
     @classmethod
     def get_command(cls, prompt, max_length):
@@ -95,3 +98,10 @@ class Keys:
         if not cls.input_mode and cls.Bprintf.to_show:
             print("\n{}{}".format(cls.prompt, cls.buffer))
         cls.Bprintf.to_show = False
+
+    @classmethod
+    def get_input(cls, on_input=lambda: ""):
+        cls.off()
+        value = on_input()
+        cls.on()
+        return value
