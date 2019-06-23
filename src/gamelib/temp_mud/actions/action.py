@@ -220,9 +220,7 @@ case 178:
 case 180:
 
 case 181:
-       case 182:
-          frobnicate();
-          break;
+case 182:
 case 183:
 case 184:
 case 185:

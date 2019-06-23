@@ -1506,8 +1506,18 @@ class Actor(Sender, Reader):
         else:
             player.clear_flag(flag_id)
 
-    def frobnicate(self):
-        raise NotImplementedError()
+    @god_action("No way buster.\n")
+    def frobnicate(self, target):
+        # Frob
+        if not target.is_mobile and self.level != 10033:
+            raise CommandError("Can't frob mobiles old bean.\n")
+        if target.is_god and self.level != 10033:
+            raise CommandError("You can't frobnicate {}!!!!\n".format(self.name))
+
+        stats = Keys.frobnicate()
+        World.load()
+        self.send_stats(target, stats)
+        yield "Ok....\n"
 
     @message_action
     def set_in(self, message):

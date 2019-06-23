@@ -1,4 +1,5 @@
 from .action import ActionList
+from .frob import Frobnicate
 from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, BecomeInvisible, BecomeVisible, Wizards, \
     Ressurect
 from .mobile import Crash, Sing, Spray, Directory
@@ -173,11 +174,11 @@ class VerbsList(ActionList):
             DebugMode,
 
             SetPFlags,
+            Frobnicate,
             SetIn,
             SetOut,
             SetMin,
             SetMout,
-            # 186
             Emote,
             Dig,
             Empty,

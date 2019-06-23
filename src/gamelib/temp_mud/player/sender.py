@@ -108,6 +108,14 @@ class Sender:
             message,
         )
 
+    def send_stats(self, target, stats):
+        self.send_message(
+            target,
+            message_codes.CHANGE_STATS,
+            None,
+            stats,
+        )
+
     def send_summon(self, target):
         self.send_message(
             target,
