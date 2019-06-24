@@ -69,9 +69,7 @@ case 22:
 case 23:
 case 24:
 case 25:
-       case 26:
-          levcom();
-          break;
+case 26:
 case 27:
        case 28:
           valuecom();

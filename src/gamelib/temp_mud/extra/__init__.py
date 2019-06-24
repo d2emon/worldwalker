@@ -1,10 +1,4 @@
 """
- levcom()
-    {
-          World.save()
-    bprintf("\001f%s\001",LEVELS);
-    }
-
  valuecom()
     {
     long a,b;

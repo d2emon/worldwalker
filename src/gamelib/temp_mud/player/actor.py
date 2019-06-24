@@ -695,7 +695,9 @@ class Actor(Sender, Reader):
             target.on_steal(self)
 
     def levels(self):
-        raise NotImplementedError()
+        # Extra
+        World.save()
+        yield "\001f{}\001".format(LEVELS)
 
     def help(self, target):
         # Extra
