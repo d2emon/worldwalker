@@ -119,9 +119,7 @@ case 109:
 case 110:
 
 case 111:
-       case 112:
-          wherecom();
-          break;
+case 112:
 case 113:
 case 114:
 case 115:

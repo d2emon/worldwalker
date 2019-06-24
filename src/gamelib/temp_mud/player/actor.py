@@ -1059,8 +1059,58 @@ class Actor(Sender, Reader):
         # New1
         item.extinguish(self)
 
-    def where(self):
-        raise NotImplementedError()
+    def where(self, name):
+        def desrm(location, flag, wizard):
+            if flag == Item.IN_LOCATION:
+                if location.location_id > -5 and not wizard:
+                    return "Somewhere.....\n"
+                try:
+                    location.reload()
+                    if wizard:
+                        zone = " | {}".format(location.get_name(self))
+                    else:
+                        zone = "\n"
+                    return location.name + zone
+                except ServiceError:
+                    return "Out in the void\n"
+            elif flag == Item.IN_CONTAINER:
+                return "In the {}\n".format(location.name)
+            elif flag in (Item.CARRIED, Item.WEARING):
+                return "Carried by \001c{}\001\n".format(location.name)
+
+        if self.strength < 10:
+            raise CommandError("You are too weak\n")
+        if not self.is_wizard:
+            self.strength -= 2
+
+        roll = random_percent()
+        if any(item.is_carried_by(self) for item in (Item(111), Item(121), Item(163))):
+            chance = 100
+        else:
+            chance = 10 * self.level
+
+        World.save()
+
+        if roll > chance:
+            raise CommandError("Your spell fails...\n")
+
+        items = (item for item in ITEMS if item.name == name)
+        player = self.find(name)
+        if not len(items) and player is None:
+            yield "I dont know what that is\n"
+
+        for item in items:
+            if self.is_god:
+                yield item.item_id
+            yield "{} - ".format(item.name)
+            if not self.is_wizard and item.is_destroyed:
+                yield "Nowhere\n"
+            else:
+                yield from desrm(item.location, item.carry_flag, self.is_wizard)
+
+        if player is not None:
+            yield "{} - ".format(player.name)
+            yield from desrm(player.location, 0, self.is_wizard)
 
     # 113
 

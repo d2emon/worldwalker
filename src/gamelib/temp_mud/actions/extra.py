@@ -70,6 +70,16 @@ class Examine(Action):
         return parser.user.examine(item)
 
 
+class Where(Action):
+    # 112
+    commands = "where",
+
+    @classmethod
+    def action(cls, command, parser):
+        name = parser.require_next("What is that ?\n")
+        return parser.user.where(name)
+
+
 class ListWizards(Action):
     # 145
     commands = "wizlist",
