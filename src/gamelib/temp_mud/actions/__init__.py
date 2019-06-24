@@ -1,5 +1,5 @@
 from .action import ActionList
-from .extra import Levels, Help, Value, Stats, Examine
+from .extra import Levels, Help, Value, Stats, Examine, ListWizards
 from .frob import Frobnicate
 from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, BecomeInvisible, BecomeVisible, Wizards, \
     Ressurect
@@ -134,7 +134,7 @@ class VerbsList(ActionList):
             Moan,
             Directory,
             Yawn,
-            # 145
+            ListWizards,
             # 146
             # 147
             Deaf,

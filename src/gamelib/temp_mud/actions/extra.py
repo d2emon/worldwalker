@@ -68,3 +68,12 @@ class Examine(Action):
             destroyed=parser.user.is_wizard,
         )
         return parser.user.examine(item)
+
+
+class ListWizards(Action):
+    # 145
+    commands = "wizlist",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.list_wizards()

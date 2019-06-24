@@ -1,15 +1,4 @@
 """
- wizlist()
- {
- if(not user.is_wizard)
- {
- bprintf("Huh ?\n");
- return;
- }
-          World.save()
- bprintf("\001f%s\001",WIZLIST);
- }
-
  incom()
  {
  extern char wordbuf[];

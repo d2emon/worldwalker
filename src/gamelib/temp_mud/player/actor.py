@@ -769,6 +769,7 @@ class Actor(Sender, Reader):
         yield "Location  : {}".format(player.location.get_name(self))
 
     def examine(self, item):
+        # Extra
         if item is None:
             raise CommandError("You see nothing special at all\n")
         return item.examine(self)
@@ -1321,8 +1322,11 @@ class Actor(Sender, Reader):
         # Weather
         self.__silly_sound("yawns")
 
-    def wizlist(self):
-        raise NotImplementedError()
+    @wizard_action("Huh ?\n")
+    def list_wizards(self):
+        # Extra
+        World.save()
+        yield "\001f{}\001".format(WIZLIST)
 
     def in_command(self):
         raise NotImplementedError()

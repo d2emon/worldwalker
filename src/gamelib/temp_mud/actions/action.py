@@ -152,9 +152,7 @@ case 141:
 case 142:
 case 143:
 case 144:
-       case 145:
-          wizlist();
-          break;
+case 145:
        case 146:
           incom();
           break;
