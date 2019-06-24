@@ -17,6 +17,11 @@ class Location:
         "Up   ",
         "Down ",
     ]
+    jumps = {
+        -643: -633,
+        -1050: -662,
+        -1082: -1053,
+    }
 
     def __init__(self, location_id):
         self.location_id = location_id
@@ -197,6 +202,25 @@ class Location:
             data.disconnect()
         except FileNotFoundError:
             self.short = "\nYou are on channel {}\n".format(self.location_id)
+
+    # Extra
+    def jump(self, actor):
+        location_id = self.jumps.get(self.location_id, None)
+        if location_id is None:
+            return None
+
+        location = Location(location_id)
+        if actor.is_wizard:
+            return location
+
+        if Umbrella.is_carried_by(actor) and Umbrella.state == 0:
+            return location
+
+        raise LooseError("\n".join([
+            "Wheeeeeeeeeeeeeeeee  <<<<SPLAT>>>>",
+            "You seem to be splattered all over the place",
+            "I suppose you could be scraped up - with a spatula",
+        ]))
 
     # Unknown
     def go_to(self, direction, user):

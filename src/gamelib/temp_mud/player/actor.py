@@ -1521,7 +1521,15 @@ class Actor(Sender, Reader):
         yield "No debugger available\n"
 
     def jump(self):
-        raise NotImplementedError()
+        # Extra
+        location = self.location.jump(self)
+        if location is None:
+            yield "Wheeeeee....\n"
+            return
+
+        self.send_global("\001s{name}\001{name} has just left\n\001".format(name=self.name))
+        self.__location_id = location.location_id
+        self.send_global("\001s{name}\001{name} has just dropped in\n\001".format(name=self.name))
 
     def map_world(self):
         # Parse

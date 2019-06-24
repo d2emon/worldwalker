@@ -119,6 +119,9 @@ case 109:
 case 110:
 
 case 111:
+       case 112:
+          wherecom();
+          break;
 case 113:
 case 114:
 case 115:
@@ -188,12 +191,7 @@ case 169:
 case 170:
 
 case 171:
-       case 172:
-          jumpcom();
-          break;
-       case 112:
-          wherecom();
-          break;
+case 172:
 case 173:
 case 174:
 case 175:

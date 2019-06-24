@@ -1,39 +1,13 @@
 """
- smokecom()
- {
- lightcom();
- }
-
  jumpcom()
  {
  long a,b;
  extern long jumtb[];
  char ms[128];
  extern char globme[];
- a=0;
- b=0;
- while(jumtb[a])
- {
- if(jumtb[a]==user.location_id){b=jumtb[a+1];break;}
- a+=2;
- }
- if(b==0){bprintf("Wheeeeee....\n");
- return;}
- if((not user.is_wizard)&&((!Item(1).is_carried_by(user))||(Item(1).state==0)))
- {
- 	user.__location_id=b;
- bprintf("Wheeeeeeeeeeeeeeeee  <<<<SPLAT>>>>\n");
- bprintf("You seem to be splattered all over the place\n");
- LooseError("I suppose you could be scraped up - with a spatula");
- }
- sprintf(ms,"\001s%s\001%s has just left\n\001",globme,globme);
- user.send_message(globme,globme,-10000,user.location_id,ms);
- sprintf(ms,"\001s%s\001%s has just dropped in\n\001",globme,globme);
- user.send_message(globme,globme,-10000,b,ms);
-     user.location_id = b
  }
 
-long jumtb[]={-643,-633,-1050,-662,-1082,-1053,0,0};
+long jumtb[]={};
 
 wherecom()
  {

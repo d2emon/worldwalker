@@ -89,3 +89,16 @@ class InCommand(Action):
         offset = parser.require_next("In where ?\n")
         location = Location.find(parser.user, name, offset)
         return parser.user.in_command(location, parser.full())
+
+
+class Jump(Action):
+    # 172
+    commands = "jump",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.jump()
+
+
+class Smoke(Light):
+    pass
