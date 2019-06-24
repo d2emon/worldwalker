@@ -1,45 +1,4 @@
 """
- stacom()
-    {
-    long a,b;
-    if(brkword()== -1)
-       {
-       bprintf("STATS what ?\n");
-       return;
-       }
-    if(not user.is_wizard)
-       {
-       bprintf("Sorry, this is a wizard command buster...\n");
-       return;
-       }
-    a = Item.find(
-        wordbuf,
-        available=True,
-        mode_0=True,
-        destroyed=parser.user.is_wizard,
-    )
-    if(a== -1)
-       {
-       statplyr();
-       return;
-       }
-    bprintf("\nItem        :%s",Item(a).name);
-if(Item(a).carry_flag==3) bprintf(       "\nContained in:%s",Item(Item(a).location).name);
-else
-{
-    if(Item(a).carry_flag!=0)bprintf("\nHeld By     :%s",Player(Item(a).location).name);
-    else
-       {bprintf("\nPosition    :");
-       yield Item(a).location.get_name(user)
-}
-       }
-    bprintf("\nState       :%d",Item(a).state);
-    bprintf("\nCarr_Flag   :%d",Item(a).carry_flag);
-    bprintf("\nSpare       :%d",Item(a).is_destroyed);
-    bprintf("\nMax State   :%d",Item(a).max_state);
-    bprintf("\nBase Value  :%d",Item(a).base_value);
-    bprintf("\n");
-    }
  examcom()
     {
     long a,b;
@@ -151,23 +110,6 @@ else
  }
  }
 
- statplyr()
- {
- extern char wordbuf[];
- long a,b;
- b=parser.user.find(wordbuf);
- if(b== -1)
- {
- bprintf("Whats that ?\n");
- return;
- }
- bprintf("Name      : %s\n",Player(b).name);
- bprintf("Level     : %d\n",Player(b).level);
- bprintf("Strength  : %d\n",Player(b).strength);
- bprintf("Sex       : %s\n",(Player(b).sex == Player.SEX_MALE)?"MALE":"FEMALE");
- bprintf("Location  : ");
- yield Player(b).location.get_name(user)
- }
  wizlist()
  {
  if(not user.is_wizard)

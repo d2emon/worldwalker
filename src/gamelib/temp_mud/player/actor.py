@@ -733,13 +733,40 @@ class Actor(Sender, Reader):
         yield "\n"
 
     def value(self, item):
+        # Extra
         if item is None:
             raise CommandError("There isn't one of those here.\n")
         value = scale() * item.base_value / 5
         yield "%s : %d points\n".format(item.name, value)
 
-    def stats(self):
-        raise NotImplementedError()
+    @wizard_action("Sorry, this is a wizard command buster...\n")
+    def item_stats(self, item):
+        # Extra
+        yield "\n"
+        yield "Item        :{}\n".format(item.name)
+        if item.is_contained:
+            yield "Contained in:{}\n".format(item.location.name)
+        elif not item.is_located:
+            yield "Held By     :{}\n".format(item.location.name)
+        else:
+            yield "Position    :{}\n".format(item.location.get_name(self))
+        yield "State       :{}\n".format(item.state)
+        yield "Carr_Flag   :{}\n".format(item.carry_flag)
+        yield "Spare       :{}\n".format(item.is_destroyed)
+        yield "Max State   :{}\n".format(item.max_state)
+        yield "Base Value  :{}\n".format(item.base_value)
+
+    @wizard_action("Sorry, this is a wizard command buster...\n")
+    def player_stats(self, player):
+        # Extra
+        if not player:
+            raise CommandError("Whats that ?\n")
+
+        yield "Name      : {}\n".format(player.name)
+        yield "Level     : {}\n".format(player.level)
+        yield "Strength  : {}\n".format(player.strength)
+        yield "Sex       : {}\n".format("MALE" if player.sex == Player.SEX_MALE else "FEMALE")
+        yield "Location  : {}".format(player.location.get_name(self))
 
     def examine(self):
         raise NotImplementedError()

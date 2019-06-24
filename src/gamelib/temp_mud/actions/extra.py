@@ -35,3 +35,22 @@ class Value(Action):
             destroyed=parser.user.is_wizard,
         )
         return parser.user.value(item)
+
+
+class Stats(Action):
+    # 29
+    commands = "stats",
+
+    @classmethod
+    def action(cls, command, parser):
+        name = parser.require_next("STATS what ?\n")
+        item = Item.find(
+            name,
+            available=True,
+            mode_0=True,
+            destroyed=parser.user.is_wizard,
+        )
+        if item is None:
+            player = parser.user.find(name)
+            return parser.user.player_stats(player)
+        return parser.user.item_stats(item)

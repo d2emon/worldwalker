@@ -1,5 +1,5 @@
 from .action import ActionList
-from .extra import Levels, Help, Value
+from .extra import Levels, Help, Value, Stats
 from .frob import Frobnicate
 from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, BecomeInvisible, BecomeVisible, Wizards, \
     Ressurect
@@ -51,7 +51,7 @@ class VerbsList(ActionList):
             Levels,
             Help,
             Value,
-            # 29
+            Stats,
             # 30
 
             DeletePlayer,
