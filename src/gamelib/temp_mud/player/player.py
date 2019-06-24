@@ -207,6 +207,20 @@ class Player(BasePlayer):
         self.visible = data.get('visible')
         self.level = data.get('level')
 
+    # Extra
+    def describe_location(self, wizard=False):
+        if self.location.location_id > -5 and not wizard:
+            return "Somewhere.....\n"
+        try:
+            self.location.reload()
+            if wizard:
+                zone = " | {}".format(self.location.get_name(self))
+            else:
+                zone = "\n"
+            return self.location.name + zone
+        except ServiceError:
+            return "Out in the void\n"
+
     # Equals
     def equal(self, player):
         return player is not None and self.player_id == player.player_id

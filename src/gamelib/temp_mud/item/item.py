@@ -72,6 +72,24 @@ class Item(WorldItem):
         items = (item for item in items if destroyed or not item.is_destroyed)
         return list(items)
 
+    def describe_location(self, wizard=False):
+        if self.__carry_flag == self.IN_LOCATION:
+            if self.location.location_id > -5 and not wizard:
+                return "Somewhere.....\n"
+            try:
+                self.location.reload()
+                if wizard:
+                    zone = " | {}".format(self.location.get_name(self))
+                else:
+                    zone = "\n"
+                return self.location.name + zone
+            except ServiceError:
+                return "Out in the void\n"
+        elif self.__carry_flag == Item.IN_CONTAINER:
+            return "In the {}\n".format(self.location.name)
+        elif self.__carry_flag in (Item.CARRIED, Item.WEARING):
+            return "Carried by \001c{}\001\n".format(self.location.name)
+
     # Actions
     def show_description(self, debug=False):
         if debug:

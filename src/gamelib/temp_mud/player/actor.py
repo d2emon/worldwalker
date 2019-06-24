@@ -790,7 +790,7 @@ class Actor(Sender, Reader):
         # Magic
         self.send_global("\001p{}\001 has summoned the {}\n".format(self.name, item.name))
         yield "The {} flies into your hand ,was ".format(item.name)
-        desrm(item.location, item.carry_flag)
+        yield from item.describe_location(self.is_wizard)
         item.set_location(self, item.CARRIED)
 
     def summon_player(self, target):
@@ -1061,24 +1061,6 @@ class Actor(Sender, Reader):
 
     def where(self, name):
         # Extra
-        def desrm(location, flag, wizard):
-            if flag == Item.IN_LOCATION:
-                if location.location_id > -5 and not wizard:
-                    return "Somewhere.....\n"
-                try:
-                    location.reload()
-                    if wizard:
-                        zone = " | {}".format(location.get_name(self))
-                    else:
-                        zone = "\n"
-                    return location.name + zone
-                except ServiceError:
-                    return "Out in the void\n"
-            elif flag == Item.IN_CONTAINER:
-                return "In the {}\n".format(location.name)
-            elif flag in (Item.CARRIED, Item.WEARING):
-                return "Carried by \001c{}\001\n".format(location.name)
-
         if self.strength < 10:
             raise CommandError("You are too weak\n")
         if not self.is_wizard:
@@ -1107,11 +1089,11 @@ class Actor(Sender, Reader):
             if not self.is_wizard and item.is_destroyed:
                 yield "Nowhere\n"
             else:
-                yield from desrm(item.location, item.carry_flag, self.is_wizard)
+                yield from item.describe_location(self.is_wizard)
 
         if player is not None:
             yield "{} - ".format(player.name)
-            yield from desrm(player.location, 0, self.is_wizard)
+            yield from player.describe_location(self.is_wizard)
 
     # 113
 
