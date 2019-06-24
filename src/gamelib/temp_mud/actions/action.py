@@ -71,9 +71,7 @@ case 24:
 case 25:
 case 26:
 case 27:
-       case 28:
-          valuecom();
-          break;
+case 28:
        case 29:
           stacom();
           break;

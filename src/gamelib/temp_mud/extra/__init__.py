@@ -1,26 +1,4 @@
 """
- valuecom()
-    {
-    long a,b;
-    extern char wordbuf[];
-    if(brkword()== -1)
-       {
-       bprintf("Value what ?\n");
-       return;
-       }
-    b = Item.find(
-	    wordbuf,
-	    available=True,
-	    destroyed=parser.user.is_wizard,
-	)
-    if(b== -1)
-       {
-       bprintf("There isn't one of those here.\n");
-       return;
-       }
-    bprintf("%s : %d points\n",wordbuf,(scale()*(Item(b).base_value))/5);
-    return;
-    }
  stacom()
     {
     long a,b;

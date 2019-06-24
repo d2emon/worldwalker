@@ -732,8 +732,11 @@ class Actor(Sender, Reader):
             yield "\001f{}\001".format(HELP3)
         yield "\n"
 
-    def value(self):
-        raise NotImplementedError()
+    def value(self, item):
+        if item is None:
+            raise CommandError("There isn't one of those here.\n")
+        value = scale() * item.base_value / 5
+        yield "%s : %d points\n".format(item.name, value)
 
     def stats(self):
         raise NotImplementedError()
