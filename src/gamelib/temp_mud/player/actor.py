@@ -99,10 +99,6 @@ class Actor(Sender, Reader):
     def Blood(self):
         raise NotImplementedError()
 
-    @property
-    def Disease(self):
-        raise NotImplementedError()
-
     # Not Implemented
     @property
     def available_items(self):
@@ -915,6 +911,7 @@ class Actor(Sender, Reader):
 
     @wizard_action("huh ?\n")
     def go_to_location(self, zone, location_id):
+        # Magic
         location = Location.find(self, zone, location_id)
         try:
             if location.location_id >= 0:
@@ -930,6 +927,7 @@ class Actor(Sender, Reader):
 
     # 100
     def wear(self, item):
+        # New1
         if not item.is_carried_by(self):
             raise CommandError("You are not carrying this\n")
         if item.is_worn_by(self):
@@ -944,6 +942,7 @@ class Actor(Sender, Reader):
 
     # 101 - 110
     def remove_clothes(self, item):
+        # New1
         if item.is_worn_by(self):
             raise CommandError("You are not wearing this\n")
         item.carry_flag = item.CARRIED
@@ -1002,6 +1001,7 @@ class Actor(Sender, Reader):
 
     @wizard_action("You can't just turn invisible like that!\n")
     def become_invisible(self, value=None):
+        # Magic
         if self.level == 10033 and value is not None:
             pass
         elif self.is_god:
@@ -1019,6 +1019,7 @@ class Actor(Sender, Reader):
 
     @wizard_action("You can't just do that sort of thing at will you know.\n")
     def become_visible(self):
+        # Magic
         if not self.visible:
             raise CommandError("You already are visible\n")
 
@@ -1205,6 +1206,7 @@ class Actor(Sender, Reader):
 
     @not_force_action("You can't be forced to do that\n")
     def grope(self, target):
+        # New1
         if self.Blood.in_fight:
             raise CommandError("Not in a fight!\n")
 
@@ -1269,9 +1271,10 @@ class Actor(Sender, Reader):
         self.send_magic(target, message_codes.DEAF)
 
     @wizard_action("Huh ?\n")
-    def ressurect(self, item):
+    def resurrect(self, item):
+        # Magic
         if item is None:
-            raise CommandError("You can only ressurect objects\n")
+            raise CommandError("You can only resurrect objects\n")
         if not item.is_destroyed:
             raise CommandError("That already exists\n")
 
@@ -1396,6 +1399,7 @@ class Actor(Sender, Reader):
         yield "MMMMEMEEEEEEEOOOOOOOWWWWWWW!!\n"
 
     def cuddle(self, target):
+        # New1
         if target.player_id == self.player_id:
             raise CommandError("You aren't that lonely are you ?\n")
 
@@ -1461,6 +1465,7 @@ class Actor(Sender, Reader):
         syslog("Typo by {} in {} : {}".format(self.name, self.location.location_id, message))
 
     def list_pronouns(self):
+        # Parse
         yield("Current pronouns are:\n")
         yield("Me              : {}\n".format(self.name))
         yield("Myself          : {}\n".format(self.name))

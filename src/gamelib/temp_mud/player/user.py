@@ -1,7 +1,7 @@
-from datetime import datetime
 from ..errors import CrapupError, LooseError
 from ..item import Item, Door
 from ..location import Location
+from ..magic import random_percent
 from ..syslog import syslog
 from ..world import World
 from .actor import Actor
@@ -11,10 +11,6 @@ from .user_data import UserData
 
 
 GWIZ = None
-
-
-def randperc():
-    raise NotImplementedError()
 
 
 class User(UserData, BasePlayer, Actor):
