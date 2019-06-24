@@ -238,3 +238,11 @@ class Parser:
         if here and target.location.location_id != self.user.location_id:
             raise CommandError("They are not here\n")
         return target
+
+    def get_number(self, min_value=0, max_value=None):
+        value = int(self.require_next("Missing numeric argument\n"))
+        if min_value is not None and value < min_value:
+            raise CommandError("Invalid range\n")
+        if max_value is not None and value > max_value:
+            raise CommandError("Invalid range\n")
+        return value

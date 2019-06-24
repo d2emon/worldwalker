@@ -1060,6 +1060,7 @@ class Actor(Sender, Reader):
         item.extinguish(self)
 
     def where(self, name):
+        # Extra
         def desrm(location, flag, wizard):
             if flag == Item.IN_LOCATION:
                 if location.location_id > -5 and not wizard:
@@ -1628,8 +1629,23 @@ class Actor(Sender, Reader):
         # New1
         self.send_magic(target, message_codes.BLIND)
 
-    def patch(self):
-        raise NotImplementedError()
+    def patch(self, player=None, item=None, value_id=None, value=None):
+        # Extra
+        if not self.test_bit(5):
+            raise CommandError("Must be Game Administrator\n")
+
+        if value_id is None:
+            raise CommandError()
+        if value is None:
+            raise CommandError()
+
+        if item is not None:
+            item.__data[value_id] = value
+        elif player is not None:
+            player.__data[value_id] = value
+        else:
+            raise CommandError()
+        yield "Tis done\n"
 
     def switch_debug(self):
         # Parse

@@ -1,5 +1,5 @@
 from .action import ActionList
-from .extra import Levels, Help, Value, Stats, Examine, ListWizards, InCommand, Jump
+from .extra import Levels, Help, Value, Stats, Examine, ListWizards, InCommand, Jump, Patch
 from .frob import Frobnicate
 from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, BecomeInvisible, BecomeVisible, Wizards, \
     Ressurect
@@ -169,9 +169,9 @@ class VerbsList(ActionList):
             Flee,
             Bug,
             Typo,
-            # 177
+            Pronouns,
             Blind,
-            # 179
+            Patch,
             DebugMode,
 
             SetPFlags,

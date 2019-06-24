@@ -110,5 +110,24 @@ class Jump(Action):
         return parser.user.jump()
 
 
+class Patch(Action):
+    # 179
+    commands = "patch",
+
+    @classmethod
+    def action(cls, command, parser):
+        name = parser.require_next("Must Specify Player or Object\n")
+        if name == "player":
+            player = Player(parser.get_number(max_value=47))
+            value_id = parser.get_number(max_value=15)
+            return parser.user.patch(player=player, value_id=value_id, value=parser.get_number())
+        elif name == "object":
+            item = Item(parser.get_number(max_value=len(ITEMS) - 1))
+            value_id = parser.get_number(max_value=3)
+            return parser.user.patch(item=item, value_id=value_id, value=parser.get_number())
+        else:
+            raise CommandError("Must specify Player or Object\n")
+
+
 class Smoke(Light):
     pass

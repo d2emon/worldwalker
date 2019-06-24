@@ -196,9 +196,7 @@ case 175:
 case 176:
 case 177:
 case 178:
-       case 179:
-          edit_world();
-          break;
+case 179:
 case 180:
 
 case 181:
