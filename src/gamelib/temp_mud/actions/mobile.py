@@ -29,11 +29,7 @@ class Spray(Action):
         item_name = parser.require_next("With what ?\n")
         if item_name == "with":
             item_name = parser.require_next("With what ?\n")
-        item = Item.find(
-            item_name,
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(item_name)
         return parser.user.spray(item, target)
 
 

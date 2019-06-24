@@ -1,4 +1,5 @@
 from .action import Action
+from ..item.items import find_item
 
 
 class Levels(Action):
@@ -29,11 +30,7 @@ class Value(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.find(
-            parser.require_next("Value what ?\n"),
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(parser.require_next("Value what ?\n"))
         return parser.user.value(item)
 
 
@@ -44,12 +41,7 @@ class Stats(Action):
     @classmethod
     def action(cls, command, parser):
         name = parser.require_next("STATS what ?\n")
-        item = Item.find(
-            name,
-            available=True,
-            mode_0=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(name=name, mode_0=True)
         if item is None:
             player = parser.user.find(name)
             return parser.user.player_stats(player)
@@ -62,11 +54,7 @@ class Examine(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.find(
-            parser.require_next("Examine what ?\n"),
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(parser.require_next("Examine what ?\n"))
         return parser.user.examine(item)
 
 

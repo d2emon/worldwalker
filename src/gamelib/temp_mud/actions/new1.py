@@ -37,11 +37,7 @@ class Put(Action):
         if container_name is None:
             raise CommandError("What ?\n")
 
-        container = Item.find(
-            container_name,
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        container = parser.user.get_item(container_name)
         return parser.user.put(item, container)
 
 
@@ -123,11 +119,7 @@ class Push(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.find(
-            parser.require_next("Push what ?\n"),
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(parser.require_next("Push what ?\n"))
         return parser.user.push(item)
 
 

@@ -110,11 +110,7 @@ class Look(Action):
         elif word == "at":
             return examcom()
         elif word != "in" and word != "into":
-            item = Item.find(
-                parser.require_next("In what ?\n"),
-                available=True,
-                destroyed=parser.user.is_wizard,
-            )
+            item = parser.user.get_item(parser.require_next("In what ?\n"))
             return parser.user.look_in(item)
 
 
@@ -152,11 +148,7 @@ class Eat(Action):
         if item_name == "from":
             item_name = next(parser)
 
-        item = Item.find(
-            item_name,
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(item_name)
         return parser.user.eat(item)
 
 
@@ -166,11 +158,7 @@ class Play(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.find(
-            parser.require_next("Play what ?\n"),
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(parser.require_next("Play what ?\n"))
         return parser.user.play(item)
 
 
@@ -239,11 +227,7 @@ class Give(Action):
         word = parser.require_next("Give what to who ?\n")
         player = parser.user.find(word)
         if player is None:
-            item = Item.find(
-                word,
-                available=True,
-                destroyed=parser.user.is_wizard,
-            )
+            item = parser.user.get_item(word)
 
             player_name = parser.require_next("But to who ?\n")
             if player_name == "to":
@@ -253,11 +237,7 @@ class Give(Action):
             if player is None:
                 raise CommandError("I don't know who {} is\n".format(player_name))
         else:
-            item = Item.find(
-                parser.require_next("Give them what ?\n"),
-                available=True,
-                destroyed=parser.user.is_wizard,
-            )
+            item = parser.user.get_item(parser.require_next("Give them what ?\n"))
 
         return parser.user.give(item, player)
 
@@ -275,7 +255,7 @@ class Steal(Action):
             player_name = parser.require_next("From who ?\n")
         player = parser.user.find(player_name)
 
-        item = Item.find(
+        item = find_item(
             item_name,
             owner=player,
             destroyed=parser.user.is_wizard,
@@ -316,7 +296,7 @@ class INumber(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.find(parser.require_next("What...\n"), a=False, destroyed=parser.user.is_wizard)
+        item = find_item(parser.require_next("What...\n"), destroyed=parser.user.is_wizard)
         return parser.user.item_number(item)
 
 

@@ -126,6 +126,14 @@ class Location:
         return -1076 >= self.location_id >= -1082
 
     @property
+    def item_location(self, user):
+        try:
+            self.reload()
+            return self.get_name(user), self.name
+        except ServiceError:
+            return None, "Out in the void"
+
+    @property
     def __items(self):
         return [item for item in ITEMS if item.is_in_location(self)]
 
@@ -137,7 +145,7 @@ class Location:
             if item.is_destroyed:
                 yield "--"
 
-            yield item.show_description(user.debug_mode) + "\n"
+            yield user.show_item_description(item) + "\n"
             wd_it = item.name
 
     def list_items(self):

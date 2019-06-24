@@ -1,51 +1,75 @@
+from ..errors import CommandError, ServiceError
 from ..location import Location
 from ..player.player import Player
 from ..services.items import ItemsService
-from ..world import World
 from .base_item import BaseItem
 from .item_data import ItemData
 
 
-class WorldItem(ItemData, BaseItem):
-    IN_LOCATION = 0
-    CARRIED = 1
-    WEARING = 2
-    IN_CONTAINER = 3
+class Item(ItemData, BaseItem):
+    # Flags
+    __IN_LOCATION = 0
+    __CARRIED = 1
+    __WEARING = 2
+    __IN_CONTAINER = 3
+
+    # States
+    STATE_ON = 0
+    STATE_OFF = 1
+    STATE_LOCKED = 2
 
     def __init__(self, item_id):
+        super().__init__(item_id)
         self.__item_id = item_id
 
     @property
     def item_id(self):
         return self.__item_id
 
-    @classmethod
-    def items(cls):
-        return (WorldItem(item_id) for item_id in range(World.item_ids))
-
     @property
     def __data(self):
         return ItemsService.get_info(item_id=self.item_id)
 
+    @classmethod
+    def __get(cls, item_id):
+        return WorldItem(item_id)
+
+    def reload(self):
+        pass
+
     # Support
+    # Locations
     @property
     def location(self):
-        if self.room is not None:
-            return self.room
-        elif self.owner is not None:
-            return self.owner
-        elif self.container is not None:
-            return self.container
-        return None
+        return self.__get_location(Location, self.__IN_LOCATION)
 
-    def __get_location(self, location_class, *carry_flags):
-        if self.__carry_flag not in carry_flags:
-            return None
-        return location_class(self.__data[0])
+    @location.setter
+    def location(self, value):
+        self.__set_location(value, self.__IN_LOCATION)
 
-    def __set_location(self, value, carry_flag):
-        self.__carry_flag = carry_flag
-        self.__data[0] = value.location_id
+    @property
+    def owner(self):
+        return self.__get_location(Player, self.__CARRIED, self.__WEARING)
+
+    @owner.setter
+    def owner(self, value):
+        self.__set_location(value, self.__CARRIED)
+
+    @property
+    def wearer(self):
+        return self.__get_location(Player, self.__WEARING)
+
+    @wearer.setter
+    def wearer(self, value):
+        self.__set_location(value, self.__WEARING)
+
+    @property
+    def container(self):
+        return self.__get_location(self.__get, self.__IN_CONTAINER)
+
+    @container.setter
+    def container(self, value):
+        self.__set_location(value, self.__IN_CONTAINER)
 
     # New1
     @property
@@ -60,31 +84,6 @@ class WorldItem(ItemData, BaseItem):
             self.pair.state = value
             return
         self.__data[1] = value
-
-    # 2
-
-    # Support
-    @property
-    def __carry_flag(self):
-        return self.__data[3]
-
-    @__carry_flag.setter
-    def __carry_flag(self, value):
-        self.__data[3] = value
-
-    # Flag utils
-    # Support
-    def __set_bit(self, bit_id):
-        self.__data[2][bit_id] = True
-
-    def __clear_bit(self, bit_id):
-        self.__data[2][bit_id] = False
-
-    def __test_bit(self, bit_id):
-        return self.__data[2][bit_id]
-
-    def __test_mask(self, mask):
-        return all(self.__test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
 
     # Flags
     @property
@@ -135,11 +134,28 @@ class WorldItem(ItemData, BaseItem):
 
     @property
     def can_change_state_on_take(self):
-        raise NotImplementedError()
+        return self.__test_bit(12)
 
     @property
     def is_light(self):
         return self.__test_bit(13)
+
+    @is_light.setter
+    def is_light(self, value):
+        if value:
+            if not self.can_light:
+                raise CommandError("You can't light that!\n")
+            if self.state == self.STATE_ON:
+                raise CommandError("It is lit\n")
+            self.state = self.STATE_ON
+            self.__set_bit(13)
+        else:
+            if not self.can_extinguish:
+                raise CommandError("You can't extinguish that!\n")
+            if not self.is_light:
+                raise CommandError("That isn't lit\n")
+            self.state = self.STATE_OFF
+            self.__clear_bit(13)
 
     @property
     def is_container(self):
@@ -149,91 +165,14 @@ class WorldItem(ItemData, BaseItem):
     def is_weapon(self):
         raise NotImplementedError()
 
-    # Flag setters
-    def create(self):
-        self.__clear_bit(0)
-        return self
-
-    def destroy(self):
-        self.__set_bit(0)
-        return self
-
-    def extinguish(self, actor):
-        self.state = 1
-        self.__clear_bit(13)
-
-    def light(self, actor):
-        self.state = 0
-        self.__set_bit(13)
-
-    def on_taken(self, actor):
-        if self.__test_bit(12):
-            self.state = 0
-
-    # Bytes
-    def get_byte(self, byte_id):
-        return self.__data[2][byte_id]
-
-    def set_byte(self, byte_id, value):
-        self.__data[2][byte_id] = value
-
-    # Locations
+    # Support
     @property
-    def is_located(self):
-        return self.__carry_flag == self.IN_LOCATION
+    def __carry_flag(self):
+        return self.__data[3]
 
-    @property
-    def is_carried(self):
-        return self.__carry_flag in (self.CARRIED, self.WEARING)
-
-    @property
-    def is_worn(self):
-        return self.__carry_flag == self.WEARING
-
-    @property
-    def is_contained(self):
-        return self.__carry_flag == self.IN_CONTAINER
-
-    @property
-    def room(self):
-        return self.__get_location(Location, self.IN_LOCATION)
-
-    @room.setter
-    def room(self, value):
-        self.__set_location(value, self.IN_LOCATION)
-
-    @property
-    def owner(self):
-        return self.__get_location(Player, self.CARRIED, self.WEARING)
-
-    @owner.setter
-    def owner(self, value):
-        self.__set_location(value, self.CARRIED)
-
-    @property
-    def wearer(self):
-        return self.__get_location(Player, self.WEARING)
-
-    @wearer.setter
-    def wearer(self, value):
-        self.__set_location(value, self.WEARING)
-
-    @property
-    def container(self):
-        return self.__get_location(self.__get, self.IN_CONTAINER)
-
-    @container.setter
-    def container(self, value):
-        self.__set_location(value, self.IN_CONTAINER)
-
-    # States
-    @property
-    def is_open(self):
-        return self.can_open and self.state == 0
-
-    @property
-    def is_locked(self):
-        return self.can_lock and self.state == 2
+    @__carry_flag.setter
+    def __carry_flag(self, value):
+        self.__data[3] = value
 
     # Pair
     @property
@@ -249,120 +188,145 @@ class WorldItem(ItemData, BaseItem):
             return None
         return self.__get(self.item_id ^ 1)
 
+    # States
+    @property
+    def is_open(self):
+        return self.can_open and self.state == self.STATE_ON
+
+    @is_open.setter
+    def is_open(self, value):
+        if value:
+            if not self.can_open:
+                raise CommandError("You can't open that\n")
+            elif self.is_open:
+                raise CommandError("It already is\n")
+            elif self.is_locked:
+                raise CommandError("It's locked!\n")
+            self.state = self.STATE_ON
+        else:
+            if not self.can_open:
+                raise CommandError("You can't close that\n")
+            if not self.is_open:
+                raise CommandError("It is open already\n")
+            self.state = self.STATE_OFF
+
+    @property
+    def is_locked(self):
+        return self.can_lock and self.state == self.STATE_LOCKED
+
+    @is_locked.setter
+    def is_locked(self, value):
+        if value:
+            if not self.can_lock:
+                raise CommandError("You can't lock that!\n")
+            if self.is_locked:
+                raise CommandError("It's already locked\n")
+            self.state = self.STATE_LOCKED
+        else:
+            if not self.can_lock:
+                raise CommandError("You can't unlock that\n")
+            if not self.is_locked:
+                raise CommandError("Its not locked!\n")
+            self.state = self.STATE_OFF
+
+    @property
+    def text(self):
+        try:
+            return ItemsService.get_description(item_id=self.item_id)
+        except ServiceError:
+            return super().text
+
+    @property
+    def is_visible(self):
+        return len(self.description) > 0
+
+    # Utils
+    # Location utils
+    def __get_location(self, location_class, *carry_flags):
+        if self.__carry_flag not in carry_flags:
+            return None
+        return location_class(self.__data[0])
+
+    def __set_location(self, value, carry_flag):
+        self.__carry_flag = carry_flag
+        self.__data[0] = value.location_id
+
+    # Flag utils
+    # Support
+    def __set_bit(self, bit_id):
+        self.__data[2][0][bit_id] = True
+
+    def __clear_bit(self, bit_id):
+        self.__data[2][0][bit_id] = False
+
+    def __test_bit(self, bit_id):
+        return self.__data[2][0][bit_id]
+
+    def __test_mask(self, mask):
+        return all(self.__test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
+
+    # Bytes
+    def __get_byte(self, byte_id):
+        return self.__data[2][byte_id + 1]
+
+    def __set_byte(self, byte_id, value):
+        self.__data[2][byte_id + 1] = value
+
+    # Flag setters
+    def create(self):
+        self.__clear_bit(0)
+        return self
+
+    def destroy(self):
+        self.__set_bit(0)
+        return self
+
+    def extinguish(self, actor):
+        self.is_light = False
+        return self
+
+    def light(self, actor):
+        self.is_light = True
+        return self
+
     # Equals
     def equal(self, item):
         return item is not None and self.item_id == item.item_id
 
-    # Search
-    @classmethod
-    def __get(cls, item_id):
-        return WorldItem(item_id)
+    # Actions
+    def push(self, actor):
+        if self.can_turn:
+            self.state = self.STATE_ON
+            actor.get_message(actor.show_item_description(self))
+            return self
 
-    @classmethod
-    def __by_name(cls, items, name):
-        return (item for item in items if item.name.lower() == name)
+        if self.can_toggle:
+            self.state = self.STATE_OFF if self.state == self.STATE_ON else self.STATE_ON
+            actor.get_message(actor.show_item_description(self))
+            return self
 
-    # ObjSys
-    @classmethod
-    def __patch_color(cls, name):
-        colors = {
-            "red": WorldItem(4),
-            "blue": WorldItem(5),
-            "green": WorldItem(6),
-        }
-        item = colors.get(name, None)
-        if item is not None:
-            # word = next(parser)
-            pass
-        return item
+        actor.get_message("Nothing happens\n")
+        return self
 
-    @classmethod
-    def __patch_shields(cls, item, user):
-        # Patch for shields
-        shields = WorldItem(113), WorldItem(114)
-        if item.item_id == 112:
-            for shield in shields:
-                if shield.is_carried_by(user):
-                    return shield
-        return item
+    def put_in(self, item, actor):
+        super().put_in(item, actor)
 
-    @classmethod
-    def __filter(cls, item, **kwargs):
-        name = kwargs.get('name')
-        available = kwargs.get('available')  # 1
-        owner = kwargs.get('owner')  # 2, 3
-        location = kwargs.get('owner')  # 4
-        container = kwargs.get('container')  # 5
-        destroyed = kwargs.get('destroyed', False)
+        if actor.get_dragon():
+            return self
 
-        if name is not None and item.name.lower() != name:
-            return None
-        else:
-            # wd_it = item_name
-            pass
+        item.on_put(actor, self)
+        item.container = self
 
-        if available is not None:
-            item = cls.__patch_shields(item, available)
-            if not available.item_is_available(item):
-                return None
-        # elif
-        if owner is not None and not item.is_carried_by(owner):
-            return None
-        # elif
-        if location is not None and not item.is_in_location(location):
-            return None
-        # elif
-        if container is not None and not item.is_contained_in(container):
-            return None
+        actor.get_message("Ok\n")
+        actor.send_global("\001D{}\001\001c puts the {} in the {}.\n\001".format(actor.name, item.name, self.name))
 
-        if not destroyed and item.is_destroyed:
-            return None
-        return item
+        item.on_taken(actor)
+        # if item.can_change_state_on_take:
+        #     item.state = self.STATE_ON
 
-    @classmethod
-    def __find(cls, **kwargs):
-        name = kwargs.get("name")
-        if name is None:
-            return ()
+        actor.location.on_put(actor, item, self)
 
-        color = cls.__patch_color(name)
-        if color is not None:
-            return color,
-
-        kwargs["name"] = name.lower()
-
-        return (item for item in map(lambda item: cls.__filter(item, **kwargs), cls.items()) if item is not None)
-
-    @classmethod
-    def __first(cls, **kwargs):
-        return next(cls.__find(**kwargs), None)
-
-    @classmethod
-    def find(cls, **kwargs):
-        item = cls.__first(**kwargs)
-        if item is None:
-            return None
-        if not kwargs.get("mode_0", False):
-            return item
-        return cls.__first(
-            name=item.name,
-            destroyed=kwargs.get("destroyed", False)
-        )
-
-    @classmethod
-    def find_at(cls, location, carry_flag, destroyed=False):
-        """
-        Carried Loc !
-
-        :param location:
-        :param carry_flag:
-        :param destroyed:
-        :return:
-        """
-        items = map(lambda item: cls.__filter(item, destroyed=destroyed), cls.items())
-        if carry_flag == cls.CARRIED:
-            return (item for item in items if item is not None and item.is_carried_by(location))
-        elif carry_flag == cls.IN_CONTAINER:
-            return (item for item in items if item is not None and item.is_contained_in(location))
-        else:
-            return ()
+    # Events
+    def on_taken(self, actor):
+        if self.can_change_state_on_take:
+            self.state = self.STATE_ON

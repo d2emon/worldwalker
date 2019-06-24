@@ -103,11 +103,7 @@ class SetValue(Action):
     @classmethod
     def action(cls, command, parser):
         name = parser.require_next("set what\n")
-        item = Item.find(
-            name,
-            available=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(name)
         if item is None:
             player = Player.find(name)
             value = parser.require_next("To what value ?\n")

@@ -13,7 +13,7 @@ class UsersService:
             raise ValueError()
         if " " in name:
             raise ValueError()
-        item = Item.find(
+        item = find_item(
             name,
             available=True,
             mode_0=True,

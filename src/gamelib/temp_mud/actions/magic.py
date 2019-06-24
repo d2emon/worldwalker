@@ -27,12 +27,7 @@ class Summon(Action):
     def action(cls, command, parser):
         name = parser.require_next("Summon who ?\n")
 
-        item = Item.find(
-            name,
-            available=True,
-            mode_0=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(name, mode_0=True)
         if item is not None:
             return parser.user.summon_item(item)
 
@@ -86,10 +81,5 @@ class Ressurect(Action):
 
     @classmethod
     def action(cls, command, parser):
-        item = Item.find(
-            parser.require_next("Yes but what ?\n"),
-            available=True,
-            mode_0=True,
-            destroyed=parser.user.is_wizard,
-        )
+        item = parser.user.get_item(parser.require_next("Yes but what ?\n"), mode_0=True)
         return parser.user.ressurect(item)

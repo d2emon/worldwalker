@@ -497,3 +497,13 @@ class User(UserData, BasePlayer, Actor):
 
         yield "You can no longer help \001c{}\001\n".format(helping.name)
         self.helping = None
+
+    def get_item(self, name, mode_0=False, error_message=None):
+        item = find_item(
+            name=name,
+            available=self,
+            mode_0=mode_0,
+            destroyed=self.is_wizard,
+        )
+        if item is None and error_message:
+            raise CommandError(error_message)

@@ -1,5 +1,6 @@
 from ..errors import CommandError, CrapupError, LooseError, ServiceError
-from ..item.item import Item, ITEMS
+from ..item import ITEMS, find_items
+from ..item.item import Item
 from ..location import Location
 from ..magic import random_percent
 from ..message import message_codes
@@ -378,8 +379,40 @@ class Actor(Sender, Reader):
             return False
         return True
 
-    def list_items(self):
-        return Item.list_items_at(self, Item.CARRIED, self.debug, self.is_wizard)
+    def show_item_description(self, item):
+        if self.debug:
+            return "{{{}}} {}".format(item.item_id, item.description)
+        return item.description
+
+    def __item_location(self, item):
+        text = item.location_text
+        if item.location is None:
+            return text
+
+        if item.location.location_id > -5 and not self.is_wizard:
+            return "Somewhere....."
+
+        zone, name = text
+        if zone is None or not self.is_wizard:
+            return name
+        else:
+            return "{} | {}".format(name, zone)
+
+    def __list_items(self, items):
+        # ObjSys
+        def title(item):
+            text = item.name
+            if self.debug:
+                text += item.item_id
+            if item.is_destroyed:
+                text = "({})".format(text)
+            if item.wearer is not None:
+                text += "<worn> "
+            return text
+
+        if len(items) <= 0:
+            return "Nothing"
+        return " ".join(map(title, items))
 
     def on_flee(self):
         # New1
@@ -536,13 +569,18 @@ class Actor(Sender, Reader):
             raise CommandError("That isn't a container\n")
         if item.is_closed:
             raise CommandError("It's closed!\n")
+
+        items = find_items(container=item, destroyed=self.is_wizard)
         yield "The {} contains:\n".format(item.name)
-        yield from Item.list_items_at(self, Item.IN_CONTAINER, self.debug, self.is_wizard)
+        yield self.__list_items(items)
+        yield "\n"
 
     def inventory(self):
         # ObjSys
+        items = find_items(owner=self, destroyed=self.is_wizard)
         yield "You are carrying\n"
-        yield from self.list_items()
+        yield self.__list_items(items)
+        yield "\n"
 
     def who(self, users=False):
         # ObjSys
@@ -789,8 +827,7 @@ class Actor(Sender, Reader):
     def summon_item(self, item):
         # Magic
         self.send_global("\001p{}\001 has summoned the {}\n".format(self.name, item.name))
-        yield "The {} flies into your hand ,was ".format(item.name)
-        yield from item.describe_location(self.is_wizard)
+        yield "The {} flies into your hand, was {}\n".format(item.name, self.__item_location(item))
         item.set_location(self, item.CARRIED)
 
     def summon_player(self, target):
@@ -1085,15 +1122,14 @@ class Actor(Sender, Reader):
         for item in items:
             if self.is_god:
                 yield item.item_id
-            yield "{} - ".format(item.name)
             if not self.is_wizard and item.is_destroyed:
-                yield "Nowhere\n"
+                location_text = "Nowhere"
             else:
-                yield from item.describe_location(self.is_wizard)
+                location_text = self.__item_location(item)
+            yield "{} - {}\n".format(item.name, location_text)
 
         if player is not None:
-            yield "{} - ".format(player.name)
-            yield from player.describe_location(self.is_wizard)
+            yield "{} - {}".format(player.name, player.describe_location(self.is_wizard))
 
     # 113
 
@@ -1702,12 +1738,16 @@ class Actor(Sender, Reader):
 
     def empty(self, container):
         # Parse
+        def empty_item(item):
+            item.owner = self
+            self.drop(item)
+
+            yield "You empty the {} from the {}\n".format(item.name, container.name)
+            self.show_buffer()
+
+            World.load()
+
         if container is None:
             raise CommandError()
 
-        for item in container.contain(destroyed=self.is_wizard):
-            item.set_location(self.location, item.CARRIED)
-            yield "You empty the {} from the {}\n".format(item.name, container.name)
-            self.drop(item)
-            self.show_buffer()
-            World.load()
+        yield from map(empty_item, find_items(container=container, destroyed=self.is_wizard))

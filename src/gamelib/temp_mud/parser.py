@@ -2,6 +2,7 @@ from .actions import VerbsList
 from .actions.action import Action, Special
 from .actions.tk import StartGame
 from .errors import CommandError
+from .item.items import find_item
 from .world import World
 
 
@@ -210,19 +211,10 @@ class Parser:
         )
 
     def get_item(self):
-        word = next(self)
-        if word is None:
-            raise CommandError("Tell me more ?\n")
-
-        World.load()
-        item = Item.find(
-            word,
-            available=True,
-            destroyed=self.user.is_wizard,
+        return self.user.get_item(
+            self.require_next("Tell me more ?\n"),
+            error_message="There isn't one of those here\n",
         )
-        if item is None:
-            raise CommandError("There isn't one of those here\n")
-        return item
 
     def get_target(self, here=True):
         # This one isn't for magic

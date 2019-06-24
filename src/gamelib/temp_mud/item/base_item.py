@@ -1,6 +1,52 @@
+from ..errors import CommandError
+
+
+class BaseItemData:
+    @property
+    def name(self):
+        raise NotImplementedError()
+
+    @property
+    def descriptions(self):
+        raise NotImplementedError()
+
+    @property
+    def max_state(self):
+        raise NotImplementedError()
+
+    @property
+    def flannel(self):
+        raise NotImplementedError()
+
+    @property
+    def base_value(self):
+        raise NotImplementedError()
+
+    @property
+    def state(self):
+        raise NotImplementedError()
+
+    @property
+    def description(self):
+        return self.descriptions[self.state]
+
+
 class BaseItem:
+    # Locations
     @property
     def location(self):
+        raise NotImplementedError()
+
+    @property
+    def owner(self):
+        raise NotImplementedError()
+
+    @property
+    def wearer(self):
+        raise NotImplementedError()
+
+    @property
+    def container(self):
         raise NotImplementedError()
 
     @property
@@ -75,6 +121,10 @@ class BaseItem:
         # 13    Is lit  (state 0 is lit)
         raise NotImplementedError()
 
+    @is_light.setter
+    def is_light(self, value):
+        raise NotImplementedError()
+
     @property
     def is_container(self):
         # 14    container
@@ -85,6 +135,51 @@ class BaseItem:
         # 15    weapon
         raise NotImplementedError()
 
+    # States
+    @property
+    def is_open(self):
+        raise NotImplementedError()
+
+    @is_open.setter
+    def is_open(self, value):
+        raise NotImplementedError()
+
+    @property
+    def is_locked(self):
+        raise NotImplementedError()
+
+    @is_locked.setter
+    def is_locked(self, value):
+        raise NotImplementedError()
+
+    # Pair
+    @property
+    def pair(self):
+        raise NotImplementedError()
+
+    @property
+    def where(self):
+        if self.location is not None:
+            return self.location
+        elif self.owner is not None:
+            return self.owner
+        elif self.container is not None:
+            return self.container
+        return None
+
+    @property
+    def location_text(self):
+        if self.location is not None:
+            return self.location.item_location
+        elif self.container is not None:
+            return "In the {}\n".format(self.container.name)
+        elif self.owner is not None:
+            return "Carried by \001c{}\001\n".format(self.owner.name)
+
+    @property
+    def text(self):
+        return "You see nothing special.\n"
+
     # Flag setters
     def create(self):
         raise NotImplementedError()
@@ -92,51 +187,11 @@ class BaseItem:
     def destroy(self):
         raise NotImplementedError()
 
-    def extinguish(self, actor):
-        raise NotImplementedError()
-
-    def light(self, actor):
-        raise NotImplementedError()
-
-    def on_taken(self, actor):
-        raise NotImplementedError()
-
     # Bytes
-    def get_byte(self, byte_id):
+    def __get_byte(self, byte_id):
         raise NotImplementedError()
 
-    def set_byte(self, byte_id, value):
-        raise NotImplementedError()
-
-    # Locations
-    @property
-    def room(self):
-        raise NotImplementedError()
-
-    @property
-    def owner(self):
-        raise NotImplementedError()
-
-    @property
-    def wearer(self):
-        raise NotImplementedError()
-
-    @property
-    def container(self):
-        raise NotImplementedError()
-
-    # States
-    @property
-    def is_open(self):
-        raise NotImplementedError()
-
-    @property
-    def is_locked(self):
-        raise NotImplementedError()
-
-    # Pair
-    @property
-    def pair(self):
+    def __set_byte(self, byte_id, value):
         raise NotImplementedError()
 
     # Equals
@@ -156,4 +211,112 @@ class BaseItem:
         return container.equal(self.container)
 
     def is_located_in(self, location):
-        return location.equal(self.room)
+        return location.equal(self.location)
+
+    # Actions
+    # Paired actions
+    def open(self, actor):
+        self.is_open = True
+        actor.get_message("Ok\n")
+        return self
+
+    def close(self, actor):
+        self.is_open = False
+        actor.get_message("Ok\n")
+        return self
+
+    def extinguish(self, actor):
+        self.is_light = False
+        actor.get_message("Ok\n")
+        return self
+
+    def light(self, actor):
+        self.is_light = True
+        actor.get_message("Ok\n")
+        return self
+
+    def lock(self, actor):
+        self.is_locked = True
+        actor.get_message("Ok\n")
+        return self
+
+    def unlock(self, actor):
+        self.is_locked = False
+        actor.get_message("Ok\n")
+        return self
+
+    # Other actions
+    def blow(self, actor):
+        raise CommandError("You can't blow that\n")
+
+    def eat(self, actor):
+        if not self.is_food:
+            raise CommandError("That's sure not the latest in health food....\n")
+
+        self.destroy()
+        actor.get_message("Ok....\n")
+        actor.strength += 12
+        return self
+
+    def examine(self, actor):
+        self.on_examine(actor)
+        actor.get_message(self.text)
+        return self
+
+    def play(self, actor):
+        return self
+
+    def push(self, actor):
+        raise NotImplementedError
+
+    def put_in(self, item, actor):
+        if self.equal(item):
+            raise CommandError("What do you think this is, the goon show ?\n")
+        if not self.is_container:
+            raise CommandError("You can't do that\n")
+        if item.flannel:
+            raise CommandError("You can't take that !\n")
+        return self
+
+    def roll(self, actor):
+        raise CommandError("You can't roll that\n")
+
+    def spray(self, actor, target):
+        raise CommandError("You can't do that\n")
+
+    def wave(self, actor):
+        actor.get_message("Nothing happens\n")
+
+    # Events
+    def on_dig(self, actor):
+        return None
+
+    def on_dig_here(self, actor):
+        return None
+
+    def on_drop(self, actor):
+        return None
+
+    def on_examine(self, actor):
+        return None
+
+    def on_give(self, actor):
+        return None
+
+    def on_look(self, actor):
+        return None
+
+    def on_owner_flee(self, owner):
+        return None
+
+    def on_put(self, actor, container):
+        return None
+
+    def on_take(self, actor, container):
+        return None
+
+    def on_taken(self, actor):
+        return None
+
+    def on_wear(self, actor):
+        return None

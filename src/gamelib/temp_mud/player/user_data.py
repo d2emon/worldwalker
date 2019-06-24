@@ -34,6 +34,7 @@ class UserData(BasePlayer):
     @strength.setter
     def strength(self, value):
         self.__strength = value
+        self.update()
 
     @property
     def sex(self):

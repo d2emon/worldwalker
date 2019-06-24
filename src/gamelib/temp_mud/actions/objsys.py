@@ -9,7 +9,7 @@ class Take(Action):
     @classmethod
     def action(cls, command, parser):
         item_name = parser.require_next("Get what ?\n")
-        item = Item.find(
+        item = find_item(
             item_name,
             here=True,
             destroyed=parser.user.is_wizard,
@@ -17,14 +17,10 @@ class Take(Action):
         container = None
         word = next(parser)
         if word is not None and word == "from" or word == "out":
-            container = Item.find(
-                parser.require_next("From what ?\n"),
-                available=True,
-                destroyed=parser.user.is_wizard,
-            )
+            container = parser.user.get_item(parser.require_next("From what ?\n"))
             if container is None:
                 raise CommandError("You can't take things from that - it's not here\n")
-            item = Item.find(
+            item = find_item(
                 item_name,
                 container=container,
                 destroyed=parser.user.is_wizard,
@@ -40,7 +36,7 @@ class Drop(Action):
     @classmethod
     def action(cls, command, parser):
         item_name = parser.require_next("Drop what ?\n")
-        item = Item.find(
+        item = find_item(
             item_name,
             owner=parser.user,
             destroyed=parser.user.is_wizard,
