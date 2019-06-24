@@ -697,8 +697,38 @@ class Actor(Sender, Reader):
     def levels(self):
         raise NotImplementedError()
 
-    def help(self):
-        raise NotImplementedError()
+    def help(self, target):
+        # Extra
+        if target is None:
+            raise CommandError("Help who ?\n")
+        if target.location.location_id != self.location.location_id:
+            raise CommandError("They are not here\n")
+        if target.player_id == self.player_id:
+            raise CommandError("You can't help yourself.\n")
+
+        if self.helping is not None:
+            self.send_personal(self.helping, "\001c{}\001 has stopped helping you\n".format(self.name))
+            yield "Stopped helping {}\n".format(self.helping.name)
+        self.helping = target
+        self.send_personal(target, "\001c{}\001 has offered to help you\n".format(self.name))
+        yield "OK...\n"
+
+    def show_help_message(self):
+        # Extra
+        World.save()
+        yield "\001f{}\001".format(HELP1)
+        if self.is_wizard:
+            yield "Hit <Return> For More....\n"
+            self.show_buffer()
+            input()
+            yield "\001f{}\001".format(HELP2)
+        yield "\n"
+        if self.is_god:
+            yield "Hit <Return> For More....\n"
+            self.show_buffer()
+            input()
+            yield "\001f{}\001".format(HELP3)
+        yield "\n"
 
     def value(self):
         raise NotImplementedError()
