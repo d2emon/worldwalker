@@ -77,3 +77,15 @@ class ListWizards(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.list_wizards()
+
+
+class InCommand(Action):
+    # 146
+    commands = "in",
+
+    @classmethod
+    def action(cls, command, parser):
+        name = parser.require_next("In where ?\n")
+        offset = parser.require_next("In where ?\n")
+        location = Location.find(parser.user, name, offset)
+        return parser.user.in_command(location, parser.full())

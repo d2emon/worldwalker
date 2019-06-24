@@ -1328,8 +1328,30 @@ class Actor(Sender, Reader):
         World.save()
         yield "\001f{}\001".format(WIZLIST)
 
-    def in_command(self):
-        raise NotImplementedError()
+    @wizard_action("Huh\n")
+    def in_command(self, location, command):
+        # Extra
+        if location is None:
+            raise CommandError("Where is that ?\n")
+
+        try:
+            location.reload()
+            World.save()
+
+            location.load_exits()
+            location.disconnect()
+        except ServiceError:
+            raise CommandError("No such room\n")
+
+        old_location = self.location
+
+        self.__location_id = location.location_id
+
+        World.load()
+        gamecom(command)
+
+        World.load()
+        self.location = old_location
 
     def smoke(self):
         raise NotImplementedError()

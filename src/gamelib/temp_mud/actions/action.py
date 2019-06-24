@@ -153,9 +153,7 @@ case 142:
 case 143:
 case 144:
 case 145:
-       case 146:
-          incom();
-          break;
+case 146:
        case 147:
           lightcom();
           break;
