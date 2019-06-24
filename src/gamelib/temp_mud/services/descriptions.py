@@ -1,7 +1,3 @@
-from ..errors import ServiceError
-from ..item.item import Item
-
-
 class DescriptionService:
     __descriptions = {}
     __default = "You see nothing special.\n"

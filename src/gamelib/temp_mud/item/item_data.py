@@ -1,11 +1,7 @@
-from ..world import World
+from ..services.items import ItemsService
 
 
 class BaseItemData:
-    @property
-    def item_id(self):
-        raise NotImplementedError()
-
     @property
     def name(self):
         raise NotImplementedError()
@@ -28,15 +24,13 @@ class BaseItemData:
 
 
 class ItemData(BaseItemData):
-    __objects = []
-
     @property
     def item_id(self):
         raise NotImplementedError()
 
     @property
     def __object(self):
-        return self.__objects[self.item_id]
+        return ItemsService.get_item(item_id=self.item_id)
 
     @property
     def state(self):
@@ -49,20 +43,20 @@ class ItemData(BaseItemData):
     # Support
     @property
     def name(self):
-        return self.__object.name
+        return self.__object.get("name")
 
     @property
     def description(self):
-        return self.__object.description[self.state]
+        return self.__object.get("description", [])[self.state]
 
     @property
     def max_state(self):
-        return self.__object.max_state
+        return self.__object.get("max_state")
 
     @property
     def flannel(self):
-        return self.__object.flannel
+        return self.__object.get("flannel")
 
     @property
     def base_value(self):
-        return self.__object.value
+        return self.__object.get("value")

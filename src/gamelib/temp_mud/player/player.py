@@ -206,3 +206,7 @@ class Player(BasePlayer):
         self.weapon = data.get('weapon')
         self.visible = data.get('visible')
         self.level = data.get('level')
+
+    # Equals
+    def equal(self, player):
+        return player is not None and self.player_id == player.player_id

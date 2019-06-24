@@ -267,3 +267,7 @@ class Location:
         if self.location_id == -1081:
             Item(20).state = 1
             yield "The door clicks shut....\n"
+
+    # Equals
+    def equal(self, location):
+        return location is not None and self.location_id == location.location_id

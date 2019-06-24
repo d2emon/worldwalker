@@ -1,121 +1,12 @@
+from ..location import Location
+from ..player.player import Player
+from ..services.items import ItemsService
 from ..world import World
+from .base_item import BaseItem
 from .item_data import ItemData
 
 
-class BaseItem:
-    @property
-    def location(self):
-        raise NotImplementedError()
-
-    @property
-    def state(self):
-        raise NotImplementedError()
-
-    # Flags
-    @property
-    def is_destroyed(self):
-        # 0     Destroyed
-        raise NotImplementedError()
-
-    @property
-    def is_pair(self):
-        # 1     Item is paired in state with then item number which is its num XOR 1
-        raise NotImplementedError()
-
-    @property
-    def can_open(self):
-        # 2     Can open/close   1=closed 0=open
-        raise NotImplementedError()
-
-    @property
-    def can_lock(self):
-        # 3     Can lock/unlock   2=locked
-        raise NotImplementedError()
-
-    @property
-    def can_turn(self):
-        # 4     Push sets to state 0
-        raise NotImplementedError()
-
-    @property
-    def can_toggle(self):
-        # 5     Push toggles state 1-0-1
-        raise NotImplementedError()
-
-    @property
-    def is_food(self):
-        # 6     Is Food	(normal food)
-        raise NotImplementedError()
-
-    # 7
-
-    @property
-    def can_wear(self):
-        # 8     Can Wear
-        raise NotImplementedError()
-
-    @property
-    def can_light(self):
-        # 9     Can Light	(state 0 is lit)
-        raise NotImplementedError()
-
-    @property
-    def can_extinguish(self):
-        # 10    Can Extinguish (state 1 is extinguished)
-        raise NotImplementedError()
-
-    @property
-    def is_key(self):
-        # 11    Is A Key
-        raise NotImplementedError()
-
-    @property
-    def can_change_state_on_take(self):
-        # 12    State 0 if taken
-        raise NotImplementedError()
-
-    @property
-    def is_light(self):
-        # 13    Is lit  (state 0 is lit)
-        raise NotImplementedError()
-
-    @property
-    def is_container(self):
-        # 14    container
-        raise NotImplementedError()
-
-    @property
-    def is_weapon(self):
-        # 15    weapon
-        raise NotImplementedError()
-
-    # Locations
-    @property
-    def room(self):
-        raise NotImplementedError()
-
-    @property
-    def owner(self):
-        raise NotImplementedError()
-
-    @property
-    def container(self):
-        raise NotImplementedError()
-
-    # States
-    @property
-    def is_open(self):
-        raise NotImplementedError()
-
-    @property
-    def is_locked(self):
-        raise NotImplementedError()
-
-
 class WorldItem(ItemData, BaseItem):
-    __OBMUL = 8
-    __NOBS = 196
-
     IN_LOCATION = 0
     CARRIED = 1
     WEARING = 2
@@ -130,11 +21,11 @@ class WorldItem(ItemData, BaseItem):
 
     @classmethod
     def items(cls):
-        return (cls(item_id) for item_id in range(World.item_ids))
+        return (WorldItem(item_id) for item_id in range(World.item_ids))
 
     @property
     def __data(self):
-        return World.objinfo[self.item_id]
+        return ItemsService.get_info(item_id=self.item_id)
 
     # Support
     @property
@@ -147,20 +38,28 @@ class WorldItem(ItemData, BaseItem):
             return self.container
         return None
 
-    def set_location(self, value, carry_flag):
+    def __get_location(self, location_class, *carry_flags):
+        if self.__carry_flag not in carry_flags:
+            return None
+        return location_class(self.__data[0])
+
+    def __set_location(self, value, carry_flag):
         self.__carry_flag = carry_flag
         self.__data[0] = value.location_id
 
     # New1
     @property
     def state(self):
+        if self.__is_pair:
+            return self.pair.state
         return self.__data[1]
 
     @state.setter
     def state(self, value):
+        if self.__is_pair:
+            self.pair.state = value
+            return
         self.__data[1] = value
-        if self.is_pair:
-            self.pair.__data[1] = value
 
     # 2
 
@@ -173,13 +72,27 @@ class WorldItem(ItemData, BaseItem):
     def __carry_flag(self, value):
         self.__data[3] = value
 
+    # Flag utils
+    # Support
+    def __set_bit(self, bit_id):
+        self.__data[2][bit_id] = True
+
+    def __clear_bit(self, bit_id):
+        self.__data[2][bit_id] = False
+
+    def __test_bit(self, bit_id):
+        return self.__data[2][bit_id]
+
+    def __test_mask(self, mask):
+        return all(self.__test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
+
     # Flags
     @property
     def is_destroyed(self):
         return self.__test_bit(0)
 
     @property
-    def is_pair(self):
+    def has_pair(self):
         return self.__test_bit(1)
 
     @property
@@ -236,211 +149,6 @@ class WorldItem(ItemData, BaseItem):
     def is_weapon(self):
         raise NotImplementedError()
 
-    # Locations
-    @property
-    def is_located(self):
-        return self.__carry_flag == self.IN_LOCATION
-
-    @property
-    def is_carried(self):
-        return self.__carry_flag in (self.CARRIED, self.WEARING)
-
-    @property
-    def is_worn(self):
-        return self.__carry_flag == self.WEARING
-
-    @property
-    def is_contained(self):
-        return self.__carry_flag == self.IN_CONTAINER
-
-    @property
-    def room(self):
-        if self.is_in_location:
-            return Location(self.__data[0])
-        return None
-
-    @property
-    def owner(self):
-        if self.is_carried:
-            return Player(self.__data[0])
-        return None
-
-    @property
-    def container(self):
-        if self.is_contained:
-            return self.by_item_id(self.__data[0])
-        return None
-
-    # States
-    @property
-    def is_open(self):
-        return self.can_open and self.state == 0
-
-    @property
-    def is_locked(self):
-        return self.can_lock and self.state == 2
-
-    # Pair
-    @property
-    def __pair_id(self):
-        if not self.is_pair:
-            return None
-        return self.item_id ^ 1  # other door side
-
-    @property
-    def pair(self):
-        return self.by_item_id(self.__pair_id)
-
-    # Search
-    @classmethod
-    def by_item_id(cls, item_id):
-        return WorldItem(item_id)
-
-    # ObjSys
-    @classmethod
-    def __find(
-        cls,
-        name,
-        destroyed=False,
-        available=None,  # 1
-        owner=None,  # 2, 3
-        location=None,  # 4
-        container=None,  # 5
-    ):
-        if name is None:
-            return None
-
-        name = name.lower()
-        if name == "red":
-            # word = next(parser)
-            return 4
-        if name == "blue":
-            # word = next(parser)
-            return 5
-        if name == "green":
-            # word = next(parser)
-            return 6
-
-        items = cls.items()
-        items = (item for item in items if item.name.lower() == name)
-        # wd_it = item_name
-
-        if available:
-            # Patch for shields
-            # if item.item_id == 112 and cls(113).is_carried_by(user):
-            #     return 113
-            # if item.item_id == 112 and cls(114).is_carried_by(user):
-            #     return 114
-            # if user.item_is_available(item):
-            #     return item
-            items = (item for item in items)
-        elif owner is not None:
-            items = (item for item in items if item.is_carried_by(owner))
-        elif location is not None:
-            items = (item for item in items if item.is_in_location(location))
-        elif container is not None:
-            items = (item for item in items if item.is_contained_in(container))
-        if not destroyed:
-            items = (item for item in items if not item.is_destroyed)
-        return items
-
-    @classmethod
-    def find(
-        cls,
-        name,
-        destroyed=False,
-        mode_0=False,  # 0
-        available=False,  # 1
-        owner=None,  # 2, 3
-        location=None,  # 4
-        container=None,  # 5
-    ):
-        item = next(
-            cls.__find(
-                name,
-                destroyed=destroyed,
-                available=available,
-                owner=owner,
-                location=location,
-                container=container,
-            ),
-            None
-        )
-        if not mode_0:
-            return item
-
-        if item is None:
-            return None
-        return next(
-            cls.__find(
-                item.name,
-                destroyed=destroyed,
-            ),
-            None
-        )
-
-    @classmethod
-    def find_at(cls, location, carry_flag, destroyed=False):
-        """
-        Carried Loc !
-
-        :param location:
-        :param carry_flag:
-        :param destroyed:
-        :return:
-        """
-        items = cls.items()
-        if carry_flag == cls.CARRIED:
-            items = (item for item in items if item.is_carried_by(location))
-        elif carry_flag == cls.IN_CONTAINER:
-            items = (item for item in items if item.is_contained_in(location))
-        else:
-            items = []
-        if not destroyed:
-            items = (item for item in items if not item.is_destroyed)
-        return items
-
-    # Flag utils
-    # Support
-    def __set_bit(self, bit_id):
-        self.__data[2][bit_id] = True
-
-    def __clear_bit(self, bit_id):
-        self.__data[2][bit_id] = False
-
-    def __test_bit(self, bit_id):
-        """
-        15=weapon
-        14=container
-        13=Is lit  (state 0 is lit)
-        12=State 0 if taken
-        11=Is A Key
-        10=Can Extinguish (state 1 is extinguished)
-        09=Can Light	(state 0 is lit)
-        08=Can Wear
-        07=
-        06=Is Food	(normal food)
-        05=Push toggles state 1-0-1
-        04=Push sets to state 0
-        03=Can lock/unlock   2=locked
-        02=Can open/close   1=closed 0=open
-        01=Item is paired in state with then item number which is its num XOR 1
-        00=Destroyed
-
-        :param bit_id:
-        :return:
-        """
-        return self.__data[2][bit_id]
-
-    def __set_byte(self, byte_id, value):
-        self.__data[2][byte_id] = value
-
-    def __get_byte(self, byte_id):
-        return self.__data[2][byte_id]
-
-    def __test_mask(self, mask):
-        return all(self.__test_bit(bit_id) for bit_id, value in enumerate(mask) if value)
-
     # Flag setters
     def create(self):
         self.__clear_bit(0)
@@ -462,17 +170,199 @@ class WorldItem(ItemData, BaseItem):
         if self.__test_bit(12):
             self.state = 0
 
-    # Compare location
-    def is_worn_by(self, owner):
-        return self.is_carried_by(owner) and self.is_worn
+    # Bytes
+    def get_byte(self, byte_id):
+        return self.__data[2][byte_id]
 
-    def is_carried_by(self, owner):
-        # if is_wizard
-        return self.location == owner.location_id and self.is_carried
+    def set_byte(self, byte_id, value):
+        self.__data[2][byte_id] = value
 
-    def is_contained_in(self, container):
-        # if is_wizard
-        return self.location == container.item_id and self.is_contained
+    # Locations
+    @property
+    def is_located(self):
+        return self.__carry_flag == self.IN_LOCATION
 
-    def is_in_location(self, location):
-        return self.location == location.location_id and self.is_located
+    @property
+    def is_carried(self):
+        return self.__carry_flag in (self.CARRIED, self.WEARING)
+
+    @property
+    def is_worn(self):
+        return self.__carry_flag == self.WEARING
+
+    @property
+    def is_contained(self):
+        return self.__carry_flag == self.IN_CONTAINER
+
+    @property
+    def room(self):
+        return self.__get_location(Location, self.IN_LOCATION)
+
+    @room.setter
+    def room(self, value):
+        self.__set_location(value, self.IN_LOCATION)
+
+    @property
+    def owner(self):
+        return self.__get_location(Player, self.CARRIED, self.WEARING)
+
+    @owner.setter
+    def owner(self, value):
+        self.__set_location(value, self.CARRIED)
+
+    @property
+    def wearer(self):
+        return self.__get_location(Player, self.WEARING)
+
+    @wearer.setter
+    def wearer(self, value):
+        self.__set_location(value, self.WEARING)
+
+    @property
+    def container(self):
+        return self.__get_location(self.__get, self.IN_CONTAINER)
+
+    @container.setter
+    def container(self, value):
+        self.__set_location(value, self.IN_CONTAINER)
+
+    # States
+    @property
+    def is_open(self):
+        return self.can_open and self.state == 0
+
+    @property
+    def is_locked(self):
+        return self.can_lock and self.state == 2
+
+    # Pair
+    @property
+    def __is_pair(self):
+        if not self.has_pair:
+            return False
+        return self.item_id & 1
+
+    @property
+    def pair(self):
+        # other door side
+        if not self.has_pair:
+            return None
+        return self.__get(self.item_id ^ 1)
+
+    # Equals
+    def equal(self, item):
+        return item is not None and self.item_id == item.item_id
+
+    # Search
+    @classmethod
+    def __get(cls, item_id):
+        return WorldItem(item_id)
+
+    @classmethod
+    def __by_name(cls, items, name):
+        return (item for item in items if item.name.lower() == name)
+
+    # ObjSys
+    @classmethod
+    def __patch_color(cls, name):
+        colors = {
+            "red": WorldItem(4),
+            "blue": WorldItem(5),
+            "green": WorldItem(6),
+        }
+        item = colors.get(name, None)
+        if item is not None:
+            # word = next(parser)
+            pass
+        return item
+
+    @classmethod
+    def __patch_shields(cls, item, user):
+        # Patch for shields
+        shields = WorldItem(113), WorldItem(114)
+        if item.item_id == 112:
+            for shield in shields:
+                if shield.is_carried_by(user):
+                    return shield
+        return item
+
+    @classmethod
+    def __filter(cls, item, **kwargs):
+        name = kwargs.get('name')
+        available = kwargs.get('available')  # 1
+        owner = kwargs.get('owner')  # 2, 3
+        location = kwargs.get('owner')  # 4
+        container = kwargs.get('container')  # 5
+        destroyed = kwargs.get('destroyed', False)
+
+        if name is not None and item.name.lower() != name:
+            return None
+        else:
+            # wd_it = item_name
+            pass
+
+        if available is not None:
+            item = cls.__patch_shields(item, available)
+            if not available.item_is_available(item):
+                return None
+        # elif
+        if owner is not None and not item.is_carried_by(owner):
+            return None
+        # elif
+        if location is not None and not item.is_in_location(location):
+            return None
+        # elif
+        if container is not None and not item.is_contained_in(container):
+            return None
+
+        if not destroyed and item.is_destroyed:
+            return None
+        return item
+
+    @classmethod
+    def __find(cls, **kwargs):
+        name = kwargs.get("name")
+        if name is None:
+            return ()
+
+        color = cls.__patch_color(name)
+        if color is not None:
+            return color,
+
+        kwargs["name"] = name.lower()
+
+        return (item for item in map(lambda item: cls.__filter(item, **kwargs), cls.items()) if item is not None)
+
+    @classmethod
+    def __first(cls, **kwargs):
+        return next(cls.__find(**kwargs), None)
+
+    @classmethod
+    def find(cls, **kwargs):
+        item = cls.__first(**kwargs)
+        if item is None:
+            return None
+        if not kwargs.get("mode_0", False):
+            return item
+        return cls.__first(
+            name=item.name,
+            destroyed=kwargs.get("destroyed", False)
+        )
+
+    @classmethod
+    def find_at(cls, location, carry_flag, destroyed=False):
+        """
+        Carried Loc !
+
+        :param location:
+        :param carry_flag:
+        :param destroyed:
+        :return:
+        """
+        items = map(lambda item: cls.__filter(item, destroyed=destroyed), cls.items())
+        if carry_flag == cls.CARRIED:
+            return (item for item in items if item is not None and item.is_carried_by(location))
+        elif carry_flag == cls.IN_CONTAINER:
+            return (item for item in items if item is not None and item.is_contained_in(location))
+        else:
+            return ()
