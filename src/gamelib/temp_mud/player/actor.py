@@ -768,8 +768,10 @@ class Actor(Sender, Reader):
         yield "Sex       : {}\n".format("MALE" if player.sex == Player.SEX_MALE else "FEMALE")
         yield "Location  : {}".format(player.location.get_name(self))
 
-    def examine(self):
-        raise NotImplementedError()
+    def examine(self, item):
+        if item is None:
+            raise CommandError("You see nothing special at all\n")
+        return item.examine(self)
 
     # 31 - 35
     @wizard_action("What ?\n")

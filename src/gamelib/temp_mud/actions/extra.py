@@ -54,3 +54,17 @@ class Stats(Action):
             player = parser.user.find(name)
             return parser.user.player_stats(player)
         return parser.user.item_stats(item)
+
+
+class Examine(Action):
+    # 30
+    commands = "examine", "read",
+
+    @classmethod
+    def action(cls, command, parser):
+        item = Item.find(
+            parser.require_next("Examine what ?\n"),
+            available=True,
+            destroyed=parser.user.is_wizard,
+        )
+        return parser.user.examine(item)

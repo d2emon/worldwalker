@@ -1,5 +1,5 @@
 from .action import ActionList
-from .extra import Levels, Help, Value, Stats
+from .extra import Levels, Help, Value, Stats, Examine
 from .frob import Frobnicate
 from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, BecomeInvisible, BecomeVisible, Wizards, \
     Ressurect
@@ -9,9 +9,9 @@ from .new1 import Wear, Remove, Put, Wave, Open, Close, Lock, Unlock, Force, Lig
     Deaf, Squeeze, Cuddle, Blind
 from .objsys import Take, Drop, Inventory, Who, Users
 from .parse import Go, GoNorth, GoEast, GoSouth, GoWest, GoUp, GoDown, QuitWorld, Look, Reset, Lightning, Eat, Play, \
-    Shout, Say, Tell, Score, Exorcise, Give, Steal, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, Converse, \
-    Shell, Raw, Roll, Credits, Brief, Debug, MapWorld, Flee, Bug, Typo, Pronouns, DebugMode, SetIn, SetOut, SetMin, \
-    SetMout, Dig, Empty
+    Shout, Say, Tell, Save, Score, Exorcise, Give, Steal, Tss, RmEdit, USystem, INumber, Update, Become, SysStat, \
+    Converse, Shell, Raw, Roll, Credits, Brief, Debug, MapWorld, Flee, Bug, Typo, Pronouns, DebugMode, SetIn, SetOut, \
+    SetMin, SetMout, Dig, Empty
 from .weather import Storm, Rain, Sun, Snow, Blizzard, Laugh, Cry, Burp, Fart, Hiccup, Grin, Smile, Wink, Snigger, \
     Pose, SetValue, Pray, Groan, Moan, Yawn, Purr, Sulk, SetPFlags, Emote
 from .zones import Exits, Loc
@@ -43,7 +43,7 @@ class VerbsList(ActionList):
             Say,
             Tell,
 
-            # 21
+            Save,
             Score,
             Exorcise,
             Give,
@@ -52,7 +52,7 @@ class VerbsList(ActionList):
             Help,
             Value,
             Stats,
-            # 30
+            Examine,
 
             DeletePlayer,
             ChangePassword,

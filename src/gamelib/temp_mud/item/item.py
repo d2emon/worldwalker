@@ -1,6 +1,7 @@
 from gamelib.temp_mud.errors import CommandError
 from gamelib.temp_mud.player import Player
 from gamelib.temp_mud.world import World
+from ..services.descriptions import DescriptionService
 from .world_item import WorldItem
 
 
@@ -189,6 +190,12 @@ class Item(WorldItem):
     def spray(self, actor, target):
         raise CommandError("You can't do that\n")
 
+    def examine(self, actor):
+        try:
+            yield DescriptionService.get(item_id=self.item_id)
+        except ServiceError:
+            yield "You see nothing special.\n"
+
     # Events
     def on_dig(self, actor):
         return None
@@ -269,6 +276,42 @@ class Umbrella(Item):
         else:
             self.state = 0
             yield "Ok\n"
+
+
+class Item7(Item):
+    colors = [
+        "\n",
+        "It glows red\n",
+        "It glows blue\n",
+        "It glows green\n",
+    ]
+
+    def __init__(self):
+        super().__init__(7)
+
+    @property
+    def subitem(self):
+        return Item(self.state + 3)
+
+    def examine(self, actor):
+        self.state = random_percent() % 3 + 1
+        yield self.colors[self.state]
+        yield from super().examine(actor)
+
+
+class Item8(Item):
+    def __init__(self):
+        super().__init__(8)
+
+    def examine(self, actor):
+        if Item7().state == 0:
+            return super().examine(actor)
+        item = Item7.subitem
+        if item.is_carried_by(self) and item.is_light:
+            yield "Everything shimmers and then solidifies into a different view!\n"
+            self.destroy()
+            return actor.teleport(-1074)
+        return super().examine(actor)
 
 
 class Item10(Item):
@@ -441,14 +484,53 @@ class Item75(Item):
         yield "very refreshing\n"
 
 
+class Item85(Item):
+    def __init__(self):
+        super().__init__(85)
+
+    def examine(self, actor):
+        item = Item(83)
+        if item.__get_byte(0):
+            return super().examine(actor)
+
+        yield "Aha. under the bed you find a loaf and a rabbit pie\n"
+        item.create()
+        item.__set_byte(0, 1)
+        Item(84).create()
+
+
 class Shield89(Shield):
     def __init__(self):
         super().__init__(89)
 
 
+class Item91(Item):
+    def __init__(self):
+        super().__init__(91)
+
+    def examine(self, actor):
+        item = Item(90)
+        if item.__get_byte(0):
+            return super().examine(actor)
+
+        yield "You pull an amulet from the bedding\n"
+        item.create()
+        item.__set_byte(0, 1)
+
+
 class Item101(Item):
     def __init__(self):
         super().__init__(101)
+
+    def examine(self, actor):
+        if self.__get_byte(0) != 0:
+            return super().examine(actor)
+
+        yield "You take a key from one pocket\n"
+        self.__set_byte(0, 1)
+        key = Item(107)
+        key.create()
+        key.set_location(actor, self.CARRIED)
 
 
 class Item102(Item):
@@ -595,6 +677,31 @@ class Item138(Item):
             Item137().state = 0
 
 
+class Item144(Item):
+    def __init__(self):
+        super().__init__(144)
+
+    def examine(self, actor):
+        if self.__get_byte(0) != 0:
+            return super().examine(actor)
+        self.__set_byte(0, 1)
+        yield "You take a scroll from the tube.\n"
+
+        scroll = Scroll()
+        scroll.create()
+        scroll.set_location(actor, self.CARRIED)
+
+
+class Scroll(Item):
+    def __init__(self):
+        super().__init__(145)
+
+    def examine(self, actor):
+        yield "As you read the scroll you are teleported!\n"
+        self.destroy()
+        actor.location_id = -114
+
+
 class Item146(Item):
     def __init__(self, item_id=146):
         super().__init__(item_id)
@@ -711,6 +818,9 @@ class ChuteBottom(Item):
 ITEMS = [
     Umbrella(),  # 1
 
+    Item7(),
+    Item8(),
+
     Item10(),
     Item11(),
 
@@ -732,7 +842,11 @@ ITEMS = [
 
     Item75(),
 
+    Item85(),
+
     Shield89(),
+
+    Item91(),
 
     Item101(),
     Item102(),
@@ -758,6 +872,8 @@ ITEMS = [
     Item137(),
     Item138(),
 
+    Item144(),
+    Scroll(),  # 145
     Item146(),
     Item147(),
 

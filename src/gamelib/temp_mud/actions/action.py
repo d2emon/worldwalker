@@ -73,9 +73,7 @@ case 26:
 case 27:
 case 28:
 case 29:
-       case 30:
-          examcom();
-          break;
+case 30:
 
 case 31:
 case 32:

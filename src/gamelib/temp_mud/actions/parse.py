@@ -202,6 +202,15 @@ class Tell(Action):
         return parser.user.tell(player, parser.full())
 
 
+class Save(Action):
+    # 21
+    commands = "save",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.save()
+
+
 class Score(Action):
     # 22
     commands = "score",
