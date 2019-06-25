@@ -96,6 +96,16 @@ class Sender:
             message,
         )
 
+    def send_snoop(self, target, snoop):
+        if target is None:
+            return
+        self.send_message(
+            target,
+            message_codes.START_SNOOP if snoop else message_codes.STOP_SNOOP,
+            None,
+            None,
+        )
+
     def send_social(self, target, message):
         if message[:4] == "star":
             message = "\001s{name}\001{name} {message}\n\001".format(name=self.name, message=message)

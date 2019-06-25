@@ -1,8 +1,9 @@
 from .action import ActionList
-from .extra import Levels, Help, Value, Stats, Examine, ListWizards, InCommand, Jump, Patch
+from .bprintf import Log, Snoop
+from .extra import Levels, Help, Value, Stats, Examine, Where, ListWizards, InCommand, Jump, Patch
 from .frob import Frobnicate
 from .magic import DeletePlayer, ChangePassword, Summon, GoToLocation, BecomeInvisible, BecomeVisible, Wizards, \
-    Ressurect
+    Smoke, Ressurect
 from .mobile import Crash, Sing, Spray, Directory
 from .new1 import Wear, Remove, Put, Wave, Open, Close, Lock, Unlock, Force, Light, Extinguish, Push, Cripple, Cure, \
     Dumb, Change, Missile, Shock, Fireball, Blow, Sigh, Kiss, Hug, Slap, Tickle, Scream, Bounce, Stare, Grope, \
@@ -98,7 +99,7 @@ class VerbsList(ActionList):
             Light,
 
             Extinguish,
-            # 112
+            Where,
             # 113 -> 117
             BecomeInvisible,
             BecomeVisible,
@@ -112,7 +113,7 @@ class VerbsList(ActionList):
             Missile,
             Shock,
             Fireball,
-            # 125
+            # - 125
             Blow,
             Sigh,
             Kiss,
@@ -136,10 +137,10 @@ class VerbsList(ActionList):
             Yawn,
             ListWizards,
             InCommand,
-            # 147
+            Smoke,
             Deaf,
             Ressurect,
-            # 150
+            Log,
 
             Tss,
             RmEdit,
@@ -153,7 +154,7 @@ class VerbsList(ActionList):
             SysStat,
 
             Converse,
-            # 162
+            Snoop,
             Shell,
             Raw,
             Purr,

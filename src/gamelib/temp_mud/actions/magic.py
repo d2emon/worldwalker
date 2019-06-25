@@ -1,4 +1,5 @@
 from .action import Action
+from .new1 import Light
 
 
 class DeletePlayer(Action):
@@ -73,6 +74,15 @@ class Wizards(Action):
     @classmethod
     def action(cls, command, parser):
         return parser.user.wizards(parser.full())
+
+
+class Smoke(Light):
+    # 147
+    commands = "smoke",
+
+    @classmethod
+    def action(cls, command, parser):
+        return parser.user.smoke(parser.get_item())
 
 
 class Ressurect(Action):

@@ -128,6 +128,12 @@ class Player(BasePlayer):
     def is_debugger(self):
         return not self.__test_flag(4)
 
+    # 5
+
+    @property
+    def can_be_snooped(self):
+        return not self.__test_flag(6)
+
     # Support
     @property
     def helper(self):

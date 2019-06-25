@@ -51,6 +51,10 @@ class Mobile(BasePlayer):
 
     @property
     def sex(self):
+        riatha = self.find("riatha")
+        shazareth = self.find("shazareth")
+        if not self.equal(riatha) and not self.equal(shazareth):
+            return None
         return self.__sex
 
     @sex.setter

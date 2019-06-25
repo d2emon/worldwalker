@@ -19,8 +19,6 @@ class Keys:
 
     @classmethod
     def Bprintf(cls, *args):
-        # pr_due    to_show
-        # pr_qcr    break_ line
         raise NotImplementedError()
 
     @classmethod

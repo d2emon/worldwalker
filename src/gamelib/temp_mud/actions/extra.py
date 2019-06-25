@@ -1,5 +1,4 @@
 from .action import Action
-from ..item.items import find_item
 
 
 class Levels(Action):
@@ -115,7 +114,3 @@ class Patch(Action):
             return parser.user.patch(item=item, value_id=value_id, value=parser.get_number())
         else:
             raise CommandError("Must specify Player or Object\n")
-
-
-class Smoke(Light):
-    pass

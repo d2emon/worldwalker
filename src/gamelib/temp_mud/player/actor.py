@@ -170,6 +170,14 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
+    def log_service(self):
+        raise NotImplementedError()
+
+    @log_service.setter
+    def log_service(self, value):
+        raise NotImplementedError()
+
+    @property
     def show_players(self):
         raise NotImplementedError()
 
@@ -1422,8 +1430,9 @@ class Actor(Sender, Reader):
         World.load()
         self.location = old_location
 
-    def smoke(self):
-        raise NotImplementedError()
+    def smoke(self, item):
+        # Magic
+        return self.light(item)
 
     def deafen(self, target):
         # New1
@@ -1442,7 +1451,23 @@ class Actor(Sender, Reader):
         self.send_global("The {} suddenly appears\n".format(item.name))
 
     def log(self):
-        raise NotImplementedError()
+        # BprintF
+        if self.__uid != self.__euid:
+            raise CommandError("\nNot allowed from this ID\n")
+
+        if self.log_service is not None:
+            self.log_service.add("\nEnd of log....\n\n")
+            self.log_service.disconnect()
+            self.log_service = None
+            yield "End of log\n"
+            return
+
+        yield "Commencing Logging Of Session\n"
+        try:
+            self.log_service = LogService.connect("mud_log", ("a", "w"))
+        except ServiceError:
+            raise CommandError("Cannot open log file mud_log\n")
+        yield "The log will be written to the file 'mud_log'\n"
 
     # 151 - 160
     @god_action("I don't know that verb\n")
@@ -1534,8 +1559,27 @@ class Actor(Sender, Reader):
         self.conversation_mode = Parser.CONVERSATION_SAY
         yield "Type '**' on a line of its own to exit converse mode\n"
 
-    def snoop(self):
-        raise NotImplementedError()
+    @wizard_action("Ho hum, the weather is nice isn't it\n")
+    def snoop(self, target=None):
+        # BprintF
+        if self.snoop_target is not None:
+            self.send_snoop(self.snoop_target, False)
+            yield "Stopped snooping on {}\n".format(self.snoop_target.name)
+            self.snoop_target = None
+
+        if target is None:
+            return
+
+        if (target.is_wizard and not self.is_god) or not target.can_be_snooped:
+            self.snoop_target = None
+            raise CommandError("Your magical vision is obscured\n")
+
+        self.snoop_target = target
+        yield "Started to snoop on {}\n".format(target.name)
+        self.send_snoop(self.snoop_target, True)
+
+        SnoopService.push(" ")
+
 
     @god_action("There is nothing here you can shell\n")
     def shell(self):

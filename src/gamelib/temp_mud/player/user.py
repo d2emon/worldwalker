@@ -1,3 +1,4 @@
+import re
 from ..errors import CrapupError, LooseError
 from ..item import Item, Door
 from ..location import Location
@@ -180,10 +181,6 @@ class User(UserData, BasePlayer, Actor):
         self.send_wizard("[ {} has just died ]\n".format(self.name))
         raise CrapupError("Oh dear you just died\n")
 
-    # Not Implemented
-    def chksnp(self, *args):
-        raise NotImplementedError()
-
     # ObjSys
     def item_is_here(self, item):
         if not self.is_wizard and item.is_destroyed:
@@ -279,7 +276,7 @@ class User(UserData, BasePlayer, Actor):
         World.save()
 
         self.save()
-        self.chksnp()
+        self.send_snoop(self.snoop_target, False)
 
     # New1
     def __do_forced(self):
@@ -507,3 +504,112 @@ class User(UserData, BasePlayer, Actor):
         )
         if item is None and error_message:
             raise CommandError(error_message)
+
+    # BprintF
+    def set_name(self, player):
+        if player.sex == self.SEX_FEMALE:
+            self.pronouns['her'] = player.name
+        elif player.sex == self.SEX_MALE:
+            self.pronouns['him'] = player.name
+        else:
+            self.pronouns['it'] = player.name
+            return
+        self.pronouns['them'] = player.name
+
+    def see_player(self, player):
+        if player is None:
+            return True
+        if self.equal(player):
+            # me
+            return True
+        if self.level < player.visible:
+            return False
+        if self.is_blind:
+            # Cant see
+            return False
+        if self.location.equal(player.location) and self.in_dark:
+            return False
+        self.set_name(player)
+        return True
+
+    def can_hear_player(self, player):
+        return not self.is_deaf and self.see_player(player)
+
+    def can_see_player(self, player):
+        return not self.is_blind and self.see_player(player)
+
+    def decode(self, message, from_keyboard=True):
+        """
+        The main loop
+
+        :param message:
+        :return:
+        """
+        message = re.sub(r"\001f(.{, 128})\001", self.__list_file(), message)
+        message = re.sub(r"\001d(.{, 256})\001", self.__not_deaf(), message)
+        message = re.sub(r"\001s(.{, 23})\001(.{, 256})\001", self.__can_see(), message)
+        message = re.sub(r"\001p(.{, 24})\001", self.__see_player(), message)
+        message = re.sub(r"\001c(.{, 256})\001", self.__not_dark(), message)
+        message = re.sub(r"\001P(.{, 24})\001", self.__can_hear_player(), message)
+        message = re.sub(r"\001D(.{, 24})\001", self.__can_see_player(), message)
+        message = re.sub(r"\001l(.{, 127})\001", self.__not_keyboard(from_keyboard), message)
+        return message
+
+    # Specials
+    def __list_file(self):
+        def f(match):
+            filename = match.group(0)
+
+            result = ""
+            if self.debug:
+                result += "[FILE {} ]\n".format(filename)
+            result += f_listfl(filename)
+            return result
+        return f
+
+    def __not_deaf(self):
+        def f(match):
+            return match.group(0) if not self.is_deaf else ""
+        return f
+
+    def __can_see(self):
+        def f(match):
+            name = match.group(0)
+            message = match.group(1)
+            player = Player.find(name)
+            return message if self.see_player(player) else ""
+        return f
+
+    def __see_player(self):
+        def f(match):
+            name = match.group(0)
+            player = Player.find(name)
+            return name if self.see_player(player) else "Someone"
+        return f
+
+    def __not_dark(self):
+        def f(match):
+            return match.group(0) if self.in_dark or self.is_blind else ""
+        return f
+
+    def __can_hear_player(self):
+        def f(match):
+            name = match.group(0)
+            player = Player.find(name)
+            return name if self.can_hear_player(player) else "Someone"
+
+        return f
+
+    def __can_see_player(self):
+        def f(match):
+            name = match.group(0)
+            player = Player.find(name)
+            return name if self.can_see_player(player) else "Someone"
+
+        return f
+
+    @classmethod
+    def __not_keyboard(cls, from_keyboard):
+        def f(match):
+            return match.group(0) if not from_keyboard else ""
+        return f

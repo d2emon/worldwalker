@@ -155,14 +155,10 @@ case 143:
 case 144:
 case 145:
 case 146:
-       case 147:
-          lightcom();
-          break;
+case 147:
 case 148:
 case 149:
-       case 150:
-          logcom();
-          break;
+case 150:
 
 case 151:
 case 152:
@@ -176,9 +172,7 @@ case 159:
 case 160:
 
 case 161:
-       case 162:
-          snoopcom();
-          break;
+case 162:
 case 163:
 case 164:
 case 165:
