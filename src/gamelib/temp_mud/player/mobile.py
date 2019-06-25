@@ -1,5 +1,5 @@
 from ..errors import CommandError
-from .base_player import BasePlayer
+from .world_player import WorldPlayer
 
 
 SCALES = {
@@ -17,9 +17,9 @@ def scale():
     return SCALES.get(len([player for player in MOBILES if player.exists]), 7)
 
 
-class Mobile(BasePlayer):
+class Mobile(WorldPlayer):
     def __init__(self, player_id):
-        self.player_id = player_id
+        super().__init__(player_id)
         self.__name = None
         self.__location_id = None
         self.__strength = None

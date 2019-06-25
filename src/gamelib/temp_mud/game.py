@@ -139,9 +139,6 @@ def show_intro(**kwargs):
     syslog("GAME ENTRY: {}[{}]".format(name, user_id))
 
 
-def show_final(**kwargs):
-
-
 class Game:
     def __init__(self, user_id, username, tty=0):
         self.user_id = user_id

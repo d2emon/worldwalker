@@ -4,14 +4,6 @@ from .base_player import BasePlayer
 
 
 class Player(BasePlayer):
-    __FLAG_SEX = 0
-    # May not be exorcised
-    __FLAG_CAN_CHANGE_FLAGS = 2
-    # 3 May use rmedit
-    # 4 May use debugmode
-    # 5 May use patch
-    # 6 May be snooped upon
-
     def __init__(self, player_id):
         self.player_id = player_id
 
@@ -230,3 +222,14 @@ class Player(BasePlayer):
     # Equals
     def equal(self, player):
         return player is not None and self.player_id == player.player_id
+
+    @property
+    def location(self):
+        pass
+
+    def check_kicked(self):
+        pass
+
+    def woundmn(self, *args):
+        pass
+

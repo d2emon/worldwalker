@@ -1,9 +1,9 @@
 from ..errors import CrapupError, ServiceError
 from ..services.users import UsersService
-from .base_player import BasePlayer
+from .base_player import BasePlayerData
 
 
-class UserData(BasePlayer):
+class UserData(BasePlayerData):
     def __init__(self):
         self.__name = ""
         self.__score = 0  # my_sco
@@ -52,39 +52,7 @@ class UserData(BasePlayer):
     def level(self, value):
         self.__level = value
 
-    # Abstract
-    @property
-    def location(self):
-        raise NotImplementedError()
-
-    @property
-    def position(self):
-        raise NotImplementedError()
-
-    @property
-    def visible(self):
-        raise NotImplementedError()
-
-    @property
-    def flags(self):
-        raise NotImplementedError()
-
-    @property
-    def weapon(self):
-        raise NotImplementedError()
-
-    @property
-    def helping(self):
-        raise NotImplementedError()
-
-    @property
-    def is_mobile(self):
-        raise NotImplementedError()
-
-    def check_kicked(self):
-        raise NotImplementedError()
-
-    def woundmn(self, *args):
+    def update(self):
         raise NotImplementedError()
 
     # NewUaf

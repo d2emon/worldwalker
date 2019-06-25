@@ -6,18 +6,17 @@ from ..world import World
 
 class Reader:
     def __init__(self):
-        self.__position = -1
         self.force_read = False
 
         self.before_message = lambda message: None
 
     @property
-    def position(self):
-        return self.__position
+    def message_id(self):
+        raise NotImplementedError()
 
-    @position.setter
-    def position(self, value):
-        self.__position = value
+    @message_id.setter
+    def message_id(self, value):
+        raise NotImplementedError()
 
     def reset_position(self):
         raise NotImplementedError()
@@ -26,7 +25,7 @@ class Reader:
     def __get_messages(self):
         try:
             World.load()
-            return Message.messages(self.position)
+            return Message.messages(self.message_id)
         except ServiceError:
             raise CrapupError("AberMUD: FILE_ACCESS : Access failed\n")
 

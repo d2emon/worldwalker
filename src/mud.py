@@ -2,7 +2,9 @@ import logging
 import uuid
 # from gamelib.mudexe.user import User
 # from gamelib.mudexe.tk.talker import talker
-from gamelib.mud1 import MudGame
+# from gamelib.mud1 import MudGame
+from gamelib.temp_mud.game import Game
+
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,13 +26,16 @@ def main():
     # user = User(1, "username")
     # talker(user)
 
-    user = User()
+    # user = User()
 
     # print(">", "mud.1")
     # MudGame(user).play()
 
     print(">", "mud.1", "-nName")
-    MudGame(user, "Phantom").play()
+    # MudGame(user, "Phantom").play()
+    game = Game(uuid.uuid1(), "Phantom", 0)
+    game.play()
+
 
     # print(">", "mud.1", "-nName", 1)
     # mud1(env, 'mud.1', '-nName', 1)

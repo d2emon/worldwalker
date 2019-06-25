@@ -341,7 +341,7 @@ class ActionList:
         best_item = self.default_action
 
         word = word.lower()
-        values = (item.match(word), item for item in self.items if item.match(word) < 5)
+        values = ((item.match(word), item) for item in self.items if item.match(word) < 5)
         for value, item in values:
             if value <= best_value:
                 continue

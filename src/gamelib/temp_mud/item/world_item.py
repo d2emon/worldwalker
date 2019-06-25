@@ -32,7 +32,7 @@ class Item(ItemData, BaseItem):
 
     @classmethod
     def __get(cls, item_id):
-        return WorldItem(item_id)
+        return Item(item_id)
 
     def reload(self):
         pass

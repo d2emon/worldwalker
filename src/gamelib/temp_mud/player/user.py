@@ -6,7 +6,7 @@ from ..magic import random_percent
 from ..syslog import syslog
 from ..world import World
 from .actor import Actor
-from .base_player import BasePlayer
+from .world_player import WorldPlayer
 from .player import Player
 from .user_data import UserData
 
@@ -14,13 +14,12 @@ from .user_data import UserData
 GWIZ = None
 
 
-class User(UserData, BasePlayer, Actor):
+class User(WorldPlayer, UserData, Actor):
     def __init__(self, name):
         super().__init__()
 
-        self.player_id = 0
+        self.__player_id = 0
         self.name = name
-        self.__data = None
 
         # Property fields
         self.__location = None
@@ -66,80 +65,37 @@ class User(UserData, BasePlayer, Actor):
     # Player properties
     @property
     def location(self):
-        return self.__location
+        return super().location
 
     @location.setter
     def location(self, value):
         World.load()
-        self.__location = value
-        # self.__data.location = value
-        self.look()
-
-    @property
-    def visible(self):
-        raise NotImplementedError()
-
-    @visible.setter
-    def visible(self, value):
-        raise NotImplementedError()
-
-    @property
-    def flags(self):
-        raise NotImplementedError()
-
-    @property
-    def weapon(self):
-        raise NotImplementedError()
-
-    @weapon.setter
-    def weapon(self, value):
-        raise NotImplementedError()
-
-    @property
-    def helping(self):
-        raise NotImplementedError()
-
-    @helping.setter
-    def helping(self, value):
-        raise NotImplementedError()
+        super().location = value
 
     # Other properties
     @property
     def is_mobile(self):
-        raise NotImplementedError()
-
-    @property
-    def __player(self):
-        return Player(self.player_id)
+        return False
 
     # Weather
     @property
-    def items(self):
-        # return [item for item in ITEMS if item.is_carried_by(self)]
-        return [item for item in Item.items() if not item.is_destroyed and item.is_carried_by(self)]
-
-    @property
     def __available_items(self):
-        return [item for item in Item.items() if self.item_is_available(item)]
-
-    @property
-    def overweight(self):
-        if self.capacity is None:
-            return False
-        return len(self.items) >= self.capacity
+        return find_items(available=self)
 
     @property
     def in_dark(self):
-        if self.is_wizard:
-            return False
-        if not self.location.is_dark:
-            return False
-        for item in (item for item in Item.items() if item.is_light):
+        def is_light(item):
+            if not item.is_light:
+                return False
             if self.item_is_here(item):
-                return False
-            if item.owner is not None and item.owner.location.location_id == self.location.location_id:
-                return False
-        return True
+                return True
+            return item.owner is not None and self.location.equal(item.owner.location)
+
+        return not any((
+            self.is_wizard,
+            not self.location.is_dark,
+            any(is_light(item) for item in find_items()),
+        ))
 
     # Parse
     @property
@@ -613,3 +569,166 @@ class User(UserData, BasePlayer, Actor):
         def f(match):
             return match.group(0) if not from_keyboard else ""
         return f
+
+    # Abstract
+    @property
+    def message_id(self):
+        pass
+
+    @property
+    def exists(self):
+        pass
+
+    @property
+    def is_dead(self):
+        pass
+
+    @property
+    def is_faded(self):
+        pass
+
+    @property
+    def is_in_start(self):
+        pass
+
+    @property
+    def is_god(self):
+        pass
+
+    @property
+    def is_wizard(self):
+        pass
+
+    @property
+    def max_items(self):
+        pass
+
+    @property
+    def value(self):
+        pass
+
+    @property
+    def level_name(self):
+        pass
+
+    def equal(self, player):
+        pass
+
+    def die(self):
+        pass
+
+    def dump_items(self):
+        pass
+
+    def fade(self):
+        pass
+
+    def get_lightning(self, enemy):
+        pass
+
+    def is_helping(self, player):
+        pass
+
+    def is_timed_out(self, current_position):
+        pass
+
+    def remove(self):
+        pass
+
+    def reset_position(self):
+        pass
+
+    def woundmn(self, *args):
+        pass
+
+    @property
+    def Blood(self):
+        pass
+
+    @property
+    def available_items(self):
+        pass
+
+    @property
+    def brief(self):
+        pass
+
+    @property
+    def conversation_mode(self):
+        pass
+
+    @property
+    def debug_mode(self):
+        pass
+
+    @property
+    def force_action(self):
+        pass
+
+    @property
+    def is_forced(self):
+        pass
+
+    @property
+    def has_farted(self):
+        pass
+
+    @property
+    def log_service(self):
+        pass
+
+    @property
+    def show_players(self):
+        pass
+
+    @property
+    def in_ms(self):
+        pass
+
+    @property
+    def out_ms(self):
+        pass
+
+    @property
+    def min_ms(self):
+        pass
+
+    @property
+    def mout_ms(self):
+        pass
+
+    @property
+    def player_id(self):
+        pass
+
+    def debug2(self, *args):
+        pass
+
+    def show_buffer(self, *args):
+        pass
+
+    @property
+    def is_dumb(self):
+        pass
+
+    @property
+    def is_crippled(self):
+        pass
+
+    @property
+    def is_blind(self):
+        pass
+
+    @property
+    def is_deaf(self):
+        pass
+
+    def wield(self):
+        pass
+
+    def kill(self):
+        pass
+
+    def translocate(self):
+        pass
+
