@@ -17,7 +17,8 @@ class Buffer:
         self.__snoop_dest = None
         self.__snoop_target = None
 
-    def add(self, message):
+    def add(self, *messages):
+        message = "".join(messages)
         if len(message) > self.__MAX_LENGTH:
             syslog("Bprintf Short Buffer overflow")
             raise CrapupError("Internal Error in BPRINTF")
@@ -28,13 +29,17 @@ class Buffer:
 
         self.__buffer += message
 
+    def add_input(self, *messages):
+        self.__buffer += "".join(map(lambda s: "\001l{}\n\001".format(s), messages))
+
+
     def __get_buffer(self, user, from_keyboard=False):
         yield from user.decode(self.__buffer, from_keyboard)
 
-    def __to_log(self, user, log):
-        if log is None:
+    def __to_log(self, user):
+        if user.log_service is None:
             return
-        log.add(self.__get_buffer(user))
+        user.log_service.add(self.__get_buffer(user))
 
     def __to_snoop(self, user):
         if self.__snoop_dest is None:
@@ -44,7 +49,7 @@ class Buffer:
         except ServiceError:
             pass
 
-    def show(self, game, log=None):
+    def show(self, game):
         game.active = False
 
         World.save()
@@ -55,7 +60,7 @@ class Buffer:
                 yield "\n"
         self.break_line = False
 
-        self.__to_log(game.user, log)
+        self.__to_log(game.user)
         self.__to_snoop(game.user)
         yield from self.__get_buffer(game.user, True)
 
