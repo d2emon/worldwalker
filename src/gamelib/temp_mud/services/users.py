@@ -29,6 +29,8 @@ class UsersService:
 
     @classmethod
     def __new_user_id(cls):
+        if len(cls.__users) <= 0:
+            return 0
         return max(user['user_id'] for user in cls.__users) + 1
 
     @classmethod

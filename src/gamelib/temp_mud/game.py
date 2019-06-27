@@ -2,7 +2,7 @@ from datetime import datetime
 from .bprintf import Buffer
 from .errors import CrapupError, ServiceError
 from .keys import Keys
-# from .parser import Parser
+from .parser import Parser
 from .player.user import User
 from .services.log import LogService
 from .world import World
@@ -87,22 +87,25 @@ class ScreenBottom(TtyControl):
 
 
 class CreateUser(Control):
-    def __init__(self, buffer):
+    def __init__(self, buffer, game):
         self.buffer = buffer
         self.value = None
+        self.game = game
         self.render()
 
     def render(self):
         self.buffer.add("Creating character....\n")
         self.buffer.add("\n")
         self.buffer.add("Sex (M/F) : ")
-        self.buffer.show()
+
+        print(list(self.buffer.show(self.game)))
 
         # self.value = {
         #     'm': User.SEX_MALE,
         #     'f': User.SEX_FEMALE,
         # }.get(Keys.get_sex())
 
+        self.value = input()
         if self.value is None:
             self.buffer.add("M or F")
             return self.render()
@@ -155,7 +158,7 @@ class Game:
         self.user.get_new_user = self.create_user
 
         self.buffer = Buffer()
-        # self.parser = Parser(self.user)
+        self.parser = Parser(self.user)
 
         self.main_control = ScreenMain(self.buffer)
         self.controls = [
@@ -191,21 +194,22 @@ class Game:
     def __start(self):
         try:
             # World.load()
-            # if self.user.player_id >= maxu:
-            #     raise Exception("\nSorry AberMUD is full at the moment\n")
             # self.buffer.add(*self.user.read_messages(reset_after_read=True))
             # World.save()
             pass
         except ServiceError:
             raise CrapupError("Sorry AberMUD is currently unavailable")
 
-        # self.user.reset_position()
-        # self.parser.start()
-        # self.user.in_setup = True
+        self.user.reset_position()
+        print(list(self.parser.start()))
+        # for s in self.parser.start():
+        #     print(s)
+        self.user.in_setup = True
 
     def create_user(self):
+        print("create_user")
         return {
-            'sex': CreateUser(self.buffer).value
+            'sex': CreateUser(self.buffer, self).value
         }
 
     def play(self):

@@ -1,7 +1,5 @@
 from ..direction import DIRECTIONS
 from ..errors import CommandError
-from ..item import Item
-from ..player.player import Player
 from .action import Action, ActionList
 
 
@@ -20,36 +18,6 @@ class Direction(Action):
     @classmethod
     def flee(cls, parser):
         return parser.user.flee(cls.direction_id)
-
-
-class ExitsList(ActionList):
-    default_action = Direction
-
-    def __init__(self):
-        super().__init__(
-            GoNorth,
-            GoEast,
-            GoSouth,
-            GoWest,
-            GoUp,
-            GoDown,
-        )
-
-
-class Go(Action):
-    # 1
-    exits = ExitsList()
-
-    @classmethod
-    def get_direction(cls, parser):
-        direction = parser.require_next("GO where ?\n")
-        if direction == "rope":
-            return "up"
-        return cls.exits.check(direction)
-
-    @classmethod
-    def action(cls, command, parser):
-        return cls.get_direction(parser).execute(command, parser)
 
 
 class GoNorth(Direction):
@@ -86,6 +54,36 @@ class GoDown(Direction):
     # 7
     direction_id = 5
     commands = "d", "down",
+
+
+class ExitsList(ActionList):
+    default_action = Direction
+
+    def __init__(self):
+        super().__init__(
+            GoNorth,
+            GoEast,
+            GoSouth,
+            GoWest,
+            GoUp,
+            GoDown,
+        )
+
+
+class Go(Action):
+    # 1
+    exits = ExitsList()
+
+    @classmethod
+    def get_direction(cls, parser):
+        direction = parser.require_next("GO where ?\n")
+        if direction == "rope":
+            return "up"
+        return cls.exits.check(direction)
+
+    @classmethod
+    def action(cls, command, parser):
+        return cls.get_direction(parser).execute(command, parser)
 
 
 class QuitWorld(Action):

@@ -37,7 +37,7 @@ class User(WorldPlayer, UserData, Actor):
 
         # Events
         self.before_message = lambda message: None
-        self.get_new_player = lambda: {}
+        self.get_new_user = lambda: {}
 
         # Other fields
         self.__in_setup = False
@@ -107,12 +107,28 @@ class User(WorldPlayer, UserData, Actor):
         self.__visible = value
 
     @property
+    def sex(self):
+        return self.__sex
+
+    @sex.setter
+    def sex(self, value):
+        self.__sex = value
+
+    @property
     def level(self):
         return self.__level
 
     @level.setter
     def level(self, value):
         self.__level = value
+
+    @property
+    def score(self):
+        return self.__score
+
+    @score.setter
+    def score(self, value):
+        self.__score = value
 
     # Other properties
     @property
@@ -154,11 +170,6 @@ class User(WorldPlayer, UserData, Actor):
         self.__summoned_location = value
         if not self.is_wizard:
             self.__is_summoned = True
-
-    # Tk
-    @classmethod
-    def start_location(cls):
-        return Location(-5 if random_percent() > 50 else -183)
 
     # New1
     def get_damage(self, damage):
@@ -311,21 +322,28 @@ class User(WorldPlayer, UserData, Actor):
         self.__position_saved = self.position
 
     def start(self):
-        location = self.start_location()
-        UserData.load(self)
+        self.show_players = True
 
-        World.load()
+        # World.load()
         self.visible = 0 if not self.is_god else 10000
 
         if self.load() is None:
-            self.create(**self.get_new_player())
+            yield "335"
+            yield self.get_new_user
+            yield self.get_new_user()
+            self.create(**self.get_new_user())
 
-        self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self.name))
+        # self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
 
-        yield from self.read_messages(reset_after_read=True)
-        self.location = location
+        # yield from self.read_messages(reset_after_read=True)
+        # self.location = location
 
-        self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.name))
+        # self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self))
+
+        yield self.strength
+        yield self.level
+        yield self.visible
+        yield self.sex
 
     # Parse
     def __summoned(self, location):
@@ -692,6 +710,10 @@ class User(WorldPlayer, UserData, Actor):
     @property
     def show_players(self):
         return self.__show_players
+
+    @show_players.setter
+    def show_players(self, value):
+        self.__show_players = value
 
     @property
     def in_ms(self):

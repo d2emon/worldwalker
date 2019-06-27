@@ -1,4 +1,3 @@
-from ..item import Item
 from ..player.player import Player
 from ..weather_data import WEATHER_SUN, WEATHER_RAIN, WEATHER_STORM, WEATHER_SNOW, WEATHER_BLIZZARD
 from .action import Action

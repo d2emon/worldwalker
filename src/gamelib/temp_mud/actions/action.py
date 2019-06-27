@@ -242,7 +242,7 @@ class BaseAction:
 
     @classmethod
     def execute(cls, command, parser):
-        World.load()
+        # World.load()
         cls.validate(command, parser)
         return cls.action(command, parser)
 

@@ -1,3 +1,4 @@
+import random
 from ..errors import ServiceError
 from .world import WorldService
 
@@ -23,6 +24,10 @@ class PlayerData:
     def exists(self):
         return self.name is not None
 
+    @classmethod
+    def __start_location(self):
+        return random.choice((-5, -183))
+
     def equal(self, search):
         if not self.exists:
             return False
@@ -40,7 +45,7 @@ class PlayerData:
             None,
             None,
 
-            self.location,
+            self.location if self.location is not None else self.__start_location(),
             self.message_id,
             None,
             self.strength,

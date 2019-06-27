@@ -32,7 +32,6 @@ class Buffer:
     def add_input(self, *messages):
         self.__buffer += "".join(map(lambda s: "\001l{}\n\001".format(s), messages))
 
-
     def __get_buffer(self, user, from_keyboard=False):
         yield from user.decode(self.__buffer, from_keyboard)
 
@@ -57,17 +56,20 @@ class Buffer:
         if self.__buffer:
             self.to_show = True
             if self.break_line:
+                print("\n")
                 yield "\n"
         self.break_line = False
 
         self.__to_log(game.user)
         self.__to_snoop(game.user)
+        print(self.__get_buffer(game.user, True))
         yield from self.__get_buffer(game.user, True)
 
         # clear buffer
         self.__buffer = ""
 
         if self.__snoop_target is not None:
+            print(map(lambda s: "|" + s, SnoopsService.get(user=game.user.name)))
             yield from map(lambda s: "|" + s, SnoopsService.get(user=game.user.name))
 
         game.active = True

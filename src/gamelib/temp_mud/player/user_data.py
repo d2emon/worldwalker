@@ -72,6 +72,7 @@ class UserData(BasePlayerData):
         self.level = kwargs.get('level', 1)
 
     def create(self, **data):
+        print(data)
         self.__deserialize(**data)
         self.save()
 

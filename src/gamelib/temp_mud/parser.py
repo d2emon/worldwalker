@@ -2,7 +2,6 @@ from .actions import VerbsList
 from .actions.action import Action, Special
 from .actions.tk import StartGame
 from .errors import CommandError
-from .item.items import find_item
 from .world import World
 
 
@@ -102,9 +101,7 @@ class Parser:
         return result
 
     def start(self):
-        self.user.reset_position()
-        self.__special(self.user, ".g")
-        self.user.in_setup = True
+        return self.__special(self.user, ".g")
 
     # Parse
     def __iter__(self):
@@ -168,13 +165,18 @@ class Parser:
 
     # Tk
     def __special(self, user, action):
-        action = Special.prepare(self, action)
-        if not action:
-            return
-        elif action == "g":
-            StartGame.action(self, self.user)
-        else:
-            print("\nUnknown . option\n")
+        try:
+            action = Special.prepare(self, action)
+            if not action:
+                return
+            elif action == "g":
+                yield from StartGame.execute(action, self)
+            else:
+                print("\nUnknown . option\n")
+        except CommandError as e:
+            yield e
+        except NotImplementedError as e:
+            yield e
 
     # Unknown
     def set_there(self, zone, location_id):
@@ -182,34 +184,7 @@ class Parser:
 
     # Unknown
     # For Actions
-    def start_game(self):
-        self.mode = self.MODE_GAME
-        self.user.show_players = True
-
-        self.user.reset_location_id()
-        self.user.initme()
-
-        World.load()
-        visible = 0 if not self.user.is_god else 10000
-        self.user.player.start(self.user.NewUaf.strength, self.user.NewUaf.level, visible, self.user.NewUaf.sex)
-
-        self.user.send_message(
-            self.user,
-            Message.WIZARD,
-            self.user.location_id,
-            "\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self.user),
-        )
-
-        yield from self.user.read_messages(reset_after_read=True)
-        self.user.go_to_channel(self.user.location_id)
-
-        self.user.send_message(
-            self.user,
-            Message.GLOBAL,
-            self.user.location_id,
-            "\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self.user),
-        )
-
+    # Tk
     def get_item(self):
         return self.user.get_item(
             self.require_next("Tell me more ?\n"),
