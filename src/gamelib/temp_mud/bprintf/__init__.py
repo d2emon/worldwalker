@@ -1,6 +1,6 @@
 from ..errors import CrapupError, LooseError, ServiceError
+from ..services.log import LogService
 from ..services.snoops import SnoopsService
-from ..syslog import syslog
 from ..world import World
 
 
@@ -20,11 +20,11 @@ class Buffer:
     def add(self, *messages):
         message = "".join(messages)
         if len(message) > self.__MAX_LENGTH:
-            syslog("Bprintf Short Buffer overflow")
+            LogService.post_system(message="Bprintf Short Buffer overflow")
             raise CrapupError("Internal Error in BPRINTF")
 
         if len(message) + len(self.__buffer) > self.__MAX_BUFFER:
-            syslog("Buffer overflow on user {}".format(user.name))
+            LogService.post_system(message="Buffer overflow on user {}".format(user.name))
             raise LooseError("PANIC - Buffer overflow")
 
         self.__buffer += message

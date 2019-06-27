@@ -1,5 +1,5 @@
-from ..item import find_items
-from ..location import Location
+# from ..item import find_items
+# from ..location import Location
 from ..services.players import PlayersService
 from .base_player import BasePlayer
 
@@ -48,6 +48,7 @@ class WorldPlayer(BasePlayer):
 
     def __init__(self, player_id):
         self.__player_id = player_id
+        self.__data_cache = None
 
     @property
     def player_id(self):
@@ -55,7 +56,22 @@ class WorldPlayer(BasePlayer):
 
     @property
     def __data(self):
-        return PlayersService.get_info(player_id=self.player_id)
+        if self.player_id is None:
+            return [
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ]
+        if self.__data_cache is None:
+            self.__data_cache = PlayersService.get_info(player_id=self.player_id)
+        return self.__data_cache
 
     @classmethod
     def __get(cls, player_id):
@@ -276,9 +292,6 @@ class WorldPlayer(BasePlayer):
 
     def remove(self):
         self.name = ""
-
-    def reset_position(self):
-        self.message_id = -1
 
     def start(self):
         # self.strength = strength

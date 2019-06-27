@@ -1,9 +1,9 @@
 import re
-from ..errors import CrapupError, LooseError
-from ..item import Item, Door
-from ..location import Location
+from ..errors import CrapupError, LooseError, ServiceError
+# from ..item import Item, Door
+# from ..location import Location
 from ..magic import random_percent
-from ..syslog import syslog
+from ..services.players import PlayersService
 from ..world import World
 from .actor import Actor
 from .world_player import WorldPlayer
@@ -16,13 +16,24 @@ GWIZ = None
 
 class User(WorldPlayer, UserData, Actor):
     def __init__(self, name):
-        super().__init__()
+        try:
+            player_data = PlayersService.get_new_player(name=name)
+        except ServiceError as e:
+            raise CrapupError(e)
 
-        self.__player_id = 0
-        self.name = name
+        super().__init__(player_data[0])
 
-        # Property fields
-        self.__location = None
+        self.__name = player_data[1]
+        self.__location = player_data[4]
+        self.__message_id = player_data[5]
+        # 6
+        self.__strength = player_data[7]
+        self.__visible = player_data[8]
+        self.__sex = player_data[9]
+        self.__level = player_data[10]
+        self.__weapon = player_data[11]
+        # 12
+        # 13
 
         # Events
         self.before_message = lambda message: None
@@ -34,7 +45,7 @@ class User(WorldPlayer, UserData, Actor):
 
         # Parse
         self.__brief = False
-        self.show_players = False
+        self.__show_players = False
 
         self.__in_ms = "has arrived."
         self.__out_ms = ""
@@ -53,24 +64,55 @@ class User(WorldPlayer, UserData, Actor):
         self.__to_update = False
 
         # Weather
-        self.has_farted = False
+        self.__has_farted = False
 
         # Unknown
         self.__wpnheld = None
 
-        # makebfr()
-        self.reset_position()
-        self.add()
+        # self.buffer = Buffer()
 
     # Player properties
     @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, value):
+        self.__name = value
+        super(WorldPlayer).name = value
+
+    @property
     def location(self):
-        return super().location
+        return self.__location
 
     @location.setter
     def location(self, value):
         World.load()
-        super().location = value
+        super(WorldPlayer).location = value
+
+    @property
+    def message_id(self):
+        return self.__message_id
+
+    @message_id.setter
+    def message_id(self, value):
+        self.__message_id = value
+
+    @property
+    def visible(self):
+        return self.__visible
+
+    @visible.setter
+    def visible(self, value):
+        self.__visible = value
+
+    @property
+    def level(self):
+        return self.__level
+
+    @level.setter
+    def level(self, value):
+        self.__level = value
 
     # Other properties
     @property
@@ -79,7 +121,7 @@ class User(WorldPlayer, UserData, Actor):
 
     # Weather
     @property
-    def __available_items(self):
+    def available_items(self):
         return find_items(available=self)
 
     @property
@@ -97,6 +139,11 @@ class User(WorldPlayer, UserData, Actor):
             any(is_light(item) for item in find_items()),
         ))
 
+    # From Reader
+    def reset_position(self):
+        self.message_id = -1
+
+    # In User
     # Parse
     @property
     def summoned_location(self):
@@ -154,26 +201,6 @@ class User(WorldPlayer, UserData, Actor):
     # Support
     def item_is_available(self, item):
         return self.item_is_here(item) or item.is_carried_by(self)
-
-    # Tk
-    def add(self):
-        World.load()
-        if Player.find(self.name) is not None:
-            raise CrapupError("You are already on the system - you may only be on once at a time")
-
-        self.player_id = Player.new_player_id()
-        if self.player_id is None:
-            raise CrapupError("\nSorry AberMUD is full at the moment\n")
-
-        # self.data.name = self.name
-        # self.data.location = self.location.location_id
-        # self.data.position = self.position
-        self.level = 1
-        self.visible = 0
-        self.strength = -1
-        self.weapon = None
-        self.sex = 0
-        self.__data = self
 
     def check_fight(self):
         self.Blood.check_fight()
@@ -572,44 +599,40 @@ class User(WorldPlayer, UserData, Actor):
 
     # Abstract
     @property
-    def message_id(self):
-        pass
-
-    @property
     def exists(self):
-        pass
+        return None
 
     @property
     def is_dead(self):
-        pass
+        return None
 
     @property
     def is_faded(self):
-        pass
+        return None
 
     @property
     def is_in_start(self):
-        pass
+        return None
 
     @property
     def is_god(self):
-        pass
+        return None
 
     @property
     def is_wizard(self):
-        pass
+        return None
 
     @property
     def max_items(self):
-        pass
+        return None
 
     @property
     def value(self):
-        pass
+        return None
 
     @property
     def level_name(self):
-        pass
+        return None
 
     def equal(self, player):
         pass
@@ -635,71 +658,60 @@ class User(WorldPlayer, UserData, Actor):
     def remove(self):
         pass
 
-    def reset_position(self):
-        pass
-
     def woundmn(self, *args):
         pass
 
     @property
-    def Blood(self):
-        pass
-
-    @property
-    def available_items(self):
-        pass
-
-    @property
     def brief(self):
-        pass
+        return None
 
     @property
     def conversation_mode(self):
-        pass
+        return None
 
     @property
     def debug_mode(self):
-        pass
+        return None
 
     @property
     def force_action(self):
-        pass
+        return None
 
     @property
     def is_forced(self):
-        pass
+        return None
 
     @property
     def has_farted(self):
-        pass
+        return self.__has_farted
 
     @property
     def log_service(self):
-        pass
+        return None
 
     @property
     def show_players(self):
-        pass
+        return self.__show_players
 
     @property
     def in_ms(self):
-        pass
+        return None
 
     @property
     def out_ms(self):
-        pass
+        return None
 
     @property
     def min_ms(self):
-        pass
+        return None
 
     @property
     def mout_ms(self):
-        pass
+        return None
 
     @property
     def player_id(self):
-        pass
+        return None
 
     def debug2(self, *args):
         pass
@@ -709,19 +721,19 @@ class User(WorldPlayer, UserData, Actor):
 
     @property
     def is_dumb(self):
-        pass
+        return None
 
     @property
     def is_crippled(self):
-        pass
+        return None
 
     @property
     def is_blind(self):
-        pass
+        return None
 
     @property
     def is_deaf(self):
-        pass
+        return None
 
     def wield(self):
         pass

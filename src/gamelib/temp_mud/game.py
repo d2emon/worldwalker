@@ -2,9 +2,9 @@ from datetime import datetime
 from .bprintf import Buffer
 from .errors import CrapupError, ServiceError
 from .keys import Keys
-from .parser import Parser
+# from .parser import Parser
 from .player.user import User
-from .syslog import syslog
+from .services.log import LogService
 from .world import World
 
 
@@ -46,7 +46,7 @@ class ScreenInput(Control):
 
     def render(self):
         self.on_activate(self)
-        self.value = Keys.get_command(self.parser.prompt, 80)
+        # self.value = Keys.get_command(self.parser.prompt, 80)
         self.on_deactivate(self)
 
 
@@ -63,11 +63,11 @@ class ScreenMain(Control):
 
     def render(self):
         World.load()
-        self.buffer.add(*self.user.read_messages())
-        if self.parser.parse(self.command) is None:
-            return
-        self.buffer.add(*self.user.read_messages(unique=True))
-        self.buffer.show()
+        # self.buffer.add(*self.user.read_messages())
+        # if self.parser.parse(self.command) is None:
+        #     return
+        # self.buffer.add(*self.user.read_messages(unique=True))
+        # self.buffer.show()
         World.save()
 
 
@@ -98,10 +98,10 @@ class CreateUser(Control):
         self.buffer.add("Sex (M/F) : ")
         self.buffer.show()
 
-        self.value = {
-            'm': User.SEX_MALE,
-            'f': User.SEX_FEMALE,
-        }.get(Keys.get_sex())
+        # self.value = {
+        #     'm': User.SEX_MALE,
+        #     'f': User.SEX_FEMALE,
+        # }.get(Keys.get_sex())
 
         if self.value is None:
             self.buffer.add("M or F")
@@ -111,16 +111,11 @@ class CreateUser(Control):
 class FinalMessage(Control):
     dashes = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 
-    def __init__(self, buffer, message):
-        self.buffer = buffer
+    def __init__(self, message):
         self.message = message
         self.render()
 
     def render(self):
-        self.buffer.show()
-        self.buffer.to_show = False
-        # So we dont get a prompt after the exit
-
         print()
         print(self.dashes)
         print()
@@ -136,7 +131,7 @@ def show_intro(**kwargs):
 
     print("Entering Game ....\n")
     print("Hello {}\n".format(name))
-    syslog("GAME ENTRY: {}[{}]".format(name, user_id))
+    LogService.post_system(message="GAME ENTRY: {}[{}]".format(name, user_id))
 
 
 class Game:
@@ -160,11 +155,11 @@ class Game:
         self.user.get_new_user = self.create_user
 
         self.buffer = Buffer()
-        self.parser = Parser(self.user)
+        # self.parser = Parser(self.user)
 
         self.main_control = ScreenMain(self.buffer)
         self.controls = [
-            ScreenHeader(self.user),
+            # ScreenHeader(self.user),
             ScreenInput(
                 on_activate=self.on_before_input,
                 on_deactivate=self.on_after_input,
@@ -195,17 +190,18 @@ class Game:
     # Game flow
     def __start(self):
         try:
-            World.load()
+            # World.load()
             # if self.user.player_id >= maxu:
             #     raise Exception("\nSorry AberMUD is full at the moment\n")
-            self.buffer.add(*self.user.read_messages(reset_after_read=True))
-            World.save()
+            # self.buffer.add(*self.user.read_messages(reset_after_read=True))
+            # World.save()
+            pass
         except ServiceError:
             raise CrapupError("Sorry AberMUD is currently unavailable")
 
-        self.user.reset_position()
-        self.parser.start()
-        self.user.in_setup = True
+        # self.user.reset_position()
+        # self.parser.start()
+        # self.user.in_setup = True
 
     def create_user(self):
         return {
@@ -213,23 +209,29 @@ class Game:
         }
 
     def play(self):
-        with Keys:
-            try:
-                self.__start()
-                self.main()
-            except SystemExit as e:
-                return self.on_error(e)
-            except CrapupError as e:
-                return self.on_finish(e)
-            except KeyboardInterrupt:
-                return self.on_quit()
+        try:
+            Keys.on()
+            self.__start()
+            self.main()
+        except SystemExit as e:
+            return self.on_error(e)
+        except CrapupError as e:
+            return self.on_finish(e)
+        except KeyboardInterrupt:
+            return self.on_quit()
+        finally:
+            Keys.off()
 
     def main(self):
         while True:
             map(lambda control: control.render(), self.controls)
 
     def __finish(self, message):
-        FinalMessage(self.buffer, message)
+        self.buffer.show(self)
+        self.buffer.to_show = False
+        # So we dont get a prompt after the exit
+
+        FinalMessage(message)
 
     # Events
     def on_before_input(self, control):
@@ -242,7 +244,7 @@ class Game:
 
     def on_error(self, error):
         print(error)
-        self.user.loose()
+        # self.user.loose()
         raise SystemExit(255)
 
     def on_finish(self, error):
@@ -250,10 +252,10 @@ class Game:
 
     def on_quit(self):
         print("^C\n")
-        if self.user.in_fight:
-            return
+        # if self.user.in_fight:
+        #     return
 
-        self.user.loose()
+        # self.user.loose()
         self.__finish("Byeeeeeeeeee  ...........")
 
     def on_timer(self):
@@ -263,8 +265,8 @@ class Game:
         self.__active = False
         World.load()
 
-        self.parser.read_messages(*self.user.read_messages(interrupt=self.interrupt))
-        self.user.on_time()
+        # self.parser.read_messages(*self.user.read_messages(interrupt=self.interrupt))
+        # self.user.on_time()
 
         World.save()
         Keys.reprint()

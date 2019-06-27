@@ -1,15 +1,14 @@
 from ..errors import CommandError, CrapupError, LooseError, ServiceError
-from ..item import ITEMS, find_items
-from ..item.item import Item
-from ..location import Location
+# from ..item import ITEMS, find_items
+# from ..item.item import Item
+# from ..location import Location
 from ..magic import random_percent
 from ..message import message_codes
-from ..parser import Parser
-from ..syslog import syslog
-from ..weather import Weather
+# from ..parser import Parser
+# from ..weather import Weather
 from ..world import World
 from ..zone import ZONES
-from .mobile import MOBILES
+# from .mobile import MOBILES
 from .player import Player
 from .reader import Reader
 from .sender import Sender

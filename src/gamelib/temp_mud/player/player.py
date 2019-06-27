@@ -1,4 +1,4 @@
-from ..services.mobiles import MobilesService
+# from ..services.mobiles import MobilesService
 from ..world import World
 from .base_player import BasePlayer
 
@@ -173,11 +173,6 @@ class Player(BasePlayer):
     @classmethod
     def get_timed_out(cls, timeout):
         return (player for player in cls.players()[:16] if player.is_timed_out(timeout))
-
-    # Tk
-    @classmethod
-    def new_player_id(cls):
-        return next((player.player_id for player in cls.players() if not player.exists), None)
 
     # ObjSys
     def show(self):

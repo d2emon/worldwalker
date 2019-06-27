@@ -198,9 +198,6 @@ class BasePlayer(BasePlayerData):
     def remove(self):
         raise NotImplementedError()
 
-    def reset_position(self):
-        raise NotImplementedError()
-
     def start(self):
         raise NotImplementedError()
 

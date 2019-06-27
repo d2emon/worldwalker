@@ -18,10 +18,6 @@ class Keys:
         cls.off()
 
     @classmethod
-    def Bprintf(cls, *args):
-        raise NotImplementedError()
-
-    @classmethod
     def on(cls):
         # ios = tcgetattr(None)
         # self.save_flags = ios.flags

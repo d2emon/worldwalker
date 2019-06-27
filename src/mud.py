@@ -7,7 +7,7 @@ from gamelib.temp_mud.game import Game
 
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 class User:

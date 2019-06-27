@@ -15,7 +15,7 @@ Sectors 1-n  in pairs ie [128 words]
 """
 from ..errors import ServiceError, LooseError
 from ..player.player import Player
-from ..weather import Weather
+# from ..weather import Weather
 from ..world import World
 from . import message_codes
 
