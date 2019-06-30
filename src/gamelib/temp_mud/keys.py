@@ -50,20 +50,48 @@ class Keys:
         return input()[:max_length]
 
     @classmethod
-    def buffer_prompt(cls, message=None, max_length=None):
-        if message is not None:
-            cls.Bprintf.add(message)
-        cls.Bprintf.show()
-        if max_length is not None:
-            return cls.__get_keyboard(max_length)
+    def get_prompt(cls, max_length=None):
+        if max_length is None:
+            return ""
+        return cls.__get_keyboard(max_length)
 
     @classmethod
     def frobnicate(cls):
-        def data():
-            yield cls.buffer_prompt("New Level: ", 6)
-            yield cls.buffer_prompt("New Score: ", 8)
-            yield cls.buffer_prompt("New Strength: ", 8)
-        return cls.get_input(lambda: data())
+        # def data():
+        #     yield cls.buffer_prompt("New Level: ", 6)
+        #     yield cls.buffer_prompt("New Score: ", 8)
+        #     yield cls.buffer_prompt("New Strength: ", 8)
+        # return cls.get_input(lambda: data())
+        print("frobnicate")
+        return None
+
+    @classmethod
+    def get_command(cls, prompt, max_length):
+        # cls.input_mode = True
+        # cls.prompt = prompt
+        # cls.buffer_prompt(buffer, message=cls.prompt)
+
+        # buffer.to_show = False
+        # cls.buffer = input()[:max_length]
+        # print("\n")
+        # cls.input_mode = False
+        # return cls.buffer
+        print("get command", prompt, max_length)
+        return None
+
+    @classmethod
+    def reprint(cls):
+        if cls.input_mode:
+            return ""
+        return "\n{}{}".format(cls.prompt, cls.buffer)
+
+    # Inputs
+    @classmethod
+    def get_input(cls, on_input=lambda: ""):
+        cls.off()
+        value = on_input()
+        cls.on()
+        return value
 
     @classmethod
     def get_sex(cls):
@@ -72,30 +100,3 @@ class Keys:
     @classmethod
     def system(cls, command):
         return cls.get_input(lambda: cls.__system(command))
-
-    @classmethod
-    def get_command(cls, prompt, max_length):
-        cls.input_mode = True
-        cls.prompt = prompt
-        cls.buffer_prompt(cls.prompt)
-
-        cls.Bprintf.to_show = False
-        cls.buffer = input()[:max_length]
-        print("\n")
-        cls.input_mode = False
-        return cls.buffer
-
-    @classmethod
-    def reprint(cls):
-        cls.Bprintf.break_line = True
-        cls.buffer_prompt()
-        if not cls.input_mode and cls.Bprintf.to_show:
-            print("\n{}{}".format(cls.prompt, cls.buffer))
-        cls.Bprintf.to_show = False
-
-    @classmethod
-    def get_input(cls, on_input=lambda: ""):
-        cls.off()
-        value = on_input()
-        cls.on()
-        return value

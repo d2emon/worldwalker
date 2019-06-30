@@ -48,37 +48,21 @@ class WorldPlayer(BasePlayer):
 
     def __init__(self, player_id):
         self.__player_id = player_id
-        self.__data_cache = None
+        self.__data = self.reload()
 
     @property
     def player_id(self):
         return self.__player_id
-
-    @property
-    def __data(self):
-        if self.player_id is None:
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-            ]
-        if self.__data_cache is None:
-            self.__data_cache = PlayersService.get_info(player_id=self.player_id)
-        return self.__data_cache
 
     @classmethod
     def __get(cls, player_id):
         return WorldPlayer(player_id)
 
     def reload(self):
-        pass
+        if self.player_id is None:
+            return [None] * 16
+
+        return list(PlayersService.get_info(player_id=self.player_id))
 
     @property
     def name(self):

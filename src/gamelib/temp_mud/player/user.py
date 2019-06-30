@@ -328,9 +328,6 @@ class User(WorldPlayer, UserData, Actor):
         self.visible = 0 if not self.is_god else 10000
 
         if self.load() is None:
-            yield "335"
-            yield self.get_new_user
-            yield self.get_new_user()
             self.create(**self.get_new_user())
 
         # self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
@@ -339,11 +336,7 @@ class User(WorldPlayer, UserData, Actor):
         # self.location = location
 
         # self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self))
-
-        yield self.strength
-        yield self.level
-        yield self.visible
-        yield self.sex
+        yield ""
 
     # Parse
     def __summoned(self, location):
@@ -422,6 +415,7 @@ class User(WorldPlayer, UserData, Actor):
             self.on_look()
 
     def on_look(self):
+        print("On Look")
         enemies = (
             # Player.find("wraith"),
             Player.find("shazareth"),
@@ -729,10 +723,6 @@ class User(WorldPlayer, UserData, Actor):
 
     @property
     def mout_ms(self):
-        return None
-
-    @property
-    def player_id(self):
         return None
 
     def debug2(self, *args):

@@ -87,25 +87,26 @@ class ScreenBottom(TtyControl):
 
 
 class CreateUser(Control):
-    def __init__(self, buffer, game):
-        self.buffer = buffer
+    def __init__(self, game):
+        self.buffer = game.buffer
         self.value = None
         self.game = game
-        self.render()
 
-    def render(self):
         self.buffer.add("Creating character....\n")
         self.buffer.add("\n")
         self.buffer.add("Sex (M/F) : ")
 
-        print(list(self.buffer.show(self.game)))
+        self.render()
 
-        # self.value = {
-        #     'm': User.SEX_MALE,
-        #     'f': User.SEX_FEMALE,
-        # }.get(Keys.get_sex())
+    def render(self):
+        # data = self.buffer.show(self.game)
+        # print(list(data))
+        print("".join(self.buffer.show(self.game)))
+        self.value = {
+            'm': User.SEX_MALE,
+            'f': User.SEX_FEMALE,
+        }.get(Keys.get_sex())
 
-        self.value = input()
         if self.value is None:
             self.buffer.add("M or F")
             return self.render()
@@ -132,8 +133,8 @@ def show_intro(**kwargs):
     user_id = kwargs.get('user_id')
     name = kwargs.get('name')
 
-    print("Entering Game ....\n")
-    print("Hello {}\n".format(name))
+    print("Entering Game ....")
+    print("Hello {}".format(name))
     LogService.post_system(message="GAME ENTRY: {}[{}]".format(name, user_id))
 
 
@@ -178,8 +179,7 @@ class Game:
 
     @active.setter
     def active(self, value):
-        if self.__active:
-            self.on_timer()
+        self.on_timer()
         self.__active = value
 
     @property
@@ -201,15 +201,13 @@ class Game:
             raise CrapupError("Sorry AberMUD is currently unavailable")
 
         self.user.reset_position()
-        print(list(self.parser.start()))
-        # for s in self.parser.start():
-        #     print(s)
+        for s in self.parser.start():
+            print(s)
         self.user.in_setup = True
 
     def create_user(self):
-        print("create_user")
         return {
-            'sex': CreateUser(self.buffer, self).value
+            'sex': CreateUser(self).value
         }
 
     def play(self):
@@ -267,11 +265,23 @@ class Game:
             return
 
         self.__active = False
-        World.load()
-
+        # World.load()
         # self.parser.read_messages(*self.user.read_messages(interrupt=self.interrupt))
-        # self.user.on_time()
+        self.user.on_time()
 
-        World.save()
-        Keys.reprint()
+        self.__reprint()
+        # World.save()
         self.__active = True
+
+    def __reprint(self):
+        self.buffer.break_line = True
+
+        self.buffer.add(Keys.buffer)
+        self.buffer.show(self)
+
+        self.buffer.reprint(Keys.reprint())
+
+    def buffer_prompt(self, message=None, max_length=None):
+        self.buffer.add(message)
+        self.buffer.show(self)
+        return Keys.get_prompt(max_length)

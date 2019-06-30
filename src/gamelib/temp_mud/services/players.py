@@ -76,7 +76,10 @@ class PlayersService:
     @classmethod
     def get_info(cls, **kwargs):
         player_id = cls.__get_player_id(**kwargs)
-        return WorldService.get_player(player_id=player_id)
+        player = next((player for player in cls.__players if player.player_id == player_id), None)
+        if player is None:
+            raise ServiceError("No player with this player id")
+        return player.serialize()
 
     # Tk
     @classmethod

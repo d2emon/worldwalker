@@ -40,6 +40,9 @@ class Buffer:
             return
         user.log_service.add(self.__get_buffer(user))
 
+    def __to_output(self, user):
+        return "".join(self.__get_buffer(user, True))
+
     def __to_snoop(self, user):
         if self.__snoop_dest is None:
             return
@@ -51,25 +54,29 @@ class Buffer:
     def show(self, game):
         game.active = False
 
-        World.save()
+        # World.save()
 
         if self.__buffer:
             self.to_show = True
             if self.break_line:
-                print("\n")
                 yield "\n"
         self.break_line = False
 
         self.__to_log(game.user)
         self.__to_snoop(game.user)
-        print(self.__get_buffer(game.user, True))
-        yield from self.__get_buffer(game.user, True)
+        yield self.__to_output(game.user)
 
         # clear buffer
         self.__buffer = ""
 
         if self.__snoop_target is not None:
-            print(map(lambda s: "|" + s, SnoopsService.get(user=game.user.name)))
             yield from map(lambda s: "|" + s, SnoopsService.get(user=game.user.name))
 
         game.active = True
+
+    def reprint(self, value):
+        if not self.to_show:
+            return
+
+        print(value)
+        self.to_show = False
