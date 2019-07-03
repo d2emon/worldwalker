@@ -1,5 +1,10 @@
 import logging
-from datetime import datetime
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)-15s:%(levelname)s:%(pathname)s:%(lineno)s\n\t%(message)s'
+)
 
 
 class LogService:
@@ -8,10 +13,9 @@ class LogService:
     @classmethod
     def post_system(cls, **kwargs):
         message = kwargs.get('message')
-        message = "{}:  {}\n".format(datetime.now(), message)
-        cls.__log.append(message)
         logging.info(message)
         # try:
+        #     cls.__log.append(message)
         #     x = connect(LOG_FILE, "a")
         #     fprintf(x, "{}:  {}\n".format(time(), message))
         #     fclose(x)

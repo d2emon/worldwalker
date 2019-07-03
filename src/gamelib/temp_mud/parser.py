@@ -100,9 +100,6 @@ class Parser:
         self.user.check_fight()
         return result
 
-    def start(self):
-        return self.__special(self.user, ".g")
-
     # Parse
     def __iter__(self):
         return self

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from ..bprintf import Buffer
 from ..errors import CrapupError, ServiceError
@@ -21,8 +22,6 @@ class Game:
         )
 
         # Signals
-        self.__active = False
-        self.__caption = ""
         self.__last_interrupt = None
 
         self.user = User(username)
@@ -32,20 +31,9 @@ class Game:
         self.parser = Parser(self.user)
 
         self.main_screen = MainScreen(
-            self.buffer,
+            self,
             self.user,
-            on_before_input=self.on_before_input,
-            on_after_input=self.on_after_input,
         )
-
-    @property
-    def active(self):
-        return self.__active
-
-    @active.setter
-    def active(self, value):
-        self.on_timer()
-        self.__active = value
 
     @property
     def interrupt(self):
@@ -54,6 +42,11 @@ class Game:
             return False
         self.__last_interrupt = time
         return True
+
+    @classmethod
+    def __show_all(cls, text):
+        # logging.debug(text)
+        print("".join(text))
 
     # Game flow
     def __start(self):
@@ -65,21 +58,19 @@ class Game:
         except ServiceError:
             raise CrapupError("Sorry AberMUD is currently unavailable")
 
+        self.user.log_debug()
         self.user.reset_position()
-        for s in self.parser.start():
-            print(s)
+        self.user.log_debug()
+        self.__show_all(self.user.start())
+        self.user.log_debug()
         self.user.in_setup = True
-
-    def create_user(self):
-        return {
-            'sex': CreateUser(self).value
-        }
+        self.user.log_debug()
 
     def play(self):
         try:
             Keys.on()
             self.__start()
-            self.main_screen.render()
+            self.main_screen.show()
         except SystemExit as e:
             return self.on_error(e)
         except CrapupError as e:
@@ -97,13 +88,8 @@ class Game:
         FinalMessage(message)
 
     # Events
-    def on_before_input(self, control):
-        self.active = True
-
-    def on_after_input(self, control):
-        self.active = False
-        self.buffer.add_input(control.value)
-        self.main_screen.command = control.value
+    def create_user(self):
+        return CreateUser(self).data
 
     def on_error(self, error):
         print(error)
@@ -120,27 +106,6 @@ class Game:
 
         # self.user.loose()
         self.__finish("Byeeeeeeeeee  ...........")
-
-    def on_timer(self):
-        if not self.active:
-            return
-
-        self.__active = False
-        # World.load()
-        # self.parser.read_messages(*self.user.read_messages(interrupt=self.interrupt))
-        self.user.on_time()
-
-        self.__reprint()
-        # World.save()
-        self.__active = True
-
-    def __reprint(self):
-        self.buffer.break_line = True
-
-        self.buffer.add(Keys.buffer)
-        self.buffer.show(self)
-
-        self.buffer.reprint(Keys.reprint())
 
     def buffer_prompt(self, message=None, max_length=None):
         self.buffer.add(message)

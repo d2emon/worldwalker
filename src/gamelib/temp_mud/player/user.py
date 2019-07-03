@@ -1,3 +1,4 @@
+import logging
 import re
 from ..errors import CrapupError, LooseError, ServiceError
 # from ..item import Item, Door
@@ -282,6 +283,10 @@ class User(WorldPlayer, UserData, Actor):
         self.is_forced = False
 
     # Parse
+    def on_message(self, message):
+        yield from self.before_message(message)
+        yield from super().on_message(message)
+
     def on_messages(self, **kwargs):
         interrupt = kwargs.get('interrupt', False)
 
@@ -322,20 +327,21 @@ class User(WorldPlayer, UserData, Actor):
         self.__position_saved = self.position
 
     def start(self):
-        self.show_players = True
-
         # World.load()
+        self.show_players = True
         self.visible = 0 if not self.is_god else 10000
+        self.log_debug()
 
         if self.load() is None:
             self.create(**self.get_new_user())
+        self.log_debug()
 
-        # self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
+        self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
 
         # yield from self.read_messages(reset_after_read=True)
         # self.location = location
 
-        # self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self))
+        self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self))
         yield ""
 
     # Parse
@@ -756,3 +762,25 @@ class User(WorldPlayer, UserData, Actor):
     def translocate(self):
         pass
 
+    def log_debug(self):
+        logging.debug(
+            """
+name:\t%s
+score:\td
+strength:\t%d
+sex:\t%d
+level:\t%d
+visible:\t%d
+position:\t%d
+show_players:\t%d
+            """,
+            self.name,
+            # self.score,
+            self.strength,
+            self.sex,
+            self.level,
+            self.visible,
+            self.message_id,
+            self.show_players
+        )
+        # logging.debug("in_setup:\t%d", self.in_setup)

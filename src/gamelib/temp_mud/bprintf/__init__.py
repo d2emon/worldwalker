@@ -1,53 +1,69 @@
+import logging
 from ..errors import CrapupError, LooseError, ServiceError
-from ..services.log import LogService
+from ..services.buffer import BufferService, BufferOverflowError, ShortBufferOverflowError
 from ..services.snoops import SnoopsService
-from ..world import World
+# from ..world import World
 
 
 class Buffer:
-    __MAX_LENGTH = 235
-    __MAX_BUFFER = 4095
-
     def __init__(self):
-        self.to_show = False  # pr_due
-        self.break_line = False  # pr_qcr
+        self.__buffer_id = self.__put()
 
-        self.__buffer = ""
+        self.__to_show = False  # pr_due
+        self.__break_line = False  # pr_qcr
 
         self.__snoop_dest = None
         self.__snoop_target = None
 
-    def add(self, *messages):
-        message = "".join(messages)
-        if len(message) > self.__MAX_LENGTH:
-            LogService.post_system(message="Bprintf Short Buffer overflow")
-            raise CrapupError("Internal Error in BPRINTF")
+    @classmethod
+    def __put(cls):
+        logging.debug("PUT buffer")
+        return BufferService.put().get('buffer_id')
 
-        if len(message) + len(self.__buffer) > self.__MAX_BUFFER:
-            LogService.post_system(message="Buffer overflow on user {}".format(user.name))
-            raise LooseError("PANIC - Buffer overflow")
+    def __clear(self):
+        # clear buffer
+        logging.debug("CLEAR buffer(%s)", self.__buffer_id)
+        return BufferService.push_clear(
+            buffer_id=self.__buffer_id,
+        ).get('result', False)
 
-        self.__buffer += message
+    def __post(self, text, raw=False):
+        logging.debug("POST buffer(%s):\t%s", self.__buffer_id, text)
+        if raw:
+            text = "\001l{}\n\001".format(text)
+        try:
+            return BufferService.post(
+                buffer_id=self.__buffer_id,
+                text=text,
+            ).get('result', False)
+        except ShortBufferOverflowError as e:
+            raise CrapupError(e)
+        except BufferOverflowError as e:
+            raise LooseError(e)
 
-    def add_input(self, *messages):
-        self.__buffer += "".join(map(lambda s: "\001l{}\n\001".format(s), messages))
+    def __get(self, clear=True):
+        logging.debug("GET buffer(%s)", self.__buffer_id)
+        text = BufferService.get(
+            buffer_id=self.__buffer_id,
+        ).get('text', '')
+        if clear:
+            self.__clear()
+        return text
 
-    def __get_buffer(self, user, from_keyboard=False):
-        yield from user.decode(self.__buffer, from_keyboard)
+    def add(self, *messages, raw=False):
+        return [self.__post(message, raw) for message in messages]
 
-    def __to_log(self, user):
+    @classmethod
+    def __to_log(cls, user, text):
         if user.log_service is None:
             return
-        user.log_service.add(self.__get_buffer(user))
+        user.log_service.add(text)
 
-    def __to_output(self, user):
-        return "".join(self.__get_buffer(user, True))
-
-    def __to_snoop(self, user):
+    def __to_snoop(self, user, text):
         if self.__snoop_dest is None:
             return
         try:
-            SnoopsService.push(user=user.name, text=self.__get_buffer(user))
+            SnoopsService.push(user=user.name, text=text)
         except ServiceError:
             pass
 
@@ -56,18 +72,18 @@ class Buffer:
 
         # World.save()
 
-        if self.__buffer:
-            self.to_show = True
-            if self.break_line:
+        text = self.__get()
+        if text:
+            self.__to_show = True
+            if self.__break_line:
                 yield "\n"
-        self.break_line = False
+        self.__break_line = False
 
-        self.__to_log(game.user)
-        self.__to_snoop(game.user)
-        yield self.__to_output(game.user)
+        decoded = game.user.decode(text, False)
+        self.__to_log(game.user, decoded)
+        self.__to_snoop(game.user, decoded)
 
-        # clear buffer
-        self.__buffer = ""
+        yield game.user.decode(text, True)
 
         if self.__snoop_target is not None:
             yield from map(lambda s: "|" + s, SnoopsService.get(user=game.user.name))
@@ -75,8 +91,8 @@ class Buffer:
         game.active = True
 
     def reprint(self, value):
-        if not self.to_show:
+        if not self.__to_show:
             return
 
         print(value)
-        self.to_show = False
+        self.__to_show = False

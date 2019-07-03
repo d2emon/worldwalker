@@ -1,15 +1,74 @@
+import logging
 from ..keys import Keys
 from ..services.log import LogService
 from ..player.user import User
 
 
 class Control:
+    def __init__(self):
+        self.visible = True
+
+    def show(self, visible=True):
+        self.visible = visible
+        while self.visible:
+            self.on_before_render()
+            self.render()
+            self.visible = False
+            self.on_after_render()
+
     def render(self):
         raise NotImplementedError()
 
+    def on_before_render(self):
+        pass
 
-class TtyControl(Control):
-    def __init__(self, tty=0):
+    def on_after_render(self):
+        pass
+
+
+class BufferedControl(Control):
+    def __init__(self, game):
+        super().__init__()
+        self.game = game
+        self.buffer = game.buffer
+
+    def add_buffer(self, message):
+        self.buffer.add(message)
+
+    def show_buffer(self):
+        print("".join(self.buffer.show(self.game)))
+
+    def render(self):
+        raise NotImplementedError()
+
+    def on_before_render(self):
+        self.show_buffer()
+
+    def on_after_render(self):
+        self.show_buffer()
+
+
+class InputControl(BufferedControl):
+    def __init__(
+        self,
+        game,
+        on_input=lambda value: None,
+    ):
+        super().__init__(game=game)
+        self.value = None
+        self.on_input = on_input
+
+    def render(self):
+        raise NotImplementedError()
+
+    def on_after_render(self):
+        self.buffer.add(self.value, raw=True)
+        self.on_input(self.value)
+
+
+class TtyControl(BufferedControl):
+    def __init__(self, game, tty=0):
+        super().__init__(game)
         self.tty = tty
 
     def show_tty(self):
@@ -19,30 +78,49 @@ class TtyControl(Control):
         if self.tty == 4:
             self.show_tty()
 
+    def on_before_render(self):
+        pass
+
+    def on_after_render(self):
+        pass
+
 
 class ScreenHeader(Control):
-    def __init__(self, user, caption=""):
-        self.user = user
+    def __init__(self, caption=""):
+        super().__init__()
         self.caption = caption
 
     def render(self):
-        if self.user.visible > 9999:
-            self.caption = "-csh"
-        elif self.user.visible == 0:
-            self.caption = "   --}----- ABERMUD -----{--     Playing as {}".format(self.user.name)
         print(self.caption)
 
+    def on_before_render(self):
+        print("-" * 80)
 
-class ScreenInput(Control):
-    def __init__(self, on_activate=lambda control: None, on_deactivate=lambda control: None):
-        self.on_activate = on_activate
-        self.on_deactivate = on_deactivate
-        self.value = None
+
+class ScreenInput(InputControl):
+    def __init__(
+        self,
+        game,
+        timer,
+        on_input=lambda value: None,
+    ):
+        super().__init__(
+            game=game,
+            on_input=on_input
+        )
+        self.timer = timer
 
     def render(self):
-        self.on_activate(self)
+        self.value = input()
         # self.value = Keys.get_command(self.parser.prompt, 80)
-        self.on_deactivate(self)
+
+    def on_before_render(self):
+        print("Input  ........." + "." * 64)
+        self.timer.active = True
+
+    def on_after_render(self):
+        self.timer.active = False
+        super().on_after_render()
 
 
 class ScreenTop(TtyControl):
@@ -50,98 +128,170 @@ class ScreenTop(TtyControl):
         # topscr()
         pass
 
+    def on_before_render(self):
+        print("Top    ........." + "." * 64)
 
-class ScreenMain(Control):
-    def __init__(self, buffer):
-        self.buffer = buffer
+
+class ScreenMain(BufferedControl):
+    def __init__(self, game):
+        super().__init__(game=game)
         self.command = None
 
     def render(self):
-        # World.load()
         # self.buffer.add(*self.user.read_messages())
+        print(self.command)
         # if self.parser.parse(self.command) is None:
         #     return
         # self.buffer.add(*self.user.read_messages(unique=True))
-        # self.buffer.show()
+
+    def on_before_render(self):
+        print("Main   ........." + "." * 64)
+        # World.load()
+
+    def on_after_render(self):
+        super().on_after_render()
         # World.save()
         print("Render Main")
 
 
-class ScreenBottom(TtyControl):
-    def __init__(self, buffer, tty=0):
-        super().__init__(tty)
-        self.buffer = buffer
+class ScreenTimer(BufferedControl):
+    def __init__(self, game):
+        super().__init__(game=game)
+        self.__active = False
 
+    @property
+    def active(self):
+        return self.__active
+
+    @active.setter
+    def active(self, value):
+        self.show()
+        self.__active = value
+
+    def render(self):
+        # self.parser.read_messages(*self.user.read_messages(interrupt=self.interrupt))
+        self.game.user.on_time()
+
+    def show(self, visible=True):
+        return super().show(self.active)
+
+    def __reprint(self):
+        self.buffer.break_line = True
+        self.buffer.add(Keys.buffer)
+        self.buffer.show(self)
+        self.buffer.reprint(Keys.reprint())
+
+    def on_before_render(self):
+        print("Timer  ........." + "." * 64)
+        self.__active = False
+        # World.load()
+
+    def on_after_render(self):
+        self.__reprint()
+        # World.save()
+        self.__active = True
+
+
+class ScreenBottom(TtyControl):
     def show_tty(self):
         # btmscr()
         pass
 
-    def render(self):
-        self.buffer.show()
-        super().render()
-        self.buffer.show()
+    def on_before_render(self):
+        print("Bottom ........." + "." * 64)
+        self.buffer.show(self.game)
+
+    def on_after_render(self):
+        self.buffer.show(self.game)
+        print("-" * 80)
 
 
-class CreateUser(Control):
+class CreateUser(InputControl):
     def __init__(self, game):
-        self.buffer = game.buffer
-        self.value = None
-        self.game = game
+        super().__init__(game=game)
+        self.on_input = self.after_input
 
-        self.buffer.add("Creating character....\n")
-        self.buffer.add("\n")
-        self.buffer.add("Sex (M/F) : ")
+        self.add_buffer("Creating character....\n")
+        self.add_buffer("\n")
+        self.add_buffer("Sex (M/F) : ")
+        self.show(True)
 
-        self.render()
+    @property
+    def data(self):
+        return {
+            'sex': self.value,
+        }
 
     def render(self):
-        while True:
-            print("".join(self.buffer.show(self.game)))
-            self.value = {
-                'm': User.SEX_MALE,
-                'f': User.SEX_FEMALE,
-            }.get(Keys.get_sex())
+        self.on_input(Keys.get_sex())
 
-            if self.value is not None:
-                return
+    def after_input(self, value):
+        self.value = {
+            'm': User.SEX_MALE,
+            'f': User.SEX_FEMALE,
+        }.get(value)
+
+    def on_after_render(self):
+        self.visible = self.value is None
+        if self.visible:
             self.buffer.add("M or F")
 
 
 class FinalMessage(Control):
     dashes = "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 
-    def __init__(self, message):
+    def __init__(self, message=""):
+        super().__init__()
         self.message = message
-        self.render()
+        self.show(True)
 
     def render(self):
+        print(self.message)
+
+    def on_before_render(self):
         print()
         print(self.dashes)
         print()
-        print(self.message)
+
+    def on_after_render(self):
         print()
         print(self.dashes)
         raise SystemExit(0)
 
 
-class MainScreen(Control):
+class MainScreen(BufferedControl):
+    waiting = True
+
     def __init__(
         self,
-        buffer,
+        game,
         user,
-        on_before_input=lambda control: None,
-        on_after_input=lambda control: None,
     ):
-        self.main_control = ScreenMain(buffer)
+        super().__init__(game=game)
+        self.user = user
+
+        # Signals
+        self.__active = False
+        self.__last_interrupt = None
+
+        self.timer_control = ScreenTimer(game=self.game)
+
+        self.header = ScreenHeader()
+        self.command_input = ScreenInput(
+            game=game,
+            timer=self.timer_control,
+            on_input=self.on_input,
+        )
+        self.top = ScreenTop(game=self.game)
+        self.main_control = ScreenMain(game=self.game)
+        self.bottom = ScreenBottom(game=self.game)
+
         self.controls = [
-            ScreenHeader(user),
-            ScreenInput(
-                on_activate=on_before_input,
-                on_deactivate=on_after_input,
-            ),
-            ScreenTop(),
+            self.header,
+            self.command_input,
+            self.top,
             self.main_control,
-            ScreenBottom(buffer),
+            self.bottom,
         ]
 
     @property
@@ -153,10 +303,20 @@ class MainScreen(Control):
         self.main_control.command = value
 
     def render(self):
-        # while True:
-        for _ in range(5):
-            print(self.controls)
-            # map(lambda control: control.render(), self.controls)
+        [control.show() for control in self.controls]
+
+    def on_before_render(self):
+        # Set caption
+        if self.user.visible > 9999:
+            self.header.caption = "-csh"
+        elif self.user.visible == 0:
+            self.header.caption = "   --}}----- ABERMUD -----{{--     Playing as {}".format(self.user.name)
+
+    def on_after_render(self):
+        self.visible = True
+
+    def on_input(self, value):
+        self.command = value
 
 
 def show_intro(**kwargs):

@@ -13,14 +13,8 @@ Sectors 1-n  in pairs ie [128 words]
 0 = Text
 -1 = general request
 """
-from ..errors import ServiceError, LooseError
-from ..player.player import Player
-# from ..weather import Weather
-from ..world import World
+from ..services.messages import MessagesService
 from . import message_codes
-
-
-MAX_MESSAGES = 199
 
 
 class Message:
@@ -32,45 +26,58 @@ class Message:
         self.user_from = user_from
         self.message = message
 
-    @classmethod
-    def load(cls, message_id):
-        return World.get_message(message_id)
-
-    def save(self):
-        self.message_id = World.add_message(self)
-        return self.message_id
-
-    # Tk
-    @classmethod
-    def messages(cls, first=None, last=None):
-        return World.get_messages(first, last)
-
-    @classmethod
-    def cleanup(cls, user):
-        World.load()
-        for player in Player.get_timed_out(World.clear_old_messages()):
-            user.broadcast("{} has been timed out\n".format(player))
-            player.timeout_death()
-        user.location.weather.autochange(user)
-
-    def send(self, user):
-        try:
-            World.load()
-            message_id = self.save()
-            if message_id >= MAX_MESSAGES:
-                self.cleanup(user)
-                next(Weather())
-        except ServiceError:
-            raise LooseError("\nAberMUD: FILE_ACCESS : Access failed\n")
-
     # Parser
-    def serialize(self):
+    @classmethod
+    def __deserialize(cls, channel_id, code, users, message):
+        return cls(
+            users[1],
+            users[0],
+            code,
+            channel_id,
+            message
+        )
+
+    def __serialize(self):
         return [
             self.channel_id,
             self.code,
             [self.user_to, self.user_from],
             self.message,
         ]
+
+    @classmethod
+    def __on_overflow(cls, first_message_id):
+        # World.load()
+        # for player in Player.get_timed_out(first_message_id):
+        #     Broadcast("{} has been timed out\n".format(player)).send()
+        #     player.timeout_death()
+
+        # user.location.weather.autochange(user)
+        # next(Weather())
+        pass
+
+    @classmethod
+    def load(cls, message_id):
+        return cls.__deserialize(*MessagesService.get(
+            message_id=message_id,
+        ).get('message'))
+
+    # Tk
+    @classmethod
+    def messages(cls, first=None, last=None):
+        return cls.__deserialize(*MessagesService.get(
+            first=first,
+            last=last,
+        ).get('message'))
+
+    def send(self):
+        result = MessagesService.post(
+            message=self.__serialize(),
+        )
+        self.message_id = result.get('message_id')
+        if result.get('overflow', False):
+            self.__on_overflow(result.get('first_message_id'))
+        return self.message_id
 
 
 class Broadcast(Message):

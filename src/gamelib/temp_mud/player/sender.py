@@ -17,10 +17,10 @@ class Sender:
 
     # Tk
     def send_message(self, to_user, code, channel_id, message):
-        Message(to_user, self, code, channel_id, message).send(self)
+        Message(to_user, self, code, channel_id, message).send()
 
     def broadcast(self, message):
-        Broadcast(message).send(self)
+        Broadcast(message).send()
 
     # Unknown
     def communicate(self, code, message, target=None):
