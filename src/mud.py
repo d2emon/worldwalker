@@ -6,7 +6,6 @@ import uuid
 from gamelib.temp_mud.game import Game
 
 
-
 logging.basicConfig(level=logging.INFO)
 
 

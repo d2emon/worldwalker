@@ -100,3 +100,14 @@ class Keys:
     @classmethod
     def system(cls, command):
         return cls.get_input(lambda: cls.__system(command))
+
+
+def without_keys(f):
+    def wrapped(*args, **kwargs):
+        try:
+            Keys.on()
+            result = f(*args, **kwargs)
+        finally:
+            Keys.off()
+        return result
+    return wrapped
