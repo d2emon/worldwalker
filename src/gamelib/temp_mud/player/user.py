@@ -1,9 +1,11 @@
-import logging
 import re
+from itertools import chain
+from .. import debug
 from ..errors import CrapupError, LooseError, ServiceError
 # from ..item import Item, Door
 # from ..location import Location
 from ..magic import random_percent
+from ..services.log import LogService
 from ..services.players import PlayersService
 from ..world import World
 from .actor import Actor
@@ -15,8 +17,91 @@ from .user_data import UserData
 GWIZ = None
 
 
+class DataFilter:
+    def __init__(self, items=None):
+        self.items = items or []
+
+    def filter(self, **kwargs):
+        return ItemsData(filter(self.__filter(**kwargs), self.items))
+
+    def or_filter(self, *items):
+        return ItemsData(chain(self.items, *items))
+
+    @classmethod
+    def __filter(cls, **kwargs):
+        return lambda item: all(f(item) for f in cls.__filters(**kwargs))
+
+    @classmethod
+    def __filters(cls, **kwargs):
+        raise NotImplementedError()
+
+    @property
+    def first(self):
+        return next(list(self.items), None)
+
+
+class ItemsData(DataFilter):
+    @classmethod
+    def __filters(
+        cls,
+        carried_by=None,
+        carried_in=None,
+        is_destroyed=None,
+        is_light=None,
+        user=None,
+        item=None,
+        location=None,
+        mask=None,
+        **kwargs
+    ):
+        if carried_by is not None:
+            yield lambda i: i.is_carried_by(carried_by)
+        if carried_in is not None:
+            yield lambda i: i.owner and carried_in.equal(i.owner.location)
+        if is_destroyed is not None:
+            yield lambda i: i.is_destroyed == is_destroyed
+        if is_light is not None:
+            yield lambda i: i.is_light == is_light
+        if user is not None and not user.is_wizard:
+            yield from cls.__filters(is_destroyed=False)
+        if item is not None:
+            yield lambda i: i == item
+        if location is not None:
+            yield lambda i: i.is_in_location(location)
+        if mask is not None:
+            yield lambda i: i.test_mask(mask)
+
+
+class PlayerData(DataFilter):
+    @classmethod
+    def __filters(
+        cls,
+        name=None,
+        player=None,
+        visible=None,
+        location=None,
+        **kwargs
+    ):
+        if name is not None:
+            # Player.find(name)
+            yield lambda i: i.name == name
+        if player is not None:
+            yield lambda i: player.equal(i)
+        if visible is not None:
+            yield lambda i: i.visible <= visible
+        if location is not None:
+            yield lambda i: location.equal(i.location)
+
+
 class User(WorldPlayer, UserData, Actor):
-    def __init__(self, name):
+    def __init__(
+        self,
+        name,
+
+        # Events
+        before_message=lambda message: None,
+        on_new_user=lambda: {},
+    ):
         try:
             player_data = PlayersService.get_new_player(name=name)
         except ServiceError as e:
@@ -24,6 +109,7 @@ class User(WorldPlayer, UserData, Actor):
 
         super().__init__(player_data[0])
 
+        # Player data
         self.__name = player_data[1]
         self.__location = player_data[4]
         self.__message_id = player_data[5]
@@ -37,8 +123,8 @@ class User(WorldPlayer, UserData, Actor):
         # 13
 
         # Events
-        self.before_message = lambda message: None
-        self.get_new_user = lambda: {}
+        self.before_message = before_message
+        self.on_new_user = on_new_user
 
         # Other fields
         self.__in_setup = False
@@ -54,11 +140,11 @@ class User(WorldPlayer, UserData, Actor):
         self.__min_ms = "appears with an ear-splitting bang."
         self.__here_ms = "is here"
 
-        self.__is_summoned = 0  # tdes
-        self.__summoned_location = 0  # ades
+        self.__summoned_location = None  # tdes, ades
         self.__vdes = 0
         self.__rdes = 0
-        self.zapped = False
+
+        self.__is_zapped = False
 
         self.__invisibility_counter = 0
         self.__drunk_counter = 0
@@ -139,41 +225,32 @@ class User(WorldPlayer, UserData, Actor):
     # Weather
     @property
     def available_items(self):
-        return find_items(available=self)
+        # return find_items(available=self)
+        return []
 
     @property
-    def in_dark(self):
-        def is_light(item):
-            if not item.is_light:
-                return False
-            if self.item_is_here(item):
-                return True
-            return item.owner is not None and self.location.equal(item.owner.location)
-
-        return not any((
+    def in_light(self):
+        return any((
             self.is_wizard,
             not self.location.is_dark,
-            any(is_light(item) for item in find_items()),
+            any(self.items_visible.filter(is_light=True).items),
         ))
-
-    # From Reader
-    def reset_position(self):
-        self.message_id = -1
 
     # In User
     # Parse
     @property
     def summoned_location(self):
-        return self.__summoned_location
+        return self.__summoned_location if not self.is_wizard else None
 
     @summoned_location.setter
     def summoned_location(self, value):
+        if self.is_wizard:
+            self.__summoned_location = None
+            return
         self.__summoned_location = value
-        if not self.is_wizard:
-            self.__is_summoned = True
 
     # New1
-    def get_damage(self, damage):
+    def get_damage(self, enemy, damage):
         if self.is_wizard:
             return
 
@@ -185,35 +262,49 @@ class User(WorldPlayer, UserData, Actor):
 
         World.save()
 
-        syslog("{} slain magically".format(self.name))
         self.remove()
-        self.zapped = True
-
-        World.load()
-        self.dump_items()
+        self.__is_zapped = True
         self.loose()
+
+        # Send messages
+        LogService.post_system(message="{} slain magically".format(self.name))
         self.send_global("{} has just died\n".format(self.name))
         self.send_wizard("[ {} has just died ]\n".format(self.name))
+
         raise CrapupError("Oh dear you just died\n")
 
     # ObjSys
-    def item_is_here(self, item):
-        if not self.is_wizard and item.is_destroyed:
-            return False
-        return item.is_in_location(self.location)
+    @property
+    def items_here(self):
+        return ItemsData().filter(user=self, location=self.location)
 
-    def find(self, player_name, not_found_error=None):
-        player = Player.find(player_name)
-        if player is None:
-            return player
-        if not self.seeplayer(player):
-            return None
-        return player
+    @property
+    def items_visible(self):
+        return self.items_here.or_filter(ItemsData().filter(carried_in=self.location))
+
+    @property
+    def items_carried(self):
+        return ItemsData().filter(carried_by=self)
 
     # Support
-    def item_is_available(self, item):
-        return self.item_is_here(item) or item.is_carried_by(self)
+    @property
+    def items_available(self):
+        return self.items_here.or_filter(self.items_carried)
 
+    @property
+    def players_visible(self):
+        return PlayerData().filter(visible=self.level, location=self.location).or_filter(self.myself)
+
+    @property
+    def myself(self):
+        return PlayerData().filter(player=self)
+
+    # ObjSys
+    def find(self, name):
+        player = self.players_visible.filter(name=name).first
+        return player if self.can_see_player(player) or None
+
+    # Support
     def check_fight(self):
         self.Blood.check_fight()
         if self.Blood.fighting and self.Blood.get_enemy().location.location_id != self.location.location_id:
@@ -226,12 +317,12 @@ class User(WorldPlayer, UserData, Actor):
     def check_kicked(self):
         self.reset_position()
         World.load()
-        if self.find(self.name) is None:
+        if not any(PlayerData().filter(name=self.name).items):
             raise LooseError("You have been kicked off")
 
     # Support
     def has_any(self, mask):
-        return any(item for item in self.__available_items if item.test_mask(mask))
+        return self.items_available.filter(mask=mask)
 
     # Parse
     def hit_lightning(self, wizard):
@@ -240,17 +331,17 @@ class User(WorldPlayer, UserData, Actor):
             return
 
         # You are in the ....
-        yield "A massive lightning bolt arcs down out of the sky to strike"
+        yield "A massive lightning bolt arcs down out of the sky to strike you between\nthe eyes\n"
+
+        self.__is_zapped = True
+        self.delete()
+
         self.send_wizard(
             "[ \001p{}\001 has just been zapped by \001p{}\001 and terminated ]\n".format(
                 self.name,
                 wizard.name,
             ),
         )
-
-        yield " you between\nthe eyes\n"
-        self.zapped = True
-        self.delete()
         self.send_global("\001s{user}\001{user} has just died.\n\001".format(user=self.name))
 
         yield "You have been utterly destroyed by {}\n".format(wizard.name)
@@ -270,7 +361,8 @@ class User(WorldPlayer, UserData, Actor):
         self.delete()
         World.save()
 
-        self.save()
+        if not self.__is_zapped:
+            self.save()
         self.send_snoop(self.snoop_target, False)
 
     # New1
@@ -298,8 +390,7 @@ class User(WorldPlayer, UserData, Actor):
             yield from self.update()
             self.__to_update = False
 
-        if self.__is_summoned:
-            self.__summoned(self.summoned_location)
+        self.__summoned(self.summoned_location)
 
         self.__update_fight(interrupt)
 
@@ -314,10 +405,6 @@ class User(WorldPlayer, UserData, Actor):
             if not self.is_dumb:
                 self.hiccup()
 
-        self.__is_summoned = False
-        self.__rdes = 0
-        self.__vdes = 0
-
     def save_position(self):
         if abs(self.position - self.__position_saved) < 10:
             return
@@ -330,11 +417,11 @@ class User(WorldPlayer, UserData, Actor):
         # World.load()
         self.show_players = True
         self.visible = 0 if not self.is_god else 10000
-        self.log_debug()
+        debug.show_user(self)
 
         if self.load() is None:
-            self.create(**self.get_new_user())
-        self.log_debug()
+            self.create(**self.on_new_user())
+        debug.show_user(self)
 
         self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
 
@@ -346,10 +433,16 @@ class User(WorldPlayer, UserData, Actor):
 
     # Parse
     def __summoned(self, location):
+        self.__rdes = 0
+        self.__vdes = 0
+        if self.summoned_location is None:
+            return
+
         self.send_global("\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name))
         self.dump_items()
         self.send_global("\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name))
         self.location = location
+        self.summoned_location = None
 
     def update(self):
         """
@@ -517,27 +610,25 @@ class User(WorldPlayer, UserData, Actor):
             return
         self.pronouns['them'] = player.name
 
-    def see_player(self, player):
-        if player is None:
-            return True
-        if self.equal(player):
-            # me
-            return True
-        if self.level < player.visible:
-            return False
-        if self.is_blind:
-            # Cant see
-            return False
-        if self.location.equal(player.location) and self.in_dark:
-            return False
-        self.set_name(player)
-        return True
+    @property
+    def can_see(self):
+        return not self.is_blind and self.in_light
 
     def can_hear_player(self, player):
-        return not self.is_deaf and self.see_player(player)
+        return not self.is_deaf and player is not None
 
     def can_see_player(self, player):
-        return not self.is_blind and self.see_player(player)
+        if not player or self.equal(player):
+            return True
+        if not self.can_see:
+            return False
+        if self.level < player.visible:
+            return False
+        if not self.location.equal(player.location):
+            return False
+
+        self.set_name(player)
+        return True
 
     def decode(self, message, from_keyboard=True):
         """
@@ -577,26 +668,24 @@ class User(WorldPlayer, UserData, Actor):
         def f(match):
             name = match.group(0)
             message = match.group(1)
-            player = Player.find(name)
-            return message if self.see_player(player) else ""
+            return message if self.find(name) else ""
         return f
 
     def __see_player(self):
         def f(match):
             name = match.group(0)
-            player = Player.find(name)
-            return name if self.see_player(player) else "Someone"
+            return name if self.find(name) else "Someone"
         return f
 
     def __not_dark(self):
         def f(match):
-            return match.group(0) if self.in_dark or self.is_blind else ""
+            return match.group(0) if not self.in_light or self.is_blind else ""
         return f
 
     def __can_hear_player(self):
         def f(match):
             name = match.group(0)
-            player = Player.find(name)
+            player = self.find(name)
             return name if self.can_hear_player(player) else "Someone"
 
         return f
@@ -605,7 +694,7 @@ class User(WorldPlayer, UserData, Actor):
         def f(match):
             name = match.group(0)
             player = Player.find(name)
-            return name if self.can_see_player(player) else "Someone"
+            return name if not self.is_blind and self.find(player) else "Someone"
 
         return f
 
@@ -616,6 +705,10 @@ class User(WorldPlayer, UserData, Actor):
         return f
 
     # Abstract
+    @property
+    def Blood(self):
+        pass
+
     @property
     def exists(self):
         return None
@@ -673,8 +766,8 @@ class User(WorldPlayer, UserData, Actor):
     def is_timed_out(self, current_position):
         pass
 
-    def remove(self):
-        pass
+    # def remove(self):
+    #     pass
 
     def woundmn(self, *args):
         pass
@@ -761,26 +854,3 @@ class User(WorldPlayer, UserData, Actor):
 
     def translocate(self):
         pass
-
-    def log_debug(self):
-        logging.debug(
-            """
-name:\t%s
-score:\td
-strength:\t%d
-sex:\t%d
-level:\t%d
-visible:\t%d
-position:\t%d
-show_players:\t%d
-            """,
-            self.name,
-            # self.score,
-            self.strength,
-            self.sex,
-            self.level,
-            self.visible,
-            self.message_id,
-            self.show_players
-        )
-        # logging.debug("in_setup:\t%d", self.in_setup)

@@ -1,4 +1,5 @@
 from datetime import datetime
+from .. import debug
 from ..bprintf import Buffer
 from ..errors import CrapupError, ServiceError
 from ..keys import Keys, without_keys
@@ -25,12 +26,12 @@ class Game:
         # Signals
         self.__last_interrupt = None
 
-        self.user = User(username)
-        self.user.get_new_user = self.create_user
-
+        self.user = User(
+            username,
+            on_new_user=lambda: CreateUser(self).data,
+        )
         self.buffer = Buffer()
         self.parser = Parser(self.user)
-
         self.main_screen = MainScreen(
             self,
             self.user,
@@ -62,9 +63,6 @@ class Game:
         self.buffer.show(self)
         return Keys.get_prompt(max_length)
 
-    def create_user(self):
-        return CreateUser(self).data
-
     # Events
     def on_error(self, error):
         print(error)
@@ -95,19 +93,10 @@ class Game:
         except ServiceError:
             raise CrapupError("Sorry AberMUD is currently unavailable")
 
-        self.__debug_user()
+        debug.show_user(self.user)
         self.user.reset_position()
-        self.__debug_user()
-        self.__debug_list(self.user.start())
-        self.__debug_user()
+        debug.show_user(self.user)
+        debug.show_list(self.user.start())
+        debug.show_user(self.user)
         self.user.in_setup = True
-        self.__debug_user()
-
-    # Debug
-    def __debug_user(self):
-        self.user.log_debug()
-
-    @classmethod
-    def __debug_list(cls, text):
-        # logging.debug(text)
-        print("".join(text))
+        debug.show_user(self.user)

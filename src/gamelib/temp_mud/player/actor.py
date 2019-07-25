@@ -157,7 +157,7 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
-    def in_dark(self):
+    def in_light(self):
         raise NotImplementedError()
 
     @property
@@ -248,7 +248,8 @@ class Actor(Sender, Reader):
     def debug2(self, *args):
         raise NotImplementedError()
 
-    def item_is_available(self, *args):
+    @property
+    def items_available(self):
         raise NotImplementedError()
 
     def loose(self, *args):
@@ -258,9 +259,6 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     def remove(self, *args):
-        raise NotImplementedError()
-
-    def reset_position(self, *args):
         raise NotImplementedError()
 
     def save_position(self, *args):
@@ -356,6 +354,10 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     # Other
+    @property
+    def can_see_door(self, door):
+        return self.in_light and door.visible
+
     @property
     def is_fighting(self):
         return self.Blood.in_fight > 0
@@ -547,7 +549,7 @@ class Actor(Sender, Reader):
             yield "You are blind... you can't see a thing!\n"
             return
 
-        if self.in_dark:
+        if not self.in_light:
             yield "It is dark\n"
             World.load()
             self.on_look()
@@ -633,9 +635,7 @@ class Actor(Sender, Reader):
 
     def play(self, item):
         # Parse
-        if item is None:
-            raise CommandError("That isn't here\n")
-        if not self.item_is_available(item):
+        if item is None or not any(self.items_available.filter(item=item).items):
             raise CommandError("That isn't here\n")
         item.play(self)
 
@@ -661,8 +661,6 @@ class Actor(Sender, Reader):
     # 21 - 30
     def save(self):
         # NewUaf
-        if self.zapped:
-            return
         # self.name = user.name
         # self.score = user.score
         # self.strength = user.strength

@@ -22,11 +22,11 @@ class Door(Item):
         if new_location is not None and new_location.location_id > 0:
             return new_location
 
-        if actor.in_dark or not self.is_visible:
-            # Invis doors
-            return None
-        else:
+        if actor.can_see_door(self):
             raise CommandError("The door is not open\n")
+
+        # Invisible doors
+        return None
 
 
 class Shield(Item):
@@ -921,7 +921,7 @@ def __filter_by(**kwargs):
 
         if available is not None:
             item = __patch_shields(item, available)
-            if not available.item_is_available(item):
+            if not any(available.items_available.filter(item=item).items):
                 return None
         # elif
         if owner is not None and not item.is_carried_by(owner):

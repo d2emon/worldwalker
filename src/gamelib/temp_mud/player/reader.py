@@ -16,7 +16,7 @@ class Reader:
         raise NotImplementedError()
 
     def reset_position(self):
-        raise NotImplementedError()
+        self.message_id = -1
 
     # Tk
     def read_messages(self, unique=False, reset_after_read=False, **kwargs):
