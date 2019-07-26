@@ -33,11 +33,11 @@ class Player(BasePlayer):
         self.__data[4] = value
 
     @property
-    def position(self):
+    def message_id(self):
         return self.__data[5]
 
-    @position.setter
-    def position(self, value):
+    @message_id.setter
+    def message_id(self, value):
         self.__data[5] = value
 
     @property
@@ -126,6 +126,13 @@ class Player(BasePlayer):
     def can_be_snooped(self):
         return not self.__test_flag(6)
 
+    @property
+    def is_faded(self):
+        return None
+
+    def is_timed_out(self, current_position):
+        return None
+
     # Support
     @property
     def helper(self):
@@ -172,7 +179,7 @@ class Player(BasePlayer):
     # Unknown
     @classmethod
     def get_timed_out(cls, timeout):
-        return (player for player in cls.players()[:16] if player.is_timed_out(timeout))
+        return (player for player in cls.players()[:16] if player.exists and player.is_timed_out(timeout))
 
     # ObjSys
     def show(self):

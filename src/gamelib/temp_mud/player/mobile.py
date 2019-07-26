@@ -193,6 +193,9 @@ class Mobile(WorldPlayer):
         raise NotImplementedError()
 
     # Mobile
+    def on_look(self, actor):
+        return self.check_fight(actor)
+
     def check_fight(self, enemy):
         self.move()  # Maybe move it
 

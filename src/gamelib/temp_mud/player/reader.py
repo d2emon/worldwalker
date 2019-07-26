@@ -4,6 +4,9 @@ from ..world import World
 
 
 class Reader:
+    START_POSITION = -1
+    FADE_POSITION = -2
+
     def __init__(self):
         self.force_read = False
 
@@ -15,8 +18,22 @@ class Reader:
     def message_id(self, value):
         raise NotImplementedError()
 
+    @property
+    def is_faded(self):
+        return self.message_id < 0
+
+    @property
+    def is_at_start(self):
+        return self.message_id == self.START_POSITION
+
     def reset_position(self):
-        self.message_id = -1
+        self.message_id = self.START_POSITION
+
+    def fade(self):
+        self.message_id = self.FADE_POSITION
+
+    def is_timed_out(self, current_position):
+        return not self.is_faded and self.message_id < current_position / 2
 
     # Tk
     def read_messages(self, unique=False, reset_after_read=False, **kwargs):

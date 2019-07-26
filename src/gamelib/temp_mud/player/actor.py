@@ -130,7 +130,9 @@ class Actor(Sender, Reader):
 
     @property
     def __euid(self):
-        raise NotImplementedError()
+        # TODO: Remove it
+        # raise NotImplementedError()
+        return None
 
     @property
     def force_action(self):
@@ -236,7 +238,9 @@ class Actor(Sender, Reader):
 
     @property
     def __uid(self):
-        raise NotImplementedError()
+        # TODO: Remove it
+        # raise NotImplementedError()
+        return None
 
     @property
     def __is_valid_uid(self):
@@ -333,9 +337,6 @@ class Actor(Sender, Reader):
     def dump_items(self, *args):
         raise NotImplementedError()
 
-    def fade(self, *args):
-        raise NotImplementedError()
-
     # Disease
     @property
     def is_dumb(self):
@@ -354,18 +355,15 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     # Other
-    @property
     def can_see_door(self, door):
-        return self.in_light and door.visible
+        raise NotImplementedError()
 
     @property
     def is_fighting(self):
-        return self.Blood.in_fight > 0
+        raise NotImplementedError()
 
     def add_force(self, action):
-        if self.force_action is not None:
-            yield "The compulsion to {} is overridden\n".format(action)
-        self.force_action = action
+        raise NotImplementedError()
 
     def __fade_system(self, actions):
         self.fade()
@@ -378,20 +376,10 @@ class Actor(Sender, Reader):
         yield from self.read_messages()
 
     def get_dragon(self):
-        # Mobile
-        if self.is_wizard:
-            return False
-        dragon = Player.find("dragon")
-        if dragon is None:
-            return False
-        if dragon.location.location_id == self.location.location_id:
-            return False
-        return True
+        raise NotImplementedError()
 
     def show_item_description(self, item):
-        if self.debug:
-            return "{{{}}} {}".format(item.item_id, item.description)
-        return item.description
+        raise NotImplementedError()
 
     def __item_location(self, item):
         text = item.location_text
@@ -424,9 +412,7 @@ class Actor(Sender, Reader):
         return " ".join(map(title, items))
 
     def on_flee(self):
-        # New1
-        items = [item for item in ITEMS if item.is_carried_by(self) and not item.is_worn_by(self)]
-        map(lambda item: item.set_location(self, item.IN_LOCATION), items)
+        raise NotImplementedError()
 
     def __silly_sound(self, message):
         self.send_silly("\001P{user.name}\001\001d " + message + "\n\001")

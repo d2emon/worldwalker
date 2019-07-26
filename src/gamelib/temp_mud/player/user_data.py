@@ -52,9 +52,6 @@ class UserData(BasePlayerData):
     def level(self, value):
         self.__level = value
 
-    def update(self):
-        raise NotImplementedError()
-
     # NewUaf
     def __serialize(self):
         return {
@@ -92,3 +89,6 @@ class UserData(BasePlayerData):
 
     def save(self):
         UsersService.post(**self.__serialize())
+
+    def update(self):
+        raise NotImplementedError()

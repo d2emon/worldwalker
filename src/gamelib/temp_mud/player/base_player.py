@@ -122,14 +122,6 @@ class BasePlayer(BasePlayerData):
         raise NotImplementedError()
 
     @property
-    def is_faded(self):
-        raise NotImplementedError()
-
-    @property
-    def is_in_start(self):
-        raise NotImplementedError()
-
-    @property
     def is_god(self):
         raise NotImplementedError()
 
@@ -177,9 +169,6 @@ class BasePlayer(BasePlayerData):
     def dump_items(self):
         raise NotImplementedError()
 
-    def fade(self):
-        raise NotImplementedError()
-
     def get_damage(self, enemy, damage):
         raise NotImplementedError()
 
@@ -187,9 +176,6 @@ class BasePlayer(BasePlayerData):
         raise NotImplementedError()
 
     def is_helping(self, player):
-        raise NotImplementedError()
-
-    def is_timed_out(self, current_position):
         raise NotImplementedError()
 
     def look(self):

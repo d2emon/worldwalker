@@ -1,6 +1,6 @@
 import re
-from itertools import chain
 from .. import debug
+from ..database import ItemsData, PlayerData
 from ..errors import CrapupError, LooseError, ServiceError
 # from ..item import Item, Door
 # from ..location import Location
@@ -9,88 +9,12 @@ from ..services.log import LogService
 from ..services.players import PlayersService
 from ..world import World
 from .actor import Actor
-from .world_player import WorldPlayer
+from .world_player import WorldPlayer, Level
 from .player import Player
 from .user_data import UserData
 
 
 GWIZ = None
-
-
-class DataFilter:
-    def __init__(self, items=None):
-        self.items = items or []
-
-    def filter(self, **kwargs):
-        return ItemsData(filter(self.__filter(**kwargs), self.items))
-
-    def or_filter(self, *items):
-        return ItemsData(chain(self.items, *items))
-
-    @classmethod
-    def __filter(cls, **kwargs):
-        return lambda item: all(f(item) for f in cls.__filters(**kwargs))
-
-    @classmethod
-    def __filters(cls, **kwargs):
-        raise NotImplementedError()
-
-    @property
-    def first(self):
-        return next(list(self.items), None)
-
-
-class ItemsData(DataFilter):
-    @classmethod
-    def __filters(
-        cls,
-        carried_by=None,
-        carried_in=None,
-        is_destroyed=None,
-        is_light=None,
-        user=None,
-        item=None,
-        location=None,
-        mask=None,
-        **kwargs
-    ):
-        if carried_by is not None:
-            yield lambda i: i.is_carried_by(carried_by)
-        if carried_in is not None:
-            yield lambda i: i.owner and carried_in.equal(i.owner.location)
-        if is_destroyed is not None:
-            yield lambda i: i.is_destroyed == is_destroyed
-        if is_light is not None:
-            yield lambda i: i.is_light == is_light
-        if user is not None and not user.is_wizard:
-            yield from cls.__filters(is_destroyed=False)
-        if item is not None:
-            yield lambda i: i == item
-        if location is not None:
-            yield lambda i: i.is_in_location(location)
-        if mask is not None:
-            yield lambda i: i.test_mask(mask)
-
-
-class PlayerData(DataFilter):
-    @classmethod
-    def __filters(
-        cls,
-        name=None,
-        player=None,
-        visible=None,
-        location=None,
-        **kwargs
-    ):
-        if name is not None:
-            # Player.find(name)
-            yield lambda i: i.name == name
-        if player is not None:
-            yield lambda i: player.equal(i)
-        if visible is not None:
-            yield lambda i: i.visible <= visible
-        if location is not None:
-            yield lambda i: location.equal(i.location)
 
 
 class User(WorldPlayer, UserData, Actor):
@@ -109,18 +33,18 @@ class User(WorldPlayer, UserData, Actor):
 
         super().__init__(player_data[0])
 
-        # Player data
+        # Player properties
         self.__name = player_data[1]
         self.__location = player_data[4]
         self.__message_id = player_data[5]
-        # 6
-        self.__strength = player_data[7]
+        # 6 UNKNOWN
+        self.__strength = player_data[7]  # Not reimplemented
         self.__visible = player_data[8]
-        self.__sex = player_data[9]
+        self.__sex = player_data[9]  # flags
         self.__level = player_data[10]
-        self.__weapon = player_data[11]
-        # 12
-        # 13
+        self.__weapon = player_data[11]  # Not reimplemented
+        # 12 UNKNOWN
+        # 13 Not reimplemented
 
         # Events
         self.before_message = before_message
@@ -158,7 +82,11 @@ class User(WorldPlayer, UserData, Actor):
 
         # self.buffer = Buffer()
 
-    # Player properties
+    # From WorldPlayer
+
+    # Player properties:
+
+    # WorldPlayer, UserData, Actor
     @property
     def name(self):
         return self.__name
@@ -168,6 +96,7 @@ class User(WorldPlayer, UserData, Actor):
         self.__name = value
         super(WorldPlayer).name = value
 
+    # WorldPlayer, Actor
     @property
     def location(self):
         return self.__location
@@ -185,6 +114,7 @@ class User(WorldPlayer, UserData, Actor):
     def message_id(self, value):
         self.__message_id = value
 
+    # WorldPlayer, Actor
     @property
     def visible(self):
         return self.__visible
@@ -193,14 +123,7 @@ class User(WorldPlayer, UserData, Actor):
     def visible(self, value):
         self.__visible = value
 
-    @property
-    def sex(self):
-        return self.__sex
-
-    @sex.setter
-    def sex(self, value):
-        self.__sex = value
-
+    # WorldPlayer, UserData, Actor
     @property
     def level(self):
         return self.__level
@@ -209,6 +132,21 @@ class User(WorldPlayer, UserData, Actor):
     def level(self, value):
         self.__level = value
 
+    # Flags:
+
+    # 0
+    # WorldPlayer, UserData, Actor
+    @property
+    def sex(self):
+        return self.__sex
+
+    @sex.setter
+    def sex(self, value):
+        self.__sex = value
+
+    # Other properties:
+
+    # WorldPlayer, UserData, Actor
     @property
     def score(self):
         return self.__score
@@ -217,40 +155,18 @@ class User(WorldPlayer, UserData, Actor):
     def score(self, value):
         self.__score = value
 
-    # Other properties
-    @property
-    def is_mobile(self):
-        return False
+    # Methods:
 
-    # Weather
-    @property
-    def available_items(self):
-        # return find_items(available=self)
-        return []
+    # WorldData, Actor
+    def check_kicked(self):
+        # Unknown
+        self.reset_position()
+        World.load()
+        if not any(PlayerData().filter(name=self.name).items):
+            raise LooseError("You have been kicked off")
 
-    @property
-    def in_light(self):
-        return any((
-            self.is_wizard,
-            not self.location.is_dark,
-            any(self.items_visible.filter(is_light=True).items),
-        ))
-
-    # In User
-    # Parse
-    @property
-    def summoned_location(self):
-        return self.__summoned_location if not self.is_wizard else None
-
-    @summoned_location.setter
-    def summoned_location(self, value):
-        if self.is_wizard:
-            self.__summoned_location = None
-            return
-        self.__summoned_location = value
-
-    # New1
     def get_damage(self, enemy, damage):
+        # New1
         if self.is_wizard:
             return
 
@@ -273,6 +189,421 @@ class User(WorldPlayer, UserData, Actor):
 
         raise CrapupError("Oh dear you just died\n")
 
+    def look(self):
+        super(Actor).look()
+
+    def start(self):
+        # Parse
+        self.reload()
+
+        self.show_players = True
+        self.visible = 0 if not self.is_god else 10000
+        debug.show_user(self)
+
+        if self.load() is None:
+            self.create(**self.on_new_user())
+        debug.show_user(self)
+
+        self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
+
+        # yield from self.read_messages(reset_after_read=True)
+        # self.location = location
+
+        self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self))
+        yield ""
+
+    def woundmn(self, *args):
+        pass
+
+    # From UserData
+
+    # Methods
+
+    # UserData, Actor
+    def update(self):
+        """
+        Routine to correct me in user file
+
+        :return:
+        """
+        # Parse
+        if not self.__in_setup:
+            return
+
+        level = Level.by_score(self)
+        if level.level != self.level:
+            self.level = level.level
+            LogService.post_system(message="{} to level {}".format(self.name, level.level))
+            yield "You are now {} {}\n".format(self.name, level.name)
+            self.send_wizard("\001p{}\001 is now level {}\n".format(self.name, self.level))
+            if self.level == 10:
+                yield "\001f{}\001".format(GWIZ)
+
+        self.strength = min(self.strength, 30 + 10 * self.level)
+
+        self.__data.level = self.level
+        self.__data.strength = self.strength
+        self.__data.sex = self.sex
+        self.__data.weapon = self.__wpnheld
+
+    # ------------------------------------------------
+
+    # From Actor
+
+    # Not Implemented
+
+    @property
+    def available_items(self):
+        # Weather
+        return ItemsData().filter(available=self)
+
+    @property
+    def has_farted(self):
+        return self.__has_farted
+
+    @has_farted.setter
+    def has_farted(self, value):
+        self.__has_farted = value
+
+    @property
+    def in_light(self):
+        # Weather
+        return any((
+            self.is_wizard,
+            not self.location.is_dark,
+            any(self.items_visible.filter(is_light=True).items),
+        ))
+
+    @property
+    def items(self):
+        return super(WorldPlayer).items
+
+    @property
+    def level_name(self):
+        return super(WorldPlayer).level_name
+
+    @property
+    def show_players(self):
+        return self.__show_players
+
+    @show_players.setter
+    def show_players(self, value):
+        self.__show_players = value
+
+    @property
+    def overweight(self):
+        return super(WorldPlayer).overweight
+
+    @property
+    def player_id(self):
+        return super(WorldPlayer).player_id
+
+    @property
+    def items_available(self):
+        # Support
+        return self.items_here.or_filter(self.items_carried)
+
+    def loose(self):
+        # Tk
+        self.on_loose()
+        self.__in_setup = False
+
+        World.load()
+        self.dump_items()
+        if self.visible < 10000:
+            self.send_wizard("{} has departed from AberMUDII\n".format(self.name))
+        self.delete()
+        World.save()
+
+        if not self.__is_zapped:
+            self.save()
+        self.send_snoop(self.snoop_target, False)
+
+    def on_look(self):
+        print("On Look")
+        undead = not ItemsData().filter(item_id=45).first().is_carried_by(self)
+        enemies = (
+            undead and "wraith",
+            "shazareth",
+            "bomber",
+            "owin",
+            "glowin",
+
+            "smythe",
+            "dio",
+            # ["The Dragon", -326, 500, 0, -2],
+            undead and "zombie",
+            # ["The Golem", -1056, 90, 0, -2],
+            # ["The Haggis", -341, 50, 0, -2],
+            # ["The Piper", -630, 50, 0, -2],
+            "rat",
+            "ghoul",
+            # ["The Figure", -130, 90, 0, -2],
+
+            "ogre",
+            "riatha",
+            "yeti",
+            "guardian",
+            # ["Prave", -201, 60, 0, -400],
+            # undead and Player.find("wraith"),
+            # ["Bath", -1, 70, 0, -401],
+            # ["Ronnie", -809, 40, 0, -402],
+            # ["The Mary", -1, 50, 0, -403],
+            # ["The Cookie", -126, 70, 0, -404],
+
+            # ["MSDOS", -1, 50, 0, -405],
+            # ["The Devil", -1, 70, 0, -2],
+            # ["The Copper", -1, 40, 0, -2],
+        )
+
+        enemies = (PlayerData().filter(name=enemy).first for enemy in enemies if enemy)
+        yield from (enemy.on_look(self) for enemy in enemies if enemy)  # No such being
+
+        items = ItemsData().filter(carried_by=self).items
+        yield from (item.on_look(self) for item in items)
+
+        if self.helping is not None:
+            yield from self.check_help()
+
+    def remove(self):
+        return super(WorldPlayer).remove()
+
+    def save_position(self):
+        # Parse
+        if abs(self.message_id - self.__position_saved) < 10:
+            return
+
+        self.reload()
+        # self.__data = self
+        self.__position_saved = self.message_id
+
+    # Base Player properties
+
+    @property
+    def can_debug(self):
+        return super(WorldPlayer).can_debug
+
+    @property
+    def can_edit(self):
+        return super(WorldPlayer).can_edit
+
+    @property
+    def can_modify_messages(self):
+        return super(WorldPlayer).can_modify_messages
+
+    @property
+    def can_set_flags(self):
+        return super(WorldPlayer).can_set_flags
+
+    @property
+    def is_god(self):
+        return super(WorldPlayer).is_god
+
+    @property
+    def is_wizard(self):
+        return super(WorldPlayer).is_wizard
+
+    @property
+    def strength(self):
+        return super(WorldPlayer).strength
+
+    @strength.setter
+    def strength(self, value):
+        super(WorldPlayer).strength = value
+
+    def die(self):
+        return super(WorldPlayer).die()
+
+    def dump_items(self):
+        return super(WorldPlayer).dump_items()
+
+    # Other
+    def can_see_door(self, door):
+        return self.in_light and door.visible
+
+    @property
+    def is_fighting(self):
+        return self.Blood.in_fight > 0
+
+    def add_force(self, action):
+        if self.force_action is not None:
+            yield "The compulsion to {} is overridden\n".format(action)
+        self.force_action = action
+
+    def get_dragon(self):
+        # Mobile
+        if self.is_wizard:
+            return False
+        dragon = Player.find("dragon")
+        if dragon is None:
+            return False
+        if dragon.location.location_id == self.location.location_id:
+            return False
+        return True
+
+    def show_item_description(self, item):
+        if self.debug:
+            return "{{{}}} {}".format(item.item_id, item.description)
+        return item.description
+
+    def on_flee(self):
+        # New1
+        for item in ItemsData().filter(carried_by=self, not_worn_by=self).items:
+            item.set_location(self, item.IN_LOCATION)
+
+    # Abstract
+
+    # Modules
+
+    @property
+    def Blood(self):
+        # TODO: Remove it
+        return None
+
+    # Not Implemented
+
+    @property
+    def brief(self):
+        # TODO: Remove it
+        return None
+
+    @property
+    def conversation_mode(self):
+        # TODO: Remove it
+        return None
+
+    @property
+    def debug_mode(self):
+        # TODO: Remove it
+        return None
+
+    @property
+    def force_action(self):
+        # TODO: Remove it
+        return None
+
+    @force_action.setter
+    def force_action(self, value):
+        # TODO: Remove it
+        print(value)
+
+    @property
+    def is_forced(self):
+        # TODO: Remove it
+        return None
+
+    @is_forced.setter
+    def is_forced(self, value):
+        # TODO: Remove it
+        print(value)
+
+    @property
+    def log_service(self):
+        # TODO: Remove it
+        return None
+
+    @log_service.setter
+    def log_service(self, value):
+        # TODO: Remove it
+        print(value)
+
+    @property
+    def in_ms(self):
+        # TODO: Remove it
+        return None
+
+    @in_ms.setter
+    def in_ms(self, value):
+        # TODO: Remove it
+        print(value)
+
+    @property
+    def out_ms(self):
+        # TODO: Remove it
+        return None
+
+    @out_ms.setter
+    def out_ms(self, value):
+        # TODO: Remove it
+        print(value)
+
+    @property
+    def min_ms(self):
+        # TODO: Remove it
+        return None
+
+    @min_ms.setter
+    def min_ms(self, value):
+        # TODO: Remove it
+        print(value)
+
+    @property
+    def mout_ms(self):
+        # TODO: Remove it
+        return None
+
+    @mout_ms.setter
+    def mout_ms(self, value):
+        # TODO: Remove it
+        print(value)
+
+    def debug2(self, *args):
+        # TODO: Remove it
+        pass
+
+    def show_buffer(self, *args):
+        # TODO: Remove it
+        pass
+
+    # Disease
+    @property
+    def is_dumb(self):
+        # TODO: Remove it
+        return None
+
+    @property
+    def is_crippled(self):
+        # TODO: Remove it
+        return None
+
+    @property
+    def is_blind(self):
+        # TODO: Remove it
+        return None
+
+    @property
+    def is_deaf(self):
+        # TODO: Remove it
+        return None
+
+    # Actions
+    def wield(self):
+        # TODO: Remove it
+        pass
+
+    def kill(self):
+        # TODO: Remove it
+        pass
+
+    def translocate(self):
+        # TODO: Remove it
+        pass
+
+    # ------------------------------------------------
+
+    # In User
+    # Parse
+    @property
+    def summoned_location(self):
+        return self.__summoned_location if not self.is_wizard else None
+
+    @summoned_location.setter
+    def summoned_location(self, value):
+        if self.is_wizard:
+            self.__summoned_location = None
+            return
+        self.__summoned_location = value
+
     # ObjSys
     @property
     def items_here(self):
@@ -287,10 +618,6 @@ class User(WorldPlayer, UserData, Actor):
         return ItemsData().filter(carried_by=self)
 
     # Support
-    @property
-    def items_available(self):
-        return self.items_here.or_filter(self.items_carried)
-
     @property
     def players_visible(self):
         return PlayerData().filter(visible=self.level, location=self.location).or_filter(self.myself)
@@ -312,13 +639,6 @@ class User(WorldPlayer, UserData, Actor):
 
         if self.Blood.in_fight:
             self.Blood.in_fight -= 1
-
-    # Unknown
-    def check_kicked(self):
-        self.reset_position()
-        World.load()
-        if not any(PlayerData().filter(name=self.name).items):
-            raise LooseError("You have been kicked off")
 
     # Support
     def has_any(self, mask):
@@ -346,24 +666,6 @@ class User(WorldPlayer, UserData, Actor):
 
         yield "You have been utterly destroyed by {}\n".format(wizard.name)
         raise LooseError("Bye Bye.... Slain By Lightning")
-
-    # Tk
-    def loose(self):
-        Signals.active = False
-        # No interruptions while you are busy dying
-        # ABOUT 2 MINUTES OR SO
-        self.__in_setup = False
-
-        World.load()
-        self.dump_items()
-        if self.visible < 10000:
-            self.send_wizard("{} has departed from AberMUDII\n".format(self.name))
-        self.delete()
-        World.save()
-
-        if not self.__is_zapped:
-            self.save()
-        self.send_snoop(self.snoop_target, False)
 
     # New1
     def __do_forced(self):
@@ -405,32 +707,6 @@ class User(WorldPlayer, UserData, Actor):
             if not self.is_dumb:
                 self.hiccup()
 
-    def save_position(self):
-        if abs(self.position - self.__position_saved) < 10:
-            return
-
-        World.load()
-        # self.__data = self
-        self.__position_saved = self.position
-
-    def start(self):
-        # World.load()
-        self.show_players = True
-        self.visible = 0 if not self.is_god else 10000
-        debug.show_user(self)
-
-        if self.load() is None:
-            self.create(**self.on_new_user())
-        debug.show_user(self)
-
-        self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
-
-        # yield from self.read_messages(reset_after_read=True)
-        # self.location = location
-
-        self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self))
-        yield ""
-
     # Parse
     def __summoned(self, location):
         self.__rdes = 0
@@ -443,32 +719,6 @@ class User(WorldPlayer, UserData, Actor):
         self.send_global("\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name))
         self.location = location
         self.summoned_location = None
-
-    def update(self):
-        """
-        Routine to correct me in user file
-
-        :return:
-        """
-        if not self.__in_setup:
-            return
-
-        level = self.NewUaf.level_of(self.score)
-        if level != self.level:
-            self.level = level
-            yield "You are now {} ".format(self.name)
-            syslog("{} to level {}".format(self.name, level))
-            yield self.level_name + "\n"
-            self.send_wizard("\001p{}\001 is now level {}\n".format(self.name, self.level))
-            if level == 10:
-                yield "\001f{}\001".format(GWIZ)
-
-        self.strength = min(self.strength, 30 + 10 * self.level)
-
-        self.__data.level = self.level
-        self.__data.strength = self.strength
-        self.__data.sex = self.sex
-        self.__data.weapon = self.__wpnheld
 
     def __update_invisibility(self):
         if self.__invisibility_counter:
@@ -512,55 +762,6 @@ class User(WorldPlayer, UserData, Actor):
     def on_time(self):
         if random_percent() > 80:
             self.on_look()
-
-    def on_look(self):
-        print("On Look")
-        enemies = (
-            # Player.find("wraith"),
-            Player.find("shazareth"),
-            Player.find("bomber"),
-            Player.find("owin"),
-            Player.find("glowin"),
-
-            Player.find("smythe"),
-            Player.find("dio"),
-            # ["The Dragon", -326, 500, 0, -2],
-            # Player.find("zombie"),
-            # ["The Golem", -1056, 90, 0, -2],
-            # ["The Haggis", -341, 50, 0, -2],
-            # ["The Piper", -630, 50, 0, -2],
-            Player.find("rat"),
-            Player.find("ghoul"),
-            # ["The Figure", -130, 90, 0, -2],
-
-            Player.find("ogre"),
-            Player.find("riatha"),
-            Player.find("yeti"),
-            Player.find("guardian"),
-            # ["Prave", -201, 60, 0, -400],
-            # Player.find("wraith"),
-            # ["Bath", -1, 70, 0, -401],
-            # ["Ronnie", -809, 40, 0, -402],
-            # ["The Mary", -1, 50, 0, -403],
-            # ["The Cookie", -126, 70, 0, -404],
-
-            # ["MSDOS", -1, 50, 0, -405],
-            # ["The Devil", -1, 70, 0, -2],
-            # ["The Copper", -1, 40, 0, -2],
-        )
-        if not Item45().is_carried_by(self):
-            enemies = enemies + (
-                Player.find("zombie"),
-                Player.find("wraith"),
-            )
-        enemies = (enemy for enemy in enemies if enemy is not None)  # No such being
-        yield from map(lambda enemy: enemy.check_fight(self),  enemies)
-
-        items = (item for item in ITEMS if item.is_carried_by(self))
-        yield from map(lambda item: item.on_look(self),  items)
-
-        if self.helping is not None:
-            yield from self.check_help()
 
     def drop_pepper(self):
         self.send_global("You start sneezing ATISCCHHOOOOOO!!!!\n")
@@ -704,153 +905,8 @@ class User(WorldPlayer, UserData, Actor):
             return match.group(0) if not from_keyboard else ""
         return f
 
-    # Abstract
-    @property
-    def Blood(self):
-        pass
-
-    @property
-    def exists(self):
-        return None
-
-    @property
-    def is_dead(self):
-        return None
-
-    @property
-    def is_faded(self):
-        return None
-
-    @property
-    def is_in_start(self):
-        return None
-
-    @property
-    def is_god(self):
-        return None
-
-    @property
-    def is_wizard(self):
-        return None
-
-    @property
-    def max_items(self):
-        return None
-
-    @property
-    def value(self):
-        return None
-
-    @property
-    def level_name(self):
-        return None
-
-    def equal(self, player):
-        pass
-
-    def die(self):
-        pass
-
-    def dump_items(self):
-        pass
-
-    def fade(self):
-        pass
-
-    def get_lightning(self, enemy):
-        pass
-
-    def is_helping(self, player):
-        pass
-
-    def is_timed_out(self, current_position):
-        pass
-
-    # def remove(self):
-    #     pass
-
-    def woundmn(self, *args):
-        pass
-
-    @property
-    def brief(self):
-        return None
-
-    @property
-    def conversation_mode(self):
-        return None
-
-    @property
-    def debug_mode(self):
-        return None
-
-    @property
-    def force_action(self):
-        return None
-
-    @property
-    def is_forced(self):
-        return None
-
-    @property
-    def has_farted(self):
-        return self.__has_farted
-
-    @property
-    def log_service(self):
-        return None
-
-    @property
-    def show_players(self):
-        return self.__show_players
-
-    @show_players.setter
-    def show_players(self, value):
-        self.__show_players = value
-
-    @property
-    def in_ms(self):
-        return None
-
-    @property
-    def out_ms(self):
-        return None
-
-    @property
-    def min_ms(self):
-        return None
-
-    @property
-    def mout_ms(self):
-        return None
-
-    def debug2(self, *args):
-        pass
-
-    def show_buffer(self, *args):
-        pass
-
-    @property
-    def is_dumb(self):
-        return None
-
-    @property
-    def is_crippled(self):
-        return None
-
-    @property
-    def is_blind(self):
-        return None
-
-    @property
-    def is_deaf(self):
-        return None
-
-    def wield(self):
-        pass
-
-    def kill(self):
-        pass
-
-    def translocate(self):
+    def on_loose(self):
+        # Signals.active = False
+        # No interruptions while you are busy dying
+        # ABOUT 2 MINUTES OR SO
         pass

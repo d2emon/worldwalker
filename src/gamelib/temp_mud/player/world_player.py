@@ -1,10 +1,24 @@
 # from ..item import find_items
 # from ..location import Location
+from ..database import LocationData, ItemsData
 from ..services.players import PlayersService
 from .base_player import BasePlayer
 
 
-class WorldPlayer(BasePlayer):
+class Level:
+    SCORES = (
+        0,
+        500,
+        1000,
+        3000,
+        6000,
+
+        10000,
+        20000,
+        32000,
+        44000,
+        70000,
+    )
     LEVELS = {
         1: ["The Novice"],
         2: ["The Adventurer", "The Adventuress"],
@@ -46,9 +60,41 @@ class WorldPlayer(BasePlayer):
         -31: ["the Acolyte"],
     }
 
+    def __init__(self, player, level=None):
+        self.player = player
+        self.level = level if level is not None else player.level
+
+    @property
+    def name(self):
+        if self.player.level == 19 and self.player.has_farted:
+            return "Raspberry Blower Of Old London Town"
+
+        level_names = self.LEVELS.get(self.level, ["The Cardboard Box"])
+        if len(level_names) > 1:
+            return level_names[self.player.sex]
+        return level_names[0]
+
+    # Parse
+    @classmethod
+    def by_score(cls, player, score=None):
+        if score is None:
+            score = player.score
+        score = score / 2  # Scaling factor
+        if player.level > 10:
+            return cls(player)
+
+        level = next((level for (level, max_score) in enumerate(cls.LEVELS) if max_score > score), 10)
+        return cls(player, level)
+
+
+class WorldPlayer(BasePlayer):
     def __init__(self, player_id):
         self.__player_id = player_id
         self.__data = self.reload()
+
+        # Unknown
+        self.damage = 0
+        self.has_farted = False
 
     @property
     def player_id(self):
@@ -73,12 +119,8 @@ class WorldPlayer(BasePlayer):
         self.__data[0] = value
 
     @property
-    def score(self):
-        return None
-
-    @property
     def location(self):
-        return Location(self.__data[4])
+        return LocationData().filter(location_id=self.__data[4]).first
 
     @location.setter
     def location(self, value):
@@ -87,7 +129,7 @@ class WorldPlayer(BasePlayer):
 
     @property
     def message_id(self):
-        return self.__data[5]
+        return self.__data[5] or -1
 
     @message_id.setter
     def message_id(self, value):
@@ -95,7 +137,7 @@ class WorldPlayer(BasePlayer):
 
     @property
     def strength(self):
-        return self.__data[7]
+        return self.__data[7] or 0
 
     @strength.setter
     def strength(self, value):
@@ -107,7 +149,7 @@ class WorldPlayer(BasePlayer):
 
     @property
     def level(self):
-        return self.__data[10]
+        return self.__data[10] or 0
 
     @property
     def weapon(self):
@@ -175,14 +217,6 @@ class WorldPlayer(BasePlayer):
         return self.strength < 0
 
     @property
-    def is_faded(self):
-        return self.message_id < 0
-
-    @property
-    def is_in_start(self):
-        return self.message_id == -1
-
-    @property
     def is_god(self):
         return self.level > 9999
 
@@ -195,6 +229,15 @@ class WorldPlayer(BasePlayer):
         return self.level > 9
 
     @property
+    def items(self):
+        return ItemsData().filter(owner=self, is_destroyed=False)
+
+    @property
+    def level_name(self):
+        # ObjSys
+        return Level(self, self.level).name
+
+    @property
     def max_items(self):
         if not self.is_wizard:
             return None
@@ -203,28 +246,14 @@ class WorldPlayer(BasePlayer):
         return self.level + 5
 
     @property
-    def items(self):
-        return find_items(
-            owner=self,
-            destroyed=False,
-        )
+    def score(self):
+        raise NotImplementedError()
 
     @property
     def value(self):
         if self.is_mobile:
             return 10 * self.damage
         return self.level * self.level * 100
-
-    # ObjSys
-    @property
-    def level_name(self):
-        if self.level == 19 and self.has_farted:
-            return "Raspberry Blower Of Old London Town"
-
-        level_names = self.LEVELS.get(self.level, ["The Cardboard Box"])
-        if len(level_names) > 1:
-            return level_names[self.sex]
-        return level_names[0]
 
     # Utils
     # Flag utils
@@ -244,17 +273,14 @@ class WorldPlayer(BasePlayer):
 
     # Other
     def check_kicked(self):
-        pass
+        raise NotImplementedError()
 
     def die(self):
         self.strength = -1
 
     def dump_items(self):
-        for item in self.items:
+        for item in self.items.items:
             item.location = self.location
-
-    def fade(self):
-        self.message_id = -2
 
     def get_damage(self, enemy, damage):
         raise NotImplementedError()
@@ -268,11 +294,8 @@ class WorldPlayer(BasePlayer):
     def is_helping(self, player):
         return self.location == player.location and self.helping == player.player_id
 
-    def is_timed_out(self, current_position):
-        return self.exists and not self.is_faded and self.position < current_position / 2
-
     def look(self):
-        pass
+        raise NotImplementedError()
 
     def remove(self):
         self.name = ""
@@ -286,30 +309,4 @@ class WorldPlayer(BasePlayer):
         self.helping = None
 
     def woundmn(self, *args):
-        pass
-
-    # Parse
-    def level_of(self, score):
-        score = score / 2  # Scaling factor
-        if self.level > 10:
-            return self.level
-        elif score < 500:
-            return 1
-        elif score < 1000:
-            return 2
-        elif score < 3000:
-            return 3
-        elif score < 6000:
-            return 4
-        elif score < 10000:
-            return 5
-        elif score < 20000:
-            return 6
-        elif score < 32000:
-            return 7
-        elif score < 44000:
-            return 8
-        elif score < 70000:
-            return 9
-        else:
-            return 10
+        raise NotImplementedError()
