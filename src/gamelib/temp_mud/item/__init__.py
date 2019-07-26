@@ -921,7 +921,7 @@ def __filter_by(**kwargs):
 
         if available is not None:
             item = __patch_shields(item, available)
-            if not any(available.items_available.filter(item=item).items):
+            if not any(available.items_available.filter(item=item).all):
                 return None
         # elif
         if owner is not None and not item.is_carried_by(owner):

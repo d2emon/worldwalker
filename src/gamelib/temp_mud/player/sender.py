@@ -129,7 +129,7 @@ class Sender:
     def send_summon(self, target):
         self.send_message(
             target,
-            message_codes.DEAF,
+            message_codes.SUMMON,
             self.location,
             None,
         )

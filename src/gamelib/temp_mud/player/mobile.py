@@ -208,7 +208,7 @@ class Mobile(WorldPlayer):
             return
         if random_percent() > 40:
             return
-        if self.player_id == Player.find("yeti").player_id and any(item.is_light for item in enemy.available_items):
+        if self.player_id == Player.find("yeti").player_id and any(item.is_light for item in enemy.items_available.all):
             return
         self.attack(enemy)
 

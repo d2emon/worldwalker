@@ -119,13 +119,17 @@ class WorldPlayer(BasePlayer):
         self.__data[0] = value
 
     @property
-    def location(self):
-        return LocationData().filter(location_id=self.__data[4]).first
+    def location_id(self):
+        return self.__data[4]
 
-    @location.setter
-    def location(self, value):
+    @location_id.setter
+    def location_id(self, value):
         self.__data[4] = value.location_id
         self.look()
+
+    @property
+    def location(self):
+        return LocationData().filter(location_id=self.location_id).first
 
     @property
     def message_id(self):
@@ -230,7 +234,7 @@ class WorldPlayer(BasePlayer):
 
     @property
     def items(self):
-        return ItemsData().filter(owner=self, is_destroyed=False)
+        return ItemsData().filter(owner=self)
 
     @property
     def level_name(self):

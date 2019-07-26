@@ -41,7 +41,7 @@ class BasePlayer(BasePlayerData):
         raise NotImplementedError()
 
     @property
-    def location(self):
+    def location_id(self):
         raise NotImplementedError()
 
     @property

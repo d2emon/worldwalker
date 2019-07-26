@@ -97,7 +97,7 @@ class Parser:
         elif not result:
             self.__special(self.user, action)
 
-        self.user.check_fight()
+        self.user.next_turn()
         return result
 
     # Parse

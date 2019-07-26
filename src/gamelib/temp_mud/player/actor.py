@@ -101,10 +101,6 @@ class Actor(Sender, Reader):
 
     # Not Implemented
     @property
-    def available_items(self):
-        raise NotImplementedError()
-
-    @property
     def brief(self):
         raise NotImplementedError()
 
@@ -164,6 +160,10 @@ class Actor(Sender, Reader):
 
     @property
     def items(self):
+        raise NotImplementedError()
+
+    @property
+    def items_available(self):
         raise NotImplementedError()
 
     @property
@@ -250,10 +250,6 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     def debug2(self, *args):
-        raise NotImplementedError()
-
-    @property
-    def items_available(self):
         raise NotImplementedError()
 
     def loose(self, *args):
@@ -419,6 +415,10 @@ class Actor(Sender, Reader):
 
     def __silly_visual(self, message):
         self.send_silly("\001s{user.name}\001{user.name} " + message + "\n\001")
+
+    # Check
+    def next_turn(self):
+        raise NotImplementedError()
 
     # 1 - 10
     @not_crippled_action
@@ -621,7 +621,7 @@ class Actor(Sender, Reader):
 
     def play(self, item):
         # Parse
-        if item is None or not any(self.items_available.filter(item=item).items):
+        if item is None or not any(self.items_available.filter(item=item).all):
             raise CommandError("That isn't here\n")
         item.play(self)
 
@@ -1062,13 +1062,13 @@ class Actor(Sender, Reader):
 
     def lock(self, item):
         # New1
-        if not any(item.is_key for item in self.available_items):
+        if not any(item.is_key for item in self.items_available.all):
             raise CommandError("You haven't got a key\n")
         item.lock(self)
 
     def unlock(self, item):
         # New1
-        if not any(item.is_key for item in self.available_items):
+        if not any(item.is_key for item in self.items_available.all):
             raise CommandError("You have no keys\n")
         item.unlock(self)
 
@@ -1078,7 +1078,7 @@ class Actor(Sender, Reader):
 
     def light(self, item):
         # New1
-        if not any(item.is_light for item in self.available_items):
+        if not any(item.is_light for item in self.items_available.all):
             raise CommandError("You have nothing to light things from\n")
         item.light(self)
 

@@ -111,7 +111,7 @@ def __global_message(user, message):
 # LIGHTNING
 def __lightning(user, message):
     if __is_me(user, message):
-        return user.hit_lightning(message.user_from)
+        return user.hit_by_lightning(message.user_from)
 
     if message.channel_id == user.location_id:
         yield "\001cA massive lightning bolt strikes \001\001D{}\001\001c\n\001".format(message.user_to)
@@ -152,14 +152,13 @@ def __personal(user, message):
     yield message.message
 
 
-# -10020
+# SUMMON
 @__private
-def __code_10020(user, message):
-    user.summoned_location = message.channel_id
-    if user.is_wizard:
+def __summon(user, message):
+    if user.set_summoned_to(message.channel_id):
+        yield "You drop everything you have as you are summoned by \001p{}\001\n".format(message.user_from)
+    else:
         yield "\001p{}\001 tried to summon you\n".format(message.user_from)
-        return
-    yield "You drop everything you have as you are summoned by \001p%s\001\n".format(message.user_from)
 
 
 # -10021
@@ -316,7 +315,7 @@ MESSAGE_HANDLERS = {
     message_codes.TELL: __tell,
     message_codes.EXORCISE: __exorcise,
     message_codes.PERSONAL: __personal,
-    message_codes.MSG_10020: __code_10020,  #
+    message_codes.SUMMON: __summon,  #
     message_codes.MSG_10021: __code_10021,  #
     message_codes.WEATHER: set_weather,
 

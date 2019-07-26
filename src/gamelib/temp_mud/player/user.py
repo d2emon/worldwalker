@@ -1,6 +1,7 @@
 import re
+from itertools import chain
 from .. import debug
-from ..database import ItemsData, PlayerData
+from ..database import ItemsData, PlayerData, LocationData
 from ..errors import CrapupError, LooseError, ServiceError
 # from ..item import Item, Door
 # from ..location import Location
@@ -17,7 +18,110 @@ from .user_data import UserData
 GWIZ = None
 
 
+class Location:
+    def __init__(self, location_id):
+        self.location_id = location_id
+
+    @property
+    def items(self):
+        return ItemsData().filter(location=self)
+
+    @property
+    def items_carried(self):
+        return ItemsData().filter(carried_in=self)
+
+    @property
+    def players(self):
+        return PlayerData().filter(location=self)
+
+
+class SummonData:
+    def __init__(self):
+        self.location_id = None  # tdes, ades
+        self.__vdes = 0
+        self.__rdes = 0
+
+    @property
+    def ready(self):
+        return self.location_id is not None
+
+    def event(self, user):
+        self.__rdes = 0
+        self.__vdes = 0
+
+        if not self.ready:
+            return
+        if not user.on_summon():
+            return
+
+        user.location_id = self.location_id
+        self.location_id = None
+        yield ""
+
+
+class DrunkData:
+    def __init__(self):
+        self.__counter = 0
+
+    @property
+    def ready(self):
+        return self.__counter > 0
+
+    def event(self, user):
+        if not self.ready:
+            return
+
+        self.__counter -= 1
+        yield from user.on_drunk
+
+
 class User(WorldPlayer, UserData, Actor):
+    class Blood:
+        # TODO: Remove it
+
+        in_fight = 0
+        fighting = None
+
+        @classmethod
+        def check_fight(cls, location=None):
+            enemy = cls.get_enemy()
+            if enemy is None:
+                return
+            if not enemy.exists:
+                return cls.stop_fight()
+            if location is not None and not location.equal(enemy.location):
+                return cls.stop_fight()
+
+        @classmethod
+        def stop_fight(cls):
+            cls.in_fight = 0
+            cls.fighting = None
+
+        @classmethod
+        def get_enemy(cls):
+            if cls.fighting is None:
+                return None
+            if not cls.in_fight:
+                return None
+            return cls.fighting
+
+        @classmethod
+        def next_turn(cls, location=None):
+            cls.check_fight(location)
+            if not cls.in_fight:
+                return
+            cls.in_fight -= 1
+
+        @classmethod
+        def fight(cls, player):
+            cls.in_fight = 0
+
+            enemy = cls.get_enemy()
+            if enemy is None:
+                return
+
+            enemy.hitplayer(player.wpnheld)
+
     def __init__(
         self,
         name,
@@ -35,7 +139,7 @@ class User(WorldPlayer, UserData, Actor):
 
         # Player properties
         self.__name = player_data[1]
-        self.__location = player_data[4]
+        self.__location_id = player_data[4]
         self.__message_id = player_data[5]
         # 6 UNKNOWN
         self.__strength = player_data[7]  # Not reimplemented
@@ -64,14 +168,12 @@ class User(WorldPlayer, UserData, Actor):
         self.__min_ms = "appears with an ear-splitting bang."
         self.__here_ms = "is here"
 
-        self.__summoned_location = None  # tdes, ades
-        self.__vdes = 0
-        self.__rdes = 0
+        self.__summon_data = SummonData()
+        self.__drunk_data = DrunkData()
 
         self.__is_zapped = False
 
         self.__invisibility_counter = 0
-        self.__drunk_counter = 0
         self.__to_update = False
 
         # Weather
@@ -98,13 +200,13 @@ class User(WorldPlayer, UserData, Actor):
 
     # WorldPlayer, Actor
     @property
-    def location(self):
-        return self.__location
+    def location_id(self):
+        return self.__location_id
 
-    @location.setter
-    def location(self, value):
+    @location_id.setter
+    def location_id(self, value):
         World.load()
-        super(WorldPlayer).location = value
+        super(WorldPlayer).location_id = value
 
     @property
     def message_id(self):
@@ -162,7 +264,7 @@ class User(WorldPlayer, UserData, Actor):
         # Unknown
         self.reset_position()
         World.load()
-        if not any(PlayerData().filter(name=self.name).items):
+        if not any(PlayerData().filter(name=self.name).all):
             raise LooseError("You have been kicked off")
 
     def get_damage(self, enemy, damage):
@@ -207,7 +309,7 @@ class User(WorldPlayer, UserData, Actor):
         self.send_wizard("\001s{user.name}\001[ {user.name}  has entered the game ]\n\001".format(user=self))
 
         # yield from self.read_messages(reset_after_read=True)
-        # self.location = location
+        # self.location_id = location_id
 
         self.send_global("\001s{user.name}\001{user.name}  has entered the game\n\001".format(user=self))
         yield ""
@@ -251,12 +353,6 @@ class User(WorldPlayer, UserData, Actor):
     # From Actor
 
     # Not Implemented
-
-    @property
-    def available_items(self):
-        # Weather
-        return ItemsData().filter(available=self)
-
     @property
     def has_farted(self):
         return self.__has_farted
@@ -271,7 +367,9 @@ class User(WorldPlayer, UserData, Actor):
         return any((
             self.is_wizard,
             not self.location.is_dark,
-            any(self.items_visible.filter(is_light=True).items),
+            self.location.items.not_destroyed(self)
+                .or_filter(self.location.items_carried)
+                .filter(is_light=True).count > 0,
         ))
 
     @property
@@ -298,10 +396,11 @@ class User(WorldPlayer, UserData, Actor):
     def player_id(self):
         return super(WorldPlayer).player_id
 
+    # Items
     @property
     def items_available(self):
-        # Support
-        return self.items_here.or_filter(self.items_carried)
+        # Support, Weather
+        return self.location.items.not_destroyed(self).or_filter(self.items)
 
     def loose(self):
         # Tk
@@ -321,7 +420,7 @@ class User(WorldPlayer, UserData, Actor):
 
     def on_look(self):
         print("On Look")
-        undead = not ItemsData().filter(item_id=45).first().is_carried_by(self)
+        undead = not self.items.filter(item_id=45).first
         enemies = (
             undead and "wraith",
             "shazareth",
@@ -355,12 +454,10 @@ class User(WorldPlayer, UserData, Actor):
             # ["The Devil", -1, 70, 0, -2],
             # ["The Copper", -1, 40, 0, -2],
         )
-
         enemies = (PlayerData().filter(name=enemy).first for enemy in enemies if enemy)
-        yield from (enemy.on_look(self) for enemy in enemies if enemy)  # No such being
 
-        items = ItemsData().filter(carried_by=self).items
-        yield from (item.on_look(self) for item in items)
+        yield from (enemy.on_look(self) for enemy in enemies if enemy)  # No such being
+        yield from (item.on_look(self) for item in self.items.all)
 
         if self.helping is not None:
             yield from self.check_help()
@@ -434,10 +531,10 @@ class User(WorldPlayer, UserData, Actor):
         # Mobile
         if self.is_wizard:
             return False
-        dragon = Player.find("dragon")
+        dragon = Player.find("dragon").first
         if dragon is None:
             return False
-        if dragon.location.location_id == self.location.location_id:
+        if self.location.equal(dragon.location):
             return False
         return True
 
@@ -448,17 +545,13 @@ class User(WorldPlayer, UserData, Actor):
 
     def on_flee(self):
         # New1
-        for item in ItemsData().filter(carried_by=self, not_worn_by=self).items:
+        for item in self.items.filter(not_worn_by=self).all:
             item.set_location(self, item.IN_LOCATION)
 
-    # Abstract
+    # Check
 
-    # Modules
-
-    @property
-    def Blood(self):
-        # TODO: Remove it
-        return None
+    def next_turn(self):
+        self.Blood.check_fight(self.location)
 
     # Not Implemented
 
@@ -589,63 +682,44 @@ class User(WorldPlayer, UserData, Actor):
         # TODO: Remove it
         pass
 
-    # ------------------------------------------------
-
     # In User
-    # Parse
-    @property
-    def summoned_location(self):
-        return self.__summoned_location if not self.is_wizard else None
 
-    @summoned_location.setter
-    def summoned_location(self, value):
-        if self.is_wizard:
-            self.__summoned_location = None
-            return
-        self.__summoned_location = value
-
-    # ObjSys
+    # Summon (Parse)
     @property
-    def items_here(self):
-        return ItemsData().filter(user=self, location=self.location)
+    def can_be_summoned(self):
+        return not self.is_wizard
 
-    @property
-    def items_visible(self):
-        return self.items_here.or_filter(ItemsData().filter(carried_in=self.location))
+    def set_summoned_to(self, location):
+        if self.can_be_summoned:
+            self.__summon_data.location = location
+        return self.can_be_summoned
 
-    @property
-    def items_carried(self):
-        return ItemsData().filter(carried_by=self)
+    def on_summon(self):
+        if not self.can_be_summoned:
+            return False
+
+        self.send_global("\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name))
+        self.dump_items()
+        self.send_global("\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name))
+        return True
 
     # Support
-    @property
-    def players_visible(self):
-        return PlayerData().filter(visible=self.level, location=self.location).or_filter(self.myself)
-
     @property
     def myself(self):
         return PlayerData().filter(player=self)
 
+    @property
+    def players_visible(self):
+        if not self.can_see:
+            return self.myself
+        return self.location.players.filter(visible=self.level).or_filter(self.myself)
+
     # ObjSys
     def find(self, name):
-        player = self.players_visible.filter(name=name).first
-        return player if self.can_see_player(player) or None
-
-    # Support
-    def check_fight(self):
-        self.Blood.check_fight()
-        if self.Blood.fighting and self.Blood.get_enemy().location.location_id != self.location.location_id:
-            self.Blood.stop_fight()
-
-        if self.Blood.in_fight:
-            self.Blood.in_fight -= 1
-
-    # Support
-    def has_any(self, mask):
-        return self.items_available.filter(mask=mask)
+        return self.players_visible.filter(name=name)
 
     # Parse
-    def hit_lightning(self, wizard):
+    def hit_by_lightning(self, wizard):
         if self.is_wizard:
             yield "\001p{}\001 cast a lightning bolt at you\n".format(wizard.name)
             return
@@ -667,105 +741,85 @@ class User(WorldPlayer, UserData, Actor):
         yield "You have been utterly destroyed by {}\n".format(wizard.name)
         raise LooseError("Bye Bye.... Slain By Lightning")
 
-    # New1
-    def __do_forced(self):
+    # On turn
+
+    def __check_invisibility(self):
+        # Parse
+        if not self.__invisibility_counter:
+            return
+        self.__invisibility_counter -= 1
+        if self.__invisibility_counter == 1:
+            self.visible = 0
+        yield ""
+
+    def __check_update(self):
+        if not self.__to_update:
+            return
+
+        yield from self.update()
+        self.__to_update = False
+
+    def __check_fight(self, interrupt):
+        # Parse
+        if not self.Blood.in_fight:
+            return
+
+        self.Blood.check_fight()
+
+        if not interrupt:
+            return
+
+        self.Blood.fight(self)
+        yield ""
+
+    def __check_score(self):
+        chance = random_percent() < 10
+        if not chance and ItemsData().filter(item_id=18, worn_by=self).count <= 0:
+            return
+
+        self.strength += 1
+        yield from self.update()
+
+    def __check_forced(self):
+        # New1
         if self.force_action is None:
             return
 
         self.is_forced = True
-        gamecom(self.force_action)
+        # gamecom(self.force_action)
+        yield self.force_action
         self.is_forced = False
 
     # Parse
-    def on_message(self, message):
-        yield from self.before_message(message)
-        yield from super().on_message(message)
-
-    def on_messages(self, **kwargs):
-        interrupt = kwargs.get('interrupt', False)
-
-        self.save_position()
-
-        self.__update_invisibility()
-
-        if self.__to_update:
-            yield from self.update()
-            self.__to_update = False
-
-        self.__summoned(self.summoned_location)
-
-        self.__update_fight(interrupt)
-
-        if Item(18).iswornby(self) or random_percent() < 10:
-            self.strength += 1
-            yield from self.update()
-
-        self.__do_forced()
-
-        if self.__drunk_counter > 0:
-            self.__drunk_counter -= 1
-            if not self.is_dumb:
-                self.hiccup()
-
-    # Parse
-    def __summoned(self, location):
-        self.__rdes = 0
-        self.__vdes = 0
-        if self.summoned_location is None:
-            return
-
-        self.send_global("\001s{name}\001{name} vanishes in a puff of smoke\n\001".format(name=self.name))
-        self.dump_items()
-        self.send_global("\001s{name}\001{name} appears in a puff of smoke\n\001".format(name=self.name))
-        self.location = location
-        self.summoned_location = None
-
-    def __update_invisibility(self):
-        if self.__invisibility_counter:
-            self.__invisibility_counter -= 1
-        if self.__invisibility_counter == 1:
-            self.visible = 0
-
-    def __update_fight(self, interrupt):
-        if not self.Blood.in_fight:
-            return
-        enemy = self.Blood.get_enemy()
-        if enemy.location.location_id != self.location.location_id:
-            self.Blood.stop_fight()
-        if not enemy.exists:
-            self.Blood.stop_fight()
-        if not self.Blood.in_fight:
-            return
-        if not interrupt:
-            return
-
-        self.Blood.in_fight = 0
-        enemy.hitplayer(self.__wpnheld)
-
     def broadcast(self, message):
+        # TODO: Refactor it
         self.force_read = True
         Broadcast(message).send(self)
 
     # Other
     @property
     def has_shield(self):
+        # TODO: Refactor it
         shields = Shield113(), Shield114(), Shield89()
         return any(item.is_worn_by(self) for item in shields)
 
     # New1
-    def teleport(self, location):
+    def teleport(self, location_id):
+        # TODO: Refactor it
         self.send_global("\001s{name}\001{name} has left.\n\001".format(name=self.name))
         self.send_global("\001s{name}\001{name} has arrived.\n\001".format(name=self.name))
-        self.location = location
+        self.location_id = location_id
 
     # Mobile
     def on_time(self):
+        # TODO: Refactor it
         if random_percent() > 80:
             self.on_look()
 
     def drop_pepper(self):
+        # TODO: Refactor it
         self.send_global("You start sneezing ATISCCHHOOOOOO!!!!\n")
-        if not Player32.exists or Player32.location.location_id != self.location.location_id:
+        if not Player32.exists or not self.location.equal(Player32.location):
             return
 
         # Ok dragon and pepper time
@@ -781,16 +835,18 @@ class User(WorldPlayer, UserData, Actor):
         raise LooseError("Whoops.....   Frying tonight")
 
     def check_help(self):
+        # TODO: Refactor it
         helping = self.helping
         if not self.__in_setup:
             return
-        if helping.exists and helping.location.location_id == self.location.location_id:
+        if helping.exists and self.location.equal(helping.location):
             return
 
         yield "You can no longer help \001c{}\001\n".format(helping.name)
         self.helping = None
 
     def get_item(self, name, mode_0=False, error_message=None):
+        # TODO: Refactor it
         item = find_item(
             name=name,
             available=self,
@@ -802,6 +858,7 @@ class User(WorldPlayer, UserData, Actor):
 
     # BprintF
     def set_name(self, player):
+        # TODO: Refactor it
         if player.sex == self.SEX_FEMALE:
             self.pronouns['her'] = player.name
         elif player.sex == self.SEX_MALE:
@@ -813,12 +870,16 @@ class User(WorldPlayer, UserData, Actor):
 
     @property
     def can_see(self):
+        # TODO: Refactor it
         return not self.is_blind and self.in_light
 
     def can_hear_player(self, player):
+        # TODO: Refactor it
         return not self.is_deaf and player is not None
 
-    def can_see_player(self, player):
+    def can_see_player(self, players):
+        # TODO: Refactor it
+        player = players.first
         if not player or self.equal(player):
             return True
         if not self.can_see:
@@ -838,6 +899,7 @@ class User(WorldPlayer, UserData, Actor):
         :param message:
         :return:
         """
+        # TODO: Refactor it
         message = re.sub(r"\001f(.{, 128})\001", self.__list_file(), message)
         message = re.sub(r"\001d(.{, 256})\001", self.__not_deaf(), message)
         message = re.sub(r"\001s(.{, 23})\001(.{, 256})\001", self.__can_see(), message)
@@ -850,6 +912,7 @@ class User(WorldPlayer, UserData, Actor):
 
     # Specials
     def __list_file(self):
+        # TODO: Refactor it
         def f(match):
             filename = match.group(0)
 
@@ -861,52 +924,89 @@ class User(WorldPlayer, UserData, Actor):
         return f
 
     def __not_deaf(self):
+        # TODO: Refactor it
         def f(match):
             return match.group(0) if not self.is_deaf else ""
         return f
 
     def __can_see(self):
+        # TODO: Refactor it
         def f(match):
             name = match.group(0)
             message = match.group(1)
-            return message if self.find(name) else ""
+            return message if self.find(name).count else ""
         return f
 
     def __see_player(self):
+        # TODO: Refactor it
         def f(match):
             name = match.group(0)
-            return name if self.find(name) else "Someone"
+            return name if self.find(name).count else "Someone"
         return f
 
     def __not_dark(self):
+        # TODO: Refactor it
         def f(match):
             return match.group(0) if not self.in_light or self.is_blind else ""
         return f
 
     def __can_hear_player(self):
+        # TODO: Refactor it
         def f(match):
             name = match.group(0)
-            player = self.find(name)
+            player = self.find(name).first
             return name if self.can_hear_player(player) else "Someone"
 
         return f
 
     def __can_see_player(self):
+        # TODO: Refactor it
         def f(match):
             name = match.group(0)
-            player = Player.find(name)
-            return name if not self.is_blind and self.find(player) else "Someone"
+            player = Player.find(name).first
+            return name if not self.is_blind and self.find(player).first else "Someone"
 
         return f
 
     @classmethod
     def __not_keyboard(cls, from_keyboard):
+        # TODO: Refactor it
         def f(match):
             return match.group(0) if not from_keyboard else ""
         return f
 
+    # Events
+
     def on_loose(self):
+        # TODO: Refactor it
         # Signals.active = False
         # No interruptions while you are busy dying
         # ABOUT 2 MINUTES OR SO
         pass
+
+    # Parse
+    def on_message(self, message):
+        yield from chain(
+            self.before_message(message),
+            super().on_message(message),
+        )
+
+    def on_messages(self, **kwargs):
+        interrupt = kwargs.get('interrupt', False)
+
+        self.save_position()
+
+        yield from chain(
+            self.__check_invisibility(),
+            self.__check_update(),
+            self.__summon_data.event(self),
+            self.__check_fight(interrupt),
+            self.__check_score(),
+            self.__check_forced(),
+            self.__drunk_data.event(self),
+        )
+
+    def on_drunk(self):
+        if self.is_dumb:
+            return
+        yield from self.hiccup()
