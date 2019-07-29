@@ -2,7 +2,7 @@ import re
 from itertools import chain
 from .. import debug
 from ..database import ItemsData, PlayerData, LocationData
-from ..errors import CrapupError, LooseError, ServiceError
+from ..errors import CrapupError, LooseError, ServiceError, CommandError
 # from ..item import Item, Door
 # from ..location import Location
 from ..magic import random_percent
@@ -73,6 +73,83 @@ class DrunkData:
 
         self.__counter -= 1
         yield from user.on_drunk
+
+
+class Decoder:
+    def __init__(self):
+        self.pronouns = {}
+
+    # Specials
+    def __decoder(
+        self,
+        pattern,
+        condition=lambda match: True,
+        replace=lambda match: match.group(0),
+        default=lambda match: ""
+    ):
+        return lambda m: re.sub(pattern, lambda match: replace(match) if condition(match) else default(match), m)
+
+    def decode(self, player, message, from_keyboard=True):
+        """
+        The main loop
+
+        :param message:
+        :return:
+        """
+        for decoder in (
+            self.__decoder(
+                r"\001f(.{, 128})\001",
+                condition=lambda match: player.debug,
+                replace=lambda match: "[FILE {} ]\n{}".format(match.group(0), f_listfl(match.group(0))),
+                default=lambda match: f_listfl(match.group(0)),
+            ),
+            self.__decoder(
+                r"\001d(.{, 256})\001",
+                condition=lambda match: not player.is_deaf,
+            ),
+            self.__decoder(
+                r"\001s(.{, 23})\001(.{, 256})\001",
+                condition=lambda match: player.find(match.group(0)).count,
+                replace=lambda match: match.group(1),
+            ),
+            self.__decoder(
+                r"\001p(.{, 24})\001",
+                condition=lambda match: player.find(match.group(0)).count,
+                default=lambda match: "Someone",
+            ),
+            self.__decoder(
+                r"\001c(.{, 256})\001",
+                condition=lambda match: player.in_light and not player.is_blind,
+            ),
+            self.__decoder(
+                r"\001P(.{, 24})\001",
+                condition=lambda match: player.can_hear_player(player.find(match.group(0)).count),
+                default=lambda match: "Someone",
+            ),
+            self.__decoder(
+                r"\001D(.{, 24})\001",
+                condition=lambda match: not player.is_blind and player.find(Player.find(match.group(0)).first).count,
+                default=lambda match: "Someone",
+            ),
+            self.__decoder(
+                r"\001l(.{, 127})\001",
+                condition=lambda match: not from_keyboard,
+            ),
+        ):
+            message = decoder(message)
+        return message
+
+    # BprintF
+    def set_player(self, player):
+        if player.sex == User.SEX_FEMALE:
+            self.pronouns['her'] = player.name
+            self.pronouns['them'] = player.name
+        elif player.sex == User.SEX_MALE:
+            self.pronouns['him'] = player.name
+            self.pronouns['them'] = player.name
+        else:
+            self.pronouns['it'] = player.name
+            return
 
 
 class User(WorldPlayer, UserData, Actor):
@@ -184,11 +261,13 @@ class User(WorldPlayer, UserData, Actor):
 
         # self.buffer = Buffer()
 
+        self.decoder = Decoder()
+
     # From WorldPlayer
 
     # Player properties:
 
-    # WorldPlayer, UserData, Actor
+    # WorldPlayer, UserData, Sender, Actor
     @property
     def name(self):
         return self.__name
@@ -208,6 +287,7 @@ class User(WorldPlayer, UserData, Actor):
         World.load()
         super(WorldPlayer).location_id = value
 
+    # WorldPlayer, Reader
     @property
     def message_id(self):
         return self.__message_id
@@ -216,7 +296,7 @@ class User(WorldPlayer, UserData, Actor):
     def message_id(self, value):
         self.__message_id = value
 
-    # WorldPlayer, Actor
+    # WorldPlayer, Sender, Actor
     @property
     def visible(self):
         return self.__visible
@@ -348,7 +428,12 @@ class User(WorldPlayer, UserData, Actor):
         self.__data.sex = self.sex
         self.__data.weapon = self.__wpnheld
 
-    # ------------------------------------------------
+    # From Sender
+
+    def broadcast(self, message):
+        # Parse
+        self.force_read = True
+        super().broadcast(message)
 
     # From Actor
 
@@ -460,7 +545,7 @@ class User(WorldPlayer, UserData, Actor):
         yield from (item.on_look(self) for item in self.items.all)
 
         if self.helping is not None:
-            yield from self.check_help()
+            yield from self.__check_help()
 
     def remove(self):
         return super(WorldPlayer).remove()
@@ -552,6 +637,17 @@ class User(WorldPlayer, UserData, Actor):
 
     def next_turn(self):
         self.Blood.check_fight(self.location)
+
+    # Feel
+
+    def can_see_player(self, player):
+        if not player or self.equal(player):
+            return True
+        if super().can_see_player(player):
+            self.decoder.set_player(player)
+            return True
+        else:
+            return False
 
     # Not Implemented
 
@@ -682,6 +778,8 @@ class User(WorldPlayer, UserData, Actor):
         # TODO: Remove it
         pass
 
+    # ------------------------------------------------
+
     # In User
 
     # Summon (Parse)
@@ -790,52 +888,8 @@ class User(WorldPlayer, UserData, Actor):
         yield self.force_action
         self.is_forced = False
 
-    # Parse
-    def broadcast(self, message):
-        # TODO: Refactor it
-        self.force_read = True
-        Broadcast(message).send(self)
-
-    # Other
-    @property
-    def has_shield(self):
-        # TODO: Refactor it
-        shields = Shield113(), Shield114(), Shield89()
-        return any(item.is_worn_by(self) for item in shields)
-
-    # New1
-    def teleport(self, location_id):
-        # TODO: Refactor it
-        self.send_global("\001s{name}\001{name} has left.\n\001".format(name=self.name))
-        self.send_global("\001s{name}\001{name} has arrived.\n\001".format(name=self.name))
-        self.location_id = location_id
-
-    # Mobile
-    def on_time(self):
-        # TODO: Refactor it
-        if random_percent() > 80:
-            self.on_look()
-
-    def drop_pepper(self):
-        # TODO: Refactor it
-        self.send_global("You start sneezing ATISCCHHOOOOOO!!!!\n")
-        if not Player32.exists or not self.location.equal(Player32.location):
-            return
-
-        # Ok dragon and pepper time
-        if Item89.is_worn_by(self):
-            # Fried dragon
-            Player32.remove()  # No dragon
-            self.score += 100
-            return self.update()
-
-        # Whoops !
-        yield "The dragon sneezes forth a massive ball of flame.....\n"
-        yield "Unfortunately you seem to have been fried\n"
-        raise LooseError("Whoops.....   Frying tonight")
-
-    def check_help(self):
-        # TODO: Refactor it
+    def __check_help(self):
+        # Mobile
         helping = self.helping
         if not self.__in_setup:
             return
@@ -846,152 +900,60 @@ class User(WorldPlayer, UserData, Actor):
         self.helping = None
 
     def get_item(self, name, mode_0=False, error_message=None):
-        # TODO: Refactor it
-        item = find_item(
+        items = ItemsData().filter(
             name=name,
             available=self,
-            mode_0=mode_0,
-            destroyed=self.is_wizard,
+            mode_0=mode_0
         )
-        if item is None and error_message:
+        if not self.is_wizard:
+            items = items.filter(destroyed=False)
+
+        item = items.first
+        if error_message and item is None:
             raise CommandError(error_message)
 
-    # BprintF
-    def set_name(self, player):
-        # TODO: Refactor it
-        if player.sex == self.SEX_FEMALE:
-            self.pronouns['her'] = player.name
-        elif player.sex == self.SEX_MALE:
-            self.pronouns['him'] = player.name
-        else:
-            self.pronouns['it'] = player.name
-            return
-        self.pronouns['them'] = player.name
-
-    @property
-    def can_see(self):
-        # TODO: Refactor it
-        return not self.is_blind and self.in_light
-
-    def can_hear_player(self, player):
-        # TODO: Refactor it
-        return not self.is_deaf and player is not None
-
-    def can_see_player(self, players):
-        # TODO: Refactor it
-        player = players.first
-        if not player or self.equal(player):
-            return True
-        if not self.can_see:
-            return False
-        if self.level < player.visible:
-            return False
-        if not self.location.equal(player.location):
-            return False
-
-        self.set_name(player)
-        return True
-
     def decode(self, message, from_keyboard=True):
-        """
-        The main loop
+        return self.decoder.decode(message, from_keyboard)
 
-        :param message:
-        :return:
-        """
-        # TODO: Refactor it
-        message = re.sub(r"\001f(.{, 128})\001", self.__list_file(), message)
-        message = re.sub(r"\001d(.{, 256})\001", self.__not_deaf(), message)
-        message = re.sub(r"\001s(.{, 23})\001(.{, 256})\001", self.__can_see(), message)
-        message = re.sub(r"\001p(.{, 24})\001", self.__see_player(), message)
-        message = re.sub(r"\001c(.{, 256})\001", self.__not_dark(), message)
-        message = re.sub(r"\001P(.{, 24})\001", self.__can_hear_player(), message)
-        message = re.sub(r"\001D(.{, 24})\001", self.__can_see_player(), message)
-        message = re.sub(r"\001l(.{, 127})\001", self.__not_keyboard(from_keyboard), message)
-        return message
+    # Orphan
 
-    # Specials
-    def __list_file(self):
-        # TODO: Refactor it
-        def f(match):
-            filename = match.group(0)
+    def drop_pepper(self):
+        # Mobile
+        self.send_global("You start sneezing ATISCCHHOOOOOO!!!!\n")
 
-            result = ""
-            if self.debug:
-                result += "[FILE {} ]\n".format(filename)
-            result += f_listfl(filename)
-            return result
-        return f
+        dragon = PlayerData().filter(player_id=32, exists=True).first
+        if dragon is None or not self.location.equal(dragon.location):
+            return
 
-    def __not_deaf(self):
-        # TODO: Refactor it
-        def f(match):
-            return match.group(0) if not self.is_deaf else ""
-        return f
+        # Ok dragon and pepper time
 
-    def __can_see(self):
-        # TODO: Refactor it
-        def f(match):
-            name = match.group(0)
-            message = match.group(1)
-            return message if self.find(name).count else ""
-        return f
+        item89 = ItemsData().filter(item_id=89, worn_by=self).first
+        if item89 is not None:
+            # Fried dragon
+            dragon.remove()  # No dragon
+            self.score += 100
+            return self.update()
 
-    def __see_player(self):
-        # TODO: Refactor it
-        def f(match):
-            name = match.group(0)
-            return name if self.find(name).count else "Someone"
-        return f
-
-    def __not_dark(self):
-        # TODO: Refactor it
-        def f(match):
-            return match.group(0) if not self.in_light or self.is_blind else ""
-        return f
-
-    def __can_hear_player(self):
-        # TODO: Refactor it
-        def f(match):
-            name = match.group(0)
-            player = self.find(name).first
-            return name if self.can_hear_player(player) else "Someone"
-
-        return f
-
-    def __can_see_player(self):
-        # TODO: Refactor it
-        def f(match):
-            name = match.group(0)
-            player = Player.find(name).first
-            return name if not self.is_blind and self.find(player).first else "Someone"
-
-        return f
-
-    @classmethod
-    def __not_keyboard(cls, from_keyboard):
-        # TODO: Refactor it
-        def f(match):
-            return match.group(0) if not from_keyboard else ""
-        return f
+        # Whoops !
+        yield "The dragon sneezes forth a massive ball of flame.....\n"
+        yield "Unfortunately you seem to have been fried\n"
+        raise LooseError("Whoops.....   Frying tonight")
 
     # Events
 
-    def on_loose(self):
-        # TODO: Refactor it
-        # Signals.active = False
-        # No interruptions while you are busy dying
-        # ABOUT 2 MINUTES OR SO
-        pass
+    # From Reader
 
-    # Parse
+    # Events
+
     def on_message(self, message):
+        # Parse
         yield from chain(
             self.before_message(message),
             super().on_message(message),
         )
 
     def on_messages(self, **kwargs):
+        # Parse
         interrupt = kwargs.get('interrupt', False)
 
         self.save_position()
@@ -1006,7 +968,23 @@ class User(WorldPlayer, UserData, Actor):
             self.__drunk_data.event(self),
         )
 
+
+    # In User
+
+    def on_loose(self):
+        # TODO: Refactor it
+        # Signals.active = False
+        # No interruptions while you are busy dying
+        # ABOUT 2 MINUTES OR SO
+        pass
+
     def on_drunk(self):
+        # Parse
         if self.is_dumb:
             return
         yield from self.hiccup()
+
+    def on_time(self):
+        # Mobile
+        if random_percent() > 80:
+            self.on_look()

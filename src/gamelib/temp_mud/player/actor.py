@@ -179,6 +179,14 @@ class Actor(Sender, Reader):
         raise NotImplementedError()
 
     @property
+    def message_id(self):
+        raise NotImplementedError()
+
+    @message_id.setter
+    def message_id(self, value):
+        raise NotImplementedError()
+
+    @property
     def show_players(self):
         raise NotImplementedError()
 
@@ -303,8 +311,12 @@ class Actor(Sender, Reader):
     def location(self):
         raise NotImplementedError()
 
-    @location.setter
-    def location(self, value):
+    @property
+    def location_id(self):
+        raise NotImplementedError()
+
+    @location_id.setter
+    def location_id(self, value):
         raise NotImplementedError()
 
     @property
@@ -354,9 +366,21 @@ class Actor(Sender, Reader):
     def can_see_door(self, door):
         raise NotImplementedError()
 
+    # Other
+    @property
+    def has_shield(self):
+        shields = Shield113(), Shield114(), Shield89()
+        return any(item.is_worn_by(self) for item in shields)
+
     @property
     def is_fighting(self):
         raise NotImplementedError()
+
+    # New1
+    def teleport(self, location_id):
+        self.send_global("\001s{name}\001{name} has left.\n\001".format(name=self.name))
+        self.send_global("\001s{name}\001{name} has arrived.\n\001".format(name=self.name))
+        self.location_id = location_id
 
     def add_force(self, action):
         raise NotImplementedError()
@@ -419,6 +443,17 @@ class Actor(Sender, Reader):
     # Check
     def next_turn(self):
         raise NotImplementedError()
+
+    # Feelings
+    def can_hear_player(self, player):
+        return not self.is_deaf and player is not None
+
+    @property
+    def can_see(self):
+        return not self.is_blind and self.in_light
+
+    def can_see_player(self, player):
+        return self.can_see and self.level < player.visible and self.location.equal(player.location)
 
     # 1 - 10
     @not_crippled_action
