@@ -1,6 +1,6 @@
 # From 10^24 to 10^27
 # Point: Supercluster
-from nestedscript import Universe, CosmicWall, GalaxyFilament, Supervoid, Supercluster
+from genelib.nested import Universe, CosmicWall, GalaxyFilament, Supervoid, Supercluster
 
 
 def sphere(diameter):

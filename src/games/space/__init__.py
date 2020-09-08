@@ -6,7 +6,7 @@ from pygame import Surface
 from pygame.sprite import Sprite, Group
 from ..middleearth.player import Player
 
-from scales.yotta import ObservableUniverse, SloanGreatWall, PerseusCetusSuperclusterComplex, EridanusSupervoid, VirgoSupercluster
+from genelib.scales import ObservableUniverse, SloanGreatWall, PerseusCetusSuperclusterComplex, EridanusSupervoid, VirgoSupercluster
 from nestedscript import CosmicWall, GalaxyFilament, Supervoid, Supercluster
 
 
