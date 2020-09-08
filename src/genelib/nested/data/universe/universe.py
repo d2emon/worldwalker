@@ -2,13 +2,25 @@
 import random
 
 from genelib.nested.names import NameGenerator, ComplexNameGenerator
+from genelib.nested.item import NestedItem, SizedThing, generate_child
 
 from .planets import *
 
-from ...thing import Thing, SizedThing, generate_child
-
 """
 new Thing("multiverse",["universe,10-30"],["multiverse","lasagnaverse","doughnutverse","towelverse","baconverse","sharkverse","nestedverse","tastyverse","upverse","downverse","layerverse","clusterverse","metaverse","quantiverse","paraverse","epiverse","alterverse","hypoverse","dimensioverse","planiverse","pluriverse","polyverse","maniverse","stackoverse","antiverse","superverse","upperverse","maxiverse","megaverse","babyverse","tinyverse","retroverse","ultraverse","topoverse","otherverse","bubbleverse","esreverse","versiverse","'verse","cookieverse","grandmaverse"]);
+
+
+    @property
+    def image(self):
+        # special-case pictures
+        if self.name == 'sharkverse':
+            return "nestedSharkverse.png"
+        elif self.name == 'baconverse':
+            return "nestedBaconverse.png"
+        elif self.name == 'doughnutverse':
+            return "nestedDoughnutverse.png"
+        elif self.name == 'lasagnaverse':
+            return "nestedLasagnaverse.png"
 """
 
 
@@ -101,7 +113,7 @@ class Supercluster(SizedThing):
         return length
 
 
-class Galaxy(Thing):
+class Galaxy(NestedItem):
     thing_name = 'galaxy'
 
     @classmethod
@@ -112,7 +124,7 @@ class Galaxy(Thing):
         ]
 
 
-class GalaxyArm(Thing):
+class GalaxyArm(NestedItem):
     thing_name = 'galaxy arm'
     name_generator = NameGenerator(["arm"])
 
@@ -129,7 +141,7 @@ class GalaxyArm(Thing):
         ]
 
 
-class GalaxyCenter(Thing):
+class GalaxyCenter(NestedItem):
     thing_name = 'galaxy arm'
     name_generator = NameGenerator(["galactic center"])
 
@@ -145,7 +157,7 @@ class GalaxyCenter(Thing):
         ]
 
 
-class Nebula(Thing):
+class Nebula(NestedItem):
     thing_name = 'nebula'
 
     @classmethod
@@ -159,7 +171,7 @@ class Nebula(Thing):
         ]
 
 
-class InterstellarCloud(Thing):
+class InterstellarCloud(NestedItem):
     thing_name = 'interstellar cloud'
     name_generator = ComplexNameGenerator([
         [
@@ -187,7 +199,7 @@ class InterstellarCloud(Thing):
         ]
 
 
-class StarSystem(Thing):
+class StarSystem(NestedItem):
     thing_name = 'star system'
 
     @classmethod
@@ -216,7 +228,7 @@ class StarSystem(Thing):
         ]
 
 
-class DysonSphere(Thing):
+class DysonSphere(NestedItem):
     thing_name = 'dyson sphere'
 
     @classmethod
@@ -237,7 +249,7 @@ class DysonSphere(Thing):
         ]
 
 
-class Star(Thing):
+class Star(NestedItem):
     thing_name = 'star'
     name_generator = ComplexNameGenerator([
         [
@@ -257,7 +269,7 @@ class Star(Thing):
         ]
 
 
-class AsteroidBelt(Thing):
+class AsteroidBelt(NestedItem):
     thing_name = 'asteroid belt'
 
     @classmethod
@@ -273,7 +285,7 @@ new Thing("earth",[".asteroid belt"],"Earth");
 """
 
 
-class Asteroid(Thing):
+class Asteroid(NestedItem):
     thing_name = 'asteroid'
     name_generator = NameGenerator(['asteroid'])
 
@@ -286,7 +298,7 @@ class Asteroid(Thing):
         ]
 
 
-class GasGiant(Thing):
+class GasGiant(NestedItem):
     thing_name = 'gas giant'
 
     @classmethod
@@ -300,7 +312,7 @@ class GasGiant(Thing):
         ]
 
 
-class GasGiantAtmosphere(Thing):
+class GasGiantAtmosphere(NestedItem):
     thing_name = 'gas giant atmosphere'
     name_generator = NameGenerator(['atmosphere'])
 
@@ -316,7 +328,7 @@ class GasGiantAtmosphere(Thing):
         ]
 
 
-class PlanetCore(Thing):
+class PlanetCore(NestedItem):
     thing_name = 'planet core'
     name_generator = NameGenerator(['core'])
 
@@ -331,7 +343,7 @@ class PlanetCore(Thing):
         ]
 
 
-class BlackHole(Thing):
+class BlackHole(NestedItem):
     thing_name = 'black hole'
 
     @classmethod
@@ -341,7 +353,7 @@ class BlackHole(Thing):
         ]
 
 
-class InsideTheBlackHole(Thing):
+class InsideTheBlackHole(NestedItem):
     thing_name = 'inside the black hole'
 
     @classmethod
@@ -353,7 +365,7 @@ class InsideTheBlackHole(Thing):
         ]
 
 
-class WhiteHole(Thing):
+class WhiteHole(NestedItem):
     thing_name = 'white hole'
 
     @classmethod
@@ -369,7 +381,7 @@ new Thing("everything",["universe"]);
 """
 
 
-class EndOfUniverseNote(Thing):
+class EndOfUniverseNote(NestedItem):
     thing_name = 'end of universe note'
     name_generator = NameGenerator([
         "Help! I'm trapped in a universe factory!", "Okay, you can stop clicking now.",

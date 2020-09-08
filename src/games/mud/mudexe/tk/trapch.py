@@ -51,7 +51,7 @@ def lookin(room):
     World.close()
 
     if ail_blind:
-        bprintf("You are blind... you can't see a thing!\n")
+        bprintf("You are blind... you can't see a item!\n")
 
     if my_lev > 9:
         showname(room)

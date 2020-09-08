@@ -505,7 +505,7 @@ if(!strcmp(lowercase(nam1+4),lowercase(luser))) return(1);
     closeworld();
     if(New1.ail_blind)
     {
-    	self.output("You are blind... you can't see a thing!\n");
+    	self.output("You are blind... you can't see a item!\n");
     }
     if(NewUaf.level>9) showname(room);
     un1=openroom(room,"r");

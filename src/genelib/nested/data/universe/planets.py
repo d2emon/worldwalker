@@ -1,5 +1,5 @@
 from genelib.nested.names import NameGenerator, ComplexNameGenerator
-from ...thing import Thing, generate_child
+from genelib.nested.item import NestedItem, generate_child
 
 
 # class Planet(TerraformedPlanet):
@@ -7,7 +7,7 @@ from ...thing import Thing, generate_child
 #     name_generator = NameGenerator(["telluric planet"])
 
 
-class BarrenPlanet(Thing):
+class BarrenPlanet(NestedItem):
     thing_name = 'barren planet'
     name_generator = NameGenerator(['telluric planet'])
 
@@ -20,7 +20,7 @@ class BarrenPlanet(Thing):
         ] + PlanetComposition.generate_children()
 
 
-class VisitorPlanet(Thing):
+class VisitorPlanet(NestedItem):
     thing_name = 'visitor planet'
     name_generator = NameGenerator(['telluric planet'])
 
@@ -35,7 +35,7 @@ class VisitorPlanet(Thing):
         ] + PlanetComposition.generate_children()
 
 
-class FuturePlanet(Thing):
+class FuturePlanet(NestedItem):
     thing_name = 'future planet'
     name_generator = NameGenerator(['telluric planet'])
 
@@ -49,7 +49,7 @@ class FuturePlanet(Thing):
         ] + PlanetComposition.generate_children()
 
 
-class TerraformedPlanet(Thing):
+class TerraformedPlanet(NestedItem):
     thing_name = 'barren planet'
     name_generator = NameGenerator(['telluric planet'])
 
@@ -63,7 +63,7 @@ class TerraformedPlanet(Thing):
         ] + PlanetComposition.generate_children()
 
 
-class MedievalPlanet(Thing):
+class MedievalPlanet(NestedItem):
     thing_name = 'barren planet'
     name_generator = NameGenerator(['telluric planet'])
 
@@ -77,7 +77,7 @@ class MedievalPlanet(Thing):
         ] + PlanetComposition.generate_children()
 
 
-class AncientPlanet(Thing):
+class AncientPlanet(NestedItem):
     thing_name = 'barren planet'
     name_generator = NameGenerator(['telluric planet'])
 
@@ -90,7 +90,7 @@ class AncientPlanet(Thing):
         ] + PlanetComposition.generate_children()
 
 
-class PlanetComposition(Thing):
+class PlanetComposition(NestedItem):
     thing_name = 'planet composition'
     name_generator = NameGenerator(['planet'])
 
@@ -104,7 +104,7 @@ class PlanetComposition(Thing):
         ]
 
 
-class Moon(Thing):
+class Moon(NestedItem):
     thing_name = 'moon'
     name_generator = ComplexNameGenerator([
         ["young", "old", "large", "small", "pale", "white", "dark", "black", "old"],

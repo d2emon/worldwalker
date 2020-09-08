@@ -1,82 +1,4 @@
 """
-//And now, the fun begins!
-
-//How to add a new Thing :
-//	new Thing(name,contains,name generator);
-//		-name is the referral name for this Thing. Unless a name generator is specified, this name will be the default name for any instances of this Thing.
-//		-contains is an array of Things that an instance of this Thing contains, specified by their name.
-//			-For example, ["banana"] means this Thing contains exactly 1 instance of a banana. ["banana","orange"] means it contains 1 banana and 1 orange.
-//			-["banana","strawberry,25%"] means it will contain 1 banana, and has a 25% probability of also containing a strawberry.
-//			-["banana,2-7"] means it will contain between 2 and 7 bananas.
-//			-[".banana"] will not include a banana in the Thing; instead, the Thing will contain whatever the banana normally contains.
-//			-["banana",["sugar","honey"]] will include a banana, and either sugar or honey. Unfortunately, this does not work with the format ".sugar" or ".honey".
-//		-name generator is optional; if specified, the instance of the Thing will be named according to this.
-//			It can be either an array containing other arrays (the name will be patched up from an element of each array) or an identifier for the Name function, like *BOOK*.
-//			A name generator of [["blue ","red "],["frog","toad"]] will produce names such as "blue frog" or "red toad".
-"""
-
-"""
-//basic materials and particles
-//(these are very rough simplifications, don't hold all the inaccuracies against me)
-new Thing("diamond",["carbon"]);
-new Thing("oil",["lipids"]);
-new Thing("magma",[".rock"]);
-new Thing("rock",["silica","aluminium,30%","iron,20%","potassium,20%","sodium,50%","calcium,50%"]);
-new Thing("silica",["silicon","oxygen"]);
-new Thing("chitin",["carbon","hydrogen","oxygen","nitrogen"]);
-new Thing("salt",["chlorine","sodium"]);
-new Thing("water",["hydrogen","oxygen"]);
-new Thing("fire",["oxygen","carbon"]);
-new Thing("ash",["organic matter","carbon"]);
-new Thing("dew",["water"]);
-new Thing("ice",["water"]);
-new Thing("snow",["snowflakes"]);
-new Thing("snowflakes",["water"]);
-new Thing("ammonia",["hydrogen","nitrogen"]);
-new Thing("methane",["hydrogen","carbon"]);
-new Thing("hydrogen",[".hydrogen atom"]);
-new Thing("hydrogen atom",["proton","electron"],["atoms"]);
-new Thing("plastic",["polymers"]);
-new Thing("rubber",["polymers"]);
-new Thing("polymers",[".glucids"]);
-new Thing("alcohol",[".glucids"]);
-new Thing("carbon",[".atom"]);
-new Thing("sodium",[".atom"]);
-new Thing("chlorine",[".atom"]);
-new Thing("oxygen",[".atom"]);
-new Thing("helium",[".atom"]);
-new Thing("potassium",[".atom"]);
-new Thing("aluminium",[".atom"]);
-new Thing("iron",[".atom"]);
-new Thing("copper",[".atom"]);
-new Thing("lead",[".atom"]);
-new Thing("steel",["iron","carbon"]);
-new Thing("gold",[".atom"]);
-new Thing("silver",[".atom"]);
-new Thing("silicon",[".atom"]);
-new Thing("calcium",[".atom"]);
-new Thing("nitrogen",[".atom"]);
-new Thing("sulfur",[".atom"]);
-new Thing("phosphorus",[".atom"]);
-//alright, I'm not doing the whole periodic table.
-new Thing("proteins",[".molecule"]);
-new Thing("lipids",[".molecule"]);
-new Thing("glucids",["carbon","hydrogen","oxygen"],"glucose");
-new Thing("organic matter",[["proteins","lipids","glucids"],["proteins","lipids","glucids",""],"salt,30%"]);
-new Thing("atom",["proton","neutron","electron"],["atoms"]);
-new Thing("molecule",["atom"],["molecules"]);
-new Thing("proton",["up quark,2","down quark"]);
-new Thing("neutron",["down quark,2","up quark"]);
-new Thing("electron",["qwubble"]);
-new Thing("up quark",["qwubble"]);
-new Thing("down quark",["qwubble"]);
-new Thing("qwubble",["multiverse,1-5"]);
-new Thing("portal",["universe"]);
-"""
-
-from .universe import *
-
-"""
 //cell stuff
 new Thing("cell",["nucleus","cytoplasm"],["cells"]);
 new Thing("nucleus",["dna","proteins"]);
@@ -333,7 +255,7 @@ new Thing("bacteria thought",[],["#wow","#wow okay","#i can't even","#okay","#me
 new Thing("plankton",["plankton body","plankton thoughts"],["jellyfish larva","coral polyp","diatom","urchin larva","starfish larva","salp","rotifer","pteropod","clione"]);//krill etc in crustaceans
 new Thing("plankton body",["simple eye,0-3","simple mouth","exoskeleton","jelly","soft flesh"],"body");
 new Thing("plankton thoughts",["plankton thought,1"],["thoughts"]);
-new Thing("plankton thought",[],["hello :)","yes hi :)","how are you :)","it's sunny today :)","what a nice day :)","aaah I could just float away :)","I am fine thank you :)","yes I think so :)","how fun :)","do you catch my drift :)","so many cousins :)","I'm a little lost :)","no pressure :)","that's okay :)","what a nice thing to say :)","you should stay over :)","my place or your place :)","why are you still here :)","there's a big world to explore :)","I don't even know where I'm going :)","here I go! :)","am I really going where I decide to go, or am I just being pushed around by the current? :)","oh no :(","can't you feel them coming? :(","they're slowly rising from deep below :(","it's slowly coming this way :(","I'm different :(","ravioli, ravioli :)","give me the formuoli :)","oh,..."]);
+new Thing("plankton thought",[],["hello :)","yes hi :)","how are you :)","it's sunny today :)","what a nice day :)","aaah I could just float away :)","I am fine thank you :)","yes I think so :)","how fun :)","do you catch my drift :)","so many cousins :)","I'm a little lost :)","no pressure :)","that's okay :)","what a nice item to say :)","you should stay over :)","my place or your place :)","why are you still here :)","there's a big world to explore :)","I don't even know where I'm going :)","here I go! :)","am I really going where I decide to go, or am I just being pushed around by the current? :)","oh no :(","can't you feel them coming? :(","they're slowly rising from deep below :(","it's slowly coming this way :(","I'm different :(","ravioli, ravioli :)","give me the formuoli :)","oh,..."]);
 
 //clams
 new Thing("clam",["clam body","clam thoughts"],["oyster","mussel","scallop"]);
@@ -436,7 +358,7 @@ new Thing("dinosaur thought",[],["Dinner. Served.","End. Near.","Protect. Eggs."
 //dragons why not
 new Thing("dragon",["dragon body","dragon thoughts"],[["fire","ice","forst","arcane","ancient","wise","guardian","copper","bronze","steel","obsidian","gem","undead","skeletal","sea","sky","cloud","green","red","white","golden","silver","chrome","rainbow","mist","mother"],[" "],["dragon","wyrm","wyvern","guivre"]]);
 new Thing("dragon thoughts",["dragon thought,1-2"],["thoughts"]);
-new Thing("dragon thought",[],["You shouldn't be here.","Leave. Now.","You need to leave.","Well well well. What do we have here?","I will make quick work of you.","You smell like food. Are you food?","I will eat your mind before I eat your body.","You'll be dead before you realize what's happening to you.","They... they took my egg...","My treasure. Must protect my treasure!","I guard, undisturbed.","I'm older than most of these mountains.","I've seen things you wouldn't believe.","Leave at once, mortal.","Turn back if you value your life.","Act with great care now, for this is the very last thing you'll ever do.","Knights in armor cook just like canned beans.","People seem to value treasure more than their own life.","There's no honor, no valor nowadays.","I'm on fire today.","Ooooh burn."]);
+new Thing("dragon thought",[],["You shouldn't be here.","Leave. Now.","You need to leave.","Well well well. What do we have here?","I will make quick work of you.","You smell like food. Are you food?","I will eat your mind before I eat your body.","You'll be dead before you realize what's happening to you.","They... they took my egg...","My treasure. Must protect my treasure!","I guard, undisturbed.","I'm older than most of these mountains.","I've seen things you wouldn't believe.","Leave at once, mortal.","Turn back if you value your life.","Act with great care now, for this is the very last item you'll ever do.","Knights in armor cook just like canned beans.","People seem to value treasure more than their own life.","There's no honor, no valor nowadays.","I'm on fire today.","Ooooh burn."]);
 new Thing("dragon body",["reptile head","pyrolith","scales","reptile leg,4",["reptile wing,2",""],"tail","flesh"],"body");
 new Thing("pyrolith",["rock"]);
 new Thing("dragon lair",["dragon,98%","medieval servant,10%","dragon nest,40%","pile of treasure,90%","medieval corpse,0-3"]);
@@ -477,7 +399,7 @@ new Thing("bear thought",[],["I WOULD LIKE TO ENQUIRE ABOUT YOUR FOOD","EXCUSE M
 
 new Thing("horse",["mammal body","horse thoughts"],["horse"]);
 new Thing("horse thoughts",["horse thought,1-3"],["thoughts"]);
-new Thing("horse thought",[],["oh","oh god","what does it mean","it's all around","why","I don't understand","oh god what is that","oh my god","oh dear god","it's so intense","it's so beautiful","this is everything I've ever wanted","this exceeds all my expectations","this is better than everything ever","how did I even get here son","whoah","I just","mom where are you","let's just","...whoah","look at me, I'm amazing","give me a lick","sweet lemonade","not walking into bars again","all those colors","I can taste the colors","the universe tastes amazing","is this real life","I can't even","I can't breathe help","that's the best thing I've ever heard","so then why the long face? because it's melting. my face is melting","why this","I am everything","I am forever","I can't even begin to"]);
+new Thing("horse thought",[],["oh","oh god","what does it mean","it's all around","why","I don't understand","oh god what is that","oh my god","oh dear god","it's so intense","it's so beautiful","this is everything I've ever wanted","this exceeds all my expectations","this is better than everything ever","how did I even get here son","whoah","I just","mom where are you","let's just","...whoah","look at me, I'm amazing","give me a lick","sweet lemonade","not walking into bars again","all those colors","I can taste the colors","the universe tastes amazing","is this real life","I can't even","I can't breathe help","that's the best item I've ever heard","so then why the long face? because it's melting. my face is melting","why this","I am everything","I am forever","I can't even begin to"]);
 
 new Thing("monkey",["mammal body","monkey thoughts"],["macaque","chimpanzee","gorilla","bonobo","orangutan","howler monkey","capuchin monkey","spider monkey"]);
 new Thing("monkey thoughts",["monkey thought,2-3"],["thoughts"]);
@@ -646,7 +568,7 @@ new Thing("ectoplasm",["proton,3-7"],[["purple","fetid","green","yellow","blood-
 new Thing("ghost",["ghost body","ghost thoughts"],[["depressed","sad","lonely","wailing","screaming","stretching","clinking","sneezing","breathing","screeching","spinning","gasping","moaning","regretful","remorseful","vengeful","friendly neighborhood","skeletal","tentacled","conjoined","grasping","slimy","floating","mournful"],[" "],["ghost","spirit","apparition","phantom","poltergeist","specter","hauntling"]]);
 new Thing("ghost body",["ectoplasm"],["\"body\""]);
 new Thing("ghost thoughts",["ghost thought","ghost thought,20%"],["thoughts"]);
-new Thing("ghost thought",[],["if only - she could hear me -","he needs to know - I'm sorry -","alone - I - wait -","I am so - very lonely -","when - will it end -","will it be - over soon -","do I - deserve this -","I regret - so much -","I miss you - so much -","please - never - ever die -","I must - wait here -","how many - centuries -","such is - my burden -","I cannot - feel a thing -","I have lost - all hope -","abandoned -","I float - forever -","I wander - for how long -","so spooky - right now -","that slime - isn't mine -","I rest - at last -","let's - be pals -","I sense - a presence -","you can - see me?","who you - gonna call -","can you - hear me now -"]);
+new Thing("ghost thought",[],["if only - she could hear me -","he needs to know - I'm sorry -","alone - I - wait -","I am so - very lonely -","when - will it end -","will it be - over soon -","do I - deserve this -","I regret - so much -","I miss you - so much -","please - never - ever die -","I must - wait here -","how many - centuries -","such is - my burden -","I cannot - feel a item -","I have lost - all hope -","abandoned -","I float - forever -","I wander - for how long -","so spooky - right now -","that slime - isn't mine -","I rest - at last -","let's - be pals -","I sense - a presence -","you can - see me?","who you - gonna call -","can you - hear me now -"]);
 
 
 //infrastructure
@@ -799,7 +721,7 @@ new Thing("cute computer image",[".computer file"],[
 new Thing("stupid computer image",[".computer file"],[
 ["An image of ","A picture of ","An album of ","A short video of ","A video of ","A compilation of "],
 ["some dude","some girl","a rather unattractive fellow","a rather unattractive lady","a grotesque individual","a clearly drunk guy","a clearly drunk girl","a bunch of kids with popped collars","some muscular guy","a masked guy","some guy with a horse mask","cosplaying kids","orange people","midgets","a midget","a movie star","some celebrity","high school kids","children","a creepy old person","old people"],[" "],
-["setting fire to some stuff","involved in a retardedly dangerous prank","trying something extremely dangerous","involved in what was probably a stupid bet","doing stupid stuff","in anatomically questionable shenanigans","getting stupidly injured","stretching the limits of stupidity","in an absurdly dangerous stunt","dancing to some cheesy music","pestering dangerous animals","doing that thing with the stuff","trying too hard to be cool"],["."]
+["setting fire to some stuff","involved in a retardedly dangerous prank","trying something extremely dangerous","involved in what was probably a stupid bet","doing stupid stuff","in anatomically questionable shenanigans","getting stupidly injured","stretching the limits of stupidity","in an absurdly dangerous stunt","dancing to some cheesy music","pestering dangerous animals","doing that item with the stuff","trying too hard to be cool"],["."]
 ]);
 new Thing("disturbing computer image",[".computer file"],[
 ["An image of ","A possibly illegal image of ","A crude representation of ","A disturbing representation of ","A daring representation of ","A video of "],
@@ -1126,17 +1048,4 @@ new Thing("campfire",["fire","wood","stone"]);
 new Thing("ancient meat rack",["meat,1-4","wood"],[["mammoth","saber-toothed cat","mountain lion","wooly rhinoceros","wolf","auroch","rabbit"],[" meat rack"]]);
 new Thing("wall painting",["pigment"],[["Wall painting ("],["humans","wild beasts","rabbits","spirits","aurochs","bears","monsters","mountain lions","saber-toothed cats","wolves","mammoths","old gods"],[" "],["being chased by","hunting","running with","killing","maiming","eating"],[" "],["humans","wild beasts","rabbits","spirits","aurochs","bears","monsters","mountain lions","saber-toothed cats","wolves","mammoths","old gods"],[")"]]);
 new Thing("pigment",["organic matter"]);
-"""
-
-from .meta import *
-
-"""
-//this is for the nice people who help support the site.
-new Thing("thanks",["can of nightmare","cake","portal"],"Thank you for donating!");
-
-
-
-//to add :
-//cows,fungi,more shops,temples,more buildings,paintings,internal organs,phones,lamps,abandoned plants/castles,spaceships oh god
-//actual battlefield thoughts,military bases,ships,airports,more street names,space ships/stations,giant colony ships,wasteland worlds,cults,space probes,prisons,government buildings,schools,amphibian skin
 """

@@ -1,5 +1,5 @@
 import random
-from nestedscript.thing import Thing
+from genelib.nested.item import NestedItem
 
 
 class ChildrenGenerator:
@@ -22,13 +22,13 @@ class ChildrenGenerator:
             return []
         if not self.get_probability():
             return []
-        return [Thing.get_thing(self.thing) for _ in range(self.get_amount())]
+        return [NestedItem.get_thing(self.thing) for _ in range(self.get_amount())]
 
     def add_group(self):
         if self.thing[0] != '.':
             return [self]
 
-        group = Thing.things[self.thing[1:]]
+        group = NestedItem.things[self.thing[1:]]
         if group:
             return group.children
 

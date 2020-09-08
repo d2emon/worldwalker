@@ -197,7 +197,7 @@ willwork:bprintf("You cast the summoning......\n");
     long ar[4];
     if(my_lev<10)
        {
-       bprintf("You can't just do that sort of thing at will you know.\n");
+       bprintf("You can't just do that sort of item at will you know.\n");
        return;
        }
     if(!pvis(mynum))

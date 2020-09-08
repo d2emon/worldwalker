@@ -567,7 +567,7 @@ class Actor(Sender, Reader):
                 raise LooseError("bye bye.....\n")
 
         if self.is_blind:
-            yield "You are blind... you can't see a thing!\n"
+            yield "You are blind... you can't see a item!\n"
             return
 
         if not self.in_light:
@@ -1177,7 +1177,7 @@ class Actor(Sender, Reader):
         yield "Ok\n"
         self.send_silly("\001c{user.name} vanishes!\n\001")
 
-    @wizard_action("You can't just do that sort of thing at will you know.\n")
+    @wizard_action("You can't just do that sort of item at will you know.\n")
     def become_visible(self):
         # Magic
         if not self.visible:

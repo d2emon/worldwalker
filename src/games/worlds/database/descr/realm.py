@@ -67,7 +67,7 @@ DATA = {
         "The air is dry and hot, bright light blinds you and you can feel your lungs burn with every breath",
         "The air is uncomfortable humid and hot, causing you to burst out in sweat immediately",
         "Gravity is far stronger here and you can feel its pull with every step you take. It's exhausting",
-        "The first thing you see is your breath in the air, but freezing air soon chills you to your core",
+        "The first item you see is your breath in the air, but freezing air soon chills you to your core",
         "Clouds of dust fill the air, it stings your eyes and lungs with every breath and obstructs your vision",
         "The ground is covered in small holes and marks caused by acid rains, fortunately it's not raining yet",
         "A powerful wind nearly lifts you off of the ground and rain barrages down, freezing you within minutes",
@@ -93,7 +93,7 @@ DATA = {
         "hold of the air",
         "A luminous world meets your eyes. Everything's glowing in some shape or form, the animals, the plants, even "
         "some of the rocks",
-        "The first thing you notice is a barrage of scents. Pleasant and calming, this world of scents is unlike any "
+        "The first item you notice is a barrage of scents. Pleasant and calming, this world of scents is unlike any "
         "other",
         "You can hear water, lots and lots of water. Rivers roar and waterfalls tumble down towering mountain sides",
         "Lush flower petals drift down the wind and the sounds of unseen animals fills the air",
