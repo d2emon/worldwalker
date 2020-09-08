@@ -1,8 +1,7 @@
 """
 globme holds global me data
 """
-import logging
-from services.mud_exe import MudExeServices
+from services import logger
 from ..blood import Blood
 from ..tk.special import gamecom
 
@@ -1203,7 +1202,7 @@ def calibme(user):
         NewUaf.my_lev = level
 
         user.output("You are now {} ".format(user.name))
-        MudExeServices.post_log("{} to level {}".format(user.name, level))
+        logger.post("{} to level {}".format(user.name, level))
         disle3(level, NewUaf.my_sex)
         sp = "<p>{}</p> is now level {}\n".format(user.name, NewUaf.my_lev)
         Message(

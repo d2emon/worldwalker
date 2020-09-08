@@ -1,5 +1,5 @@
 from games.mud.exceptions import MudError
-from ...utils import test_valid_username
+from games.mud.database.users import User
 from .pfl import Pfl
 
 
@@ -42,11 +42,7 @@ class Person:
         if not check_username(value):
             raise ValueError()
 
-        try:
-            test_valid_username(value)
-        except ValueError as e:
-            print(e)
-            raise MudError("Bye Bye")
+        User.fields['username'](value)
 
         return value
 

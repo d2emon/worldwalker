@@ -10,7 +10,6 @@ This file holds the basic communications routines
 """
 import logging
 from games.mud.exceptions import MudError, FileServiceError
-from services.mud_exe import MudExeServices
 from services.world import WorldService
 from ..blood import Blood
 from ..parse import Message, Parser
@@ -219,7 +218,7 @@ class Talker:
 
     def __put_on(self):
         self.__is_on = False
-        self.__player_id = MudExeServices.post_player(self.__name, self.__channel)
+        self.__player_id = player.post(self.__name, self.__channel)
         self.__is_on = True
 
     def process_command(self, command):
@@ -314,10 +313,10 @@ class Talker:
 
     def rte(self):
         try:
-            messages = MudExeServices.get_messages(self.__message_id)
-            self.__message_id = messages.get('message_id')
-            for message in messages.get('messages', []):
-                self.__mstoout(message)
+            res = events.get_events(self.__message_id)
+            self.__message_id = res.get('event_id')
+            for event in res.get('events', []):
+                self.__mstoout(event)
 
             self.update()
             Parser.next_turn(self, interrupt=self.interrupt)
@@ -329,7 +328,7 @@ class Talker:
         if self.__is_updated:
             return
 
-        MudExeServices.put_position(self.__player_id, self.__message_id)
+        player.put_event_id(self.__player_id, self.__message_id)
         self.__last_update = self.__message_id
 
     def trapch(self, channel):

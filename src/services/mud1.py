@@ -2,7 +2,7 @@ import config.services
 from games.mud.exceptions import MudError, FileServiceError
 from .file_services import Nologin, BanFile, Exe, ResetN, MotD
 from .file_services.person.person import Person
-from .mud_exe import MudExeServices
+from . import logger
 
 
 def now():
@@ -133,7 +133,7 @@ class Mud1Services:
 
     @verify_host
     def post_log(self, message):
-        MudExeServices.post_log(message)
+        logger.post(message)
 
     @verify_host
     def post_user(self, username, password):

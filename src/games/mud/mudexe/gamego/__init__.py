@@ -3,7 +3,7 @@ Two Phase Game System
 """
 import logging
 from games.mud.exceptions import MudError, GameStopped
-from services.mud_exe import MudExeServices
+from services import logger
 from services.world import WorldService
 from ..bbc import BBC
 from ..tk import Talker
@@ -17,7 +17,6 @@ class GameGo:
         self.__in_fight = None
 
         # Game go
-        self.services = MudExeServices
         self.user = user
         logging.debug("mud.exe %s %s", title, self.username)
 
@@ -31,7 +30,7 @@ class GameGo:
             on_timer=self.on_timer,
         )
         print("Hello {}".format(username))
-        self.services.post_log("GAME ENTRY: {}[{}]".format(username, self.user_id))
+        logger.post("GAME ENTRY: {}[{}]".format(username, self.user_id))
         self.talker = Talker(
             username,
             on_loose=self.on_loose,
