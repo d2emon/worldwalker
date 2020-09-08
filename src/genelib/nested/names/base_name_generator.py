@@ -1,6 +1,3 @@
-import random
-
-
 class BaseNameGenerator:
     def get_name(self):
         raise NotImplementedError
@@ -172,10 +169,10 @@ class BaseNameGenerator:
             var tverbings=["harassing","dancing with","screaming at","yelling at","laughing at","smiling at","kissing","licking","arguing with","crying over","eating","mourning","devouring","killing","seducing","courting","hanging out with","having a chat with","drawing","painting","running towards","insulting","stabbing","tickling","nibbling","hugging","watching","looking at","staring at","pointing at","running away from","chasing","stalking","following","holding hands with","being mean to","being nice to","sharing toys with","tearing apart","trying to touch","reaching for","giving birth to","cleaning up","strangling","exploring with","lasering","cutting up","singing for","intimidating","ignoring","trying to eat","suffocating under the weight of","searching for","fishing for","trying to lure","explaining something to","laying on","jumping on","stomping on","marrying","rejecting","playing with","toying with","fused to","softly rubbing","spreading jam on","drooling on","climbing on","stepping on","putting a hat on"];
             var verbings=["dancing","screaming","crying","laughing","flying","sleeping","resting","thinking","tap-dancing","smiling","meditating","wiggling","jiggling","looking away","shivering","shaking","trembling","moaning","drooling","twitching","spinning","melting","phasing out of existence","breathing heavily","dying","slowly dying","floating away","looking terrified","looking happy as can be","playing music","reading a book","losing all sanity","slowly coming this way","stifling laughter","pretending not to notice anything","yawning","singing","stretching","taking notes","teleporting","drowning","suffocating","vomiting","flying away","swimming away","shapeshifting","changing shapes","morphing into something else","tearing apart","bursting into treats","trying to escape death","sobbing sadly","clapping","staring at the viewer","blowing a raspberry","making a prank call","looking upset","looking bored","looking sad","jogging","spilling spaghetti","looking satisfied","partying","skiing","rotting away","wearing a hat"];
             var locs=["in outer space","in the moonlight","under a starry night","under a red sky","under an otherworldly sky","in a kitchen","among the clouds","in the sky","on a table","in a blank room","outside a house","in a dark room","on a bed","on a couch","in a living-room","in front of a house","on top of a house","in the ocean","on the beach","on an airplane","on a boat","in front of a window","on top of a building","on the town square","in a dark cave","in the forest","in the desert","on top of a mountain","in a snowy landscape","in a storm","in an urban setting","in a metropolis","in a bar","at a party","in a medieval setting","in a futuristic setting","in a restaurant","in an elegant stairway","in a castle","in a lavish palace","in a museum","in an ancient temple","in an alien construction","in an industrial landscape","on a movie set","in an opera","surrounded by strange contraptions","in a laboratory","surrounded by geometric patterns","in an abstract landscape","in a geometric landscape","on an alien planet","in a bloody landscape","in a bleak landscape","in a post-apocalyptic landscape","in an alternate dimension","in a historic scene","in a bathroom","in a romantic setting","surrounded by ruins","in a library","underwater","in a wasteland","in a long, dark corridor","in a dark alley","surrounded by dancing figures","surrounded by judging faces","surrounded by twisted statues","under the rain","atop a hill","in the sewers","on a moon's surface"];
-    
+
             str+=WeightedChoose(["A painting of","A portrait of","A picture of","A photograph of","A rendition of","A sculpture of","A bas-relief of","An installation of","A series of pictures representing","A series of photographs showing","A model of","A dyptic of","A tryptic of"],3)+" ";
             str+=Choose(["$adj $obj $loc.","$adj $obj $verbing $loc.","$adj $obj $loc. The $obj is $verbing.","$adj $obj and $adj2 $obj2 $loc. The $obj is $tverbing the $obj2.","$adj $obj and $adj2 $obj2 $loc. The $obj2 is $verbing, and the $obj is $verbing2.","$adj $obj $tverbing $adj2 $obj2. The $obj2 is $verbing.","$adj $obj $tverbing $adj2 $obj2 $loc."]);
-    
+
             str=str.split("$verbing2").join(Choose(verbings));
             str=str.split("$verbing").join(Choose(verbings));
             str=str.split("$tverbing").join(Choose(tverbings));
@@ -184,7 +181,7 @@ class BaseNameGenerator:
             str=str.split("$obj2").join(Choose(objs));
             str=str.split("$adj").join(Choose(adjs));
             str=str.split("$obj").join(Choose(objs));
-    
+
             this.name=str;
         }
         else if (this.name=="*NOTE*")
@@ -237,27 +234,3 @@ class BaseNameGenerator:
         if len(parts) > 1:
             name += parts[1]
         return name
-
-
-class NameGenerator(BaseNameGenerator):
-    def __init__(self, names):
-        self.names = names
-
-    def get_name(self):
-        return random.choice(self.names)
-
-
-class ComplexNameGenerator(BaseNameGenerator):
-    def __init__(self, parts):
-        self.generators = [NameGenerator(part) for part in parts]
-
-    def get_name(self):
-        return "".join([part.generate() for part in self.generators])
-
-
-def name_generator(data):
-    if isinstance(data, str):
-        return NameGenerator([data])
-    elif isinstance(data[0], str):
-        return NameGenerator(data)
-    return ComplexNameGenerator(data)

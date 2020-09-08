@@ -1,5 +1,5 @@
+from genelib.nested.names import NameGenerator, ComplexNameGenerator
 from ...thing import Thing, generate_child
-from ...name_generator import NameGenerator, ComplexNameGenerator
 
 
 # class Planet(TerraformedPlanet):

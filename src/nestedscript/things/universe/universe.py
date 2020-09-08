@@ -1,10 +1,11 @@
 # universe stuff
 import random
 
+from genelib.nested.names import NameGenerator, ComplexNameGenerator
+
 from .planets import *
 
 from ...thing import Thing, SizedThing, generate_child
-from ...name_generator import NameGenerator, ComplexNameGenerator
 
 """
 new Thing("multiverse",["universe,10-30"],["multiverse","lasagnaverse","doughnutverse","towelverse","baconverse","sharkverse","nestedverse","tastyverse","upverse","downverse","layerverse","clusterverse","metaverse","quantiverse","paraverse","epiverse","alterverse","hypoverse","dimensioverse","planiverse","pluriverse","polyverse","maniverse","stackoverse","antiverse","superverse","upperverse","maxiverse","megaverse","babyverse","tinyverse","retroverse","ultraverse","topoverse","otherverse","bubbleverse","esreverse","versiverse","'verse","cookieverse","grandmaverse"]);
