@@ -1,7 +1,7 @@
 import os
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600  # 640
+SCREEN_WIDTH = 800  # 640
+SCREEN_HEIGHT = 600  # 460  # 640
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 SCREEN_CAPTION = "WorldWalker"
 
@@ -10,6 +10,8 @@ FPS = 60
 PLAYER_POS = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 MAP_POS = (0, 0)
 BACKGROUND_COLOR = "#0099FF"
+TITLE = "World Walker"
+FRAME_RATE = 60
 GRID_SIZE = 32
 
 RESOURCE_PATH = os.path.abspath(os.path.join(__file__, '..', '..', 'res'))
