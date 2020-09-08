@@ -1,4 +1,4 @@
-from genelib.descriptionGenerator import DescriptionGenerator
+from ..genelib.descriptionGenerator import DescriptionGenerator
 
 
 class Descriptive:

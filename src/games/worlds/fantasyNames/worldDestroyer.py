@@ -1,5 +1,5 @@
 from ..database import get_data_providers
-from genelib import NameGenerator, Named, build_name_generator
+from games.worlds.genelib import NameGenerator, Named, build_name_generator
 
 
 DATABASE = 'world-destroyer'

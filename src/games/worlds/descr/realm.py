@@ -1,4 +1,4 @@
-from genelib.descriptionGenerator import DescriptionGenerator
+from ..genelib.descriptionGenerator import DescriptionGenerator
 from ..database import get_providers_from_db
 from .descriptive import Descriptive
 from ..database.descr.realm import DATA

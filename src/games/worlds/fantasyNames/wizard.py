@@ -1,6 +1,6 @@
 from ..database import get_data_providers, get_syllable_providers
-from genelib import SyllablicGenerator, GenderedNameGenerator, ComplexNameGenerator, Gendered
-from genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
+from ..genelib import SyllablicGenerator, GenderedNameGenerator, ComplexNameGenerator, Gendered
+from ..genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
 class BaseWizardNameGenerator(SyllablicGenerator):

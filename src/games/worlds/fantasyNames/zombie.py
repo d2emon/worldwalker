@@ -1,5 +1,5 @@
 from ..database import GroupDataProvider
-from genelib import ListNameGenerator, Named
+from games.worlds.genelib import ListNameGenerator, Named
 
 
 class ZombieNameGenerator(ListNameGenerator):

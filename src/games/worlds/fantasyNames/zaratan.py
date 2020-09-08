@@ -1,5 +1,5 @@
 from ..database import get_data_providers, get_syllable_providers
-from genelib import SyllablicGenerator, Named, build_name_generator, unique_with
+from games.worlds.genelib import SyllablicGenerator, Named, build_name_generator, unique_with
 
 
 class BaseZaratanNameGenerator(SyllablicGenerator):

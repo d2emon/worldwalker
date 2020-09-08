@@ -1,6 +1,6 @@
 from ..database import get_data_providers
-from genelib import NameGenerator, GenderedNameGenerator, Gendered
-from genelib.genders import GENDER_MALE, GENDER_FEMALE
+from ..genelib import NameGenerator, GenderedNameGenerator, Gendered
+from ..genelib.genders import GENDER_MALE, GENDER_FEMALE
 
 
 DATABASE = 'witch'

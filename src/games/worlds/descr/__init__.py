@@ -45,7 +45,7 @@
 # Potion
 # Prophecy
 # Quest
-# Realm
+from .realm import Realm
 # Religion
 # School Uniform
 # Shipwreck
