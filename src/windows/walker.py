@@ -17,10 +17,10 @@ class WalkerWindow(Window):
 
     def __init__(self):
         super().__init__(
-            caption=config.SCREEN_CAPTION,
+            caption=config.SCREEN.CAPTION,
             # fps=config.FPS,
             fps=24,
-            size=config.SCREEN_SIZE,
+            size=config.SCREEN.SIZE,
         )
 
         self.events[pygame.KEYDOWN] = self.on_key_down

@@ -6,9 +6,9 @@ from games.map_walk.window import Window
 class MapWalkWindow(Window):
     def __init__(self):
         super().__init__(
-            caption=config.SCREEN_CAPTION,
+            caption=config.SCREEN.CAPTION,
             fps=config.FPS,
-            size=config.SCREEN_SIZE,
+            size=config.SCREEN.SIZE,
         )
 
         self.events[self.INIT] = self.on_init
