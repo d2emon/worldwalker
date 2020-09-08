@@ -2,7 +2,7 @@ import random
 import pygame
 from pygame import draw, Rect, Surface
 from pygame.sprite import Sprite
-from game_utils import Button
+from games.game_utils import Button
 
 
 class MenuItem(Button):

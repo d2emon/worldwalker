@@ -1,7 +1,7 @@
 #! /usr/bin/python
 import pygame
 import random
-from game_utils import Game
+from games.game_utils import Game
 from pygame import Surface
 from pygame.sprite import Sprite, Group
 from ..middleearth.player import Player

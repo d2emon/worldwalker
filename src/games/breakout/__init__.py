@@ -1,4 +1,4 @@
-from game_utils import Game
+from games.game_utils import Game
 from .screens import MenuScreen, GameScreen
 
 

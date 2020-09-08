@@ -1,7 +1,7 @@
 import pygame
 from pygame import Surface
 from pygame.sprite import LayeredDirty
-from game_utils import Game
+from games.game_utils import Game
 from .player import Player
 from .world_map import BgMap
 from .background import Background

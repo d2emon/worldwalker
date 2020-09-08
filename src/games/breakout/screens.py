@@ -2,7 +2,7 @@ import time
 import pygame
 from pygame import image, Surface
 from pygame.sprite import Group
-from game_utils import Font, TextObject
+from games.game_utils import Font, TextObject
 from .sprites import MenuItem, Paddle, Brick, Ball
 
 
