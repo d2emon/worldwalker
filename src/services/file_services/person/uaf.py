@@ -1,4 +1,4 @@
-from ...errors import FileServiceError, CrapupError
+from games.mud.exceptions import FileServiceError, MudError
 from ..file_service import LockFileService
 
 
@@ -15,7 +15,7 @@ class Uaf(LockFileService):
         try:
             return super().connect(**query)
         except FileServiceError:
-            raise CrapupError("Cannot access UAF\n")
+            raise MudError("Cannot access UAF\n")
 
     @classmethod
     def get_line(cls, token, **kwargs):

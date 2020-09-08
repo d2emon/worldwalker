@@ -1,4 +1,4 @@
-from services.errors import FileServiceError, CrapupError
+from games.mud.exceptions import FileServiceError, MudError
 from services.file_services.person import Uaf
 
 
@@ -65,7 +65,7 @@ def initme(user):
         if person is not None:
             return person
     except FileServiceError:
-        raise CrapupError("Panic: Timeout event on user file\n")
+        raise MudError("Panic: Timeout event on user file\n")
 
     user.output("Creating character....\n")
     return moan1(Person(name=user.name))

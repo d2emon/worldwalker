@@ -1,6 +1,6 @@
 import logging
 import uuid
-from ..errors import FileServiceError
+from games.mud.exceptions import FileServiceError
 
 
 LOG_LEVEL = logging.INFO

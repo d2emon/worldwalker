@@ -9,10 +9,9 @@ are (C) 1987/88  Alan Cox,Jim Finnis,Richard Acott
 This file holds the basic communications routines
 """
 import logging
-from services.errors import CrapupError, FileServiceError
+from games.mud.exceptions import MudError, FileServiceError
 from services.mud_exe import MudExeServices
 from services.world import WorldService
-from services.world.player import PlayerServices
 from ..blood import Blood
 from ..parse import Message, Parser
 from ..support import Player
@@ -140,9 +139,9 @@ class Talker:
             self.__message_id = None
             special(self, '.g')
         except OverflowError:
-            raise CrapupError("\nSorry AberMUD is full at the moment")
+            raise MudError("\nSorry AberMUD is full at the moment")
         except FileServiceError as e:
-            raise CrapupError(e)
+            raise MudError(e)
 
         self.__active = True
 
@@ -324,7 +323,7 @@ class Talker:
             Parser.next_turn(self, interrupt=self.interrupt)
             Parser.clear_des()
         except FileServiceError as e:
-            raise CrapupError(e)
+            raise MudError(e)
 
     def update(self):
         if self.__is_updated:
@@ -392,7 +391,7 @@ class Talker:
             #     longwthr()
         except FileServiceError:
             self.loseme()
-            raise CrapupError("\nAberMUD: FILE_ACCESS : Access failed\n")
+            raise MudError("\nAberMUD: FILE_ACCESS : Access failed\n")
 
     # def fpbn(self, name):
     #     player = Player.fpbns(name)

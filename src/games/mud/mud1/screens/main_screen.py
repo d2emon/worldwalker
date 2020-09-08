@@ -1,4 +1,4 @@
-from services.errors import RetryError
+from games.mud.exceptions import RetryError
 from .screen import Screen
 
 

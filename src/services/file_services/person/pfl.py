@@ -1,4 +1,4 @@
-from ...errors import FileServiceError, CrapupError
+from games.mud.exceptions import FileServiceError, MudError
 from ..file_service import LockFileService
 
 
@@ -62,4 +62,4 @@ class Pfl(LockFileService):
                 users = cls.get_line(token, encoded=False)
                 return list(filter(lambda user: user.username.lower() == search, users))
         except FileServiceError:
-            raise CrapupError("No persona file\n")
+            raise MudError("No persona file\n")

@@ -1,6 +1,6 @@
 import logging
 import uuid
-from ..errors import CrapupError, FileServiceError
+from games.mud.exceptions import MudError, FileServiceError
 from ..file_services import Snoop
 
 
@@ -242,7 +242,7 @@ class Buffer:
         #     else:
         #         self.__data = ''
         #         loseme()
-        #         raise CrapupError("Internal $ control sequence error\n")
+        #         raise MudError("Internal $ control sequence error\n")
         return self.__data
 
     def get_all(self, is_finished=True):
@@ -264,7 +264,7 @@ class Buffer:
         # Max 240 chars/msg
         if len(message) > 235:
             # syslog("Bprintf Short Buffer overflow")
-            raise CrapupError("Internal Error in BPRINTF")
+            raise MudError("Internal Error in BPRINTF")
         # Now we have a string of chars expanded
         self.__quprnt(message)
 
@@ -281,7 +281,7 @@ class Buffer:
         self.__data = ""
         # loseme()
         # syslog("Buffer overflow on user {}".format(globme))
-        raise CrapupError("PANIC - Buffer overflow")
+        raise MudError("PANIC - Buffer overflow")
 
 
 class BufferService:
@@ -319,7 +319,7 @@ class BufferService:
             cls.buffers[buffer_id] = Buffer()  # 4K of chars should be enough for worst case
             return buffer_id
         except BufferError:
-            raise CrapupError("Out Of Memory")
+            raise MudError("Out Of Memory")
 
     @classmethod
     def post_buffer(cls, buffer_id, message, raw=False):

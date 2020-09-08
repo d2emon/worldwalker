@@ -1,4 +1,4 @@
-from ..errors import FileServiceError, CrapupError
+from games.mud.exceptions import FileServiceError, MudError
 from .file_service import FileService
 
 
@@ -24,4 +24,4 @@ class Exe(FileService):
             with cls() as token:
                 cls.execute(token, *args)
         except FileServiceError:
-            raise CrapupError("mud.exe : Not found\n")
+            raise MudError("mud.exe : Not found\n")

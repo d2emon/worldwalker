@@ -1,0 +1,2 @@
+class FileServiceError(Exception):
+    pass

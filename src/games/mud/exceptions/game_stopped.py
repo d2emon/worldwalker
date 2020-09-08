@@ -1,0 +1,2 @@
+class GameStopped(Exception):
+    pass

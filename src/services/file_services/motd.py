@@ -1,4 +1,4 @@
-from ..errors import FileServiceError
+from games.mud.exceptions import FileServiceError
 from .file_service import TextFileService
 
 

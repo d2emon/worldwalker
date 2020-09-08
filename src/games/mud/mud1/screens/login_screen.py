@@ -1,4 +1,4 @@
-from services.errors import RetryError, CrapupError
+from games.mud.exceptions import RetryError, MudError
 from .screen import Screen
 
 
@@ -51,7 +51,7 @@ class LoginScreen(Screen):
         except RetryError as e:
             cls.show_message(message=e)
             if tries >= 2:
-                raise CrapupError("\nNo!\n\n")
+                raise MudError("\nNo!\n\n")
             cls.input_password(on_enter=on_enter, tries=tries + 1)
 
     @classmethod

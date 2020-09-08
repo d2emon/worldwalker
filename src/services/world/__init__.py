@@ -1,8 +1,7 @@
 """
 Fast File Controller v0.1
 """
-import logging
-from ..errors import CrapupError, FileServiceError
+from games.mud.exceptions import MudError, FileServiceError
 from ..file_services.file_service import LockFileService
 
 
@@ -102,7 +101,7 @@ class WorldService:
             cls.__ublock = World.read(cls.__token, 350, 16 * 48)
             return cls.__token
         except FileServiceError:
-            raise CrapupError("Cannot find World file")
+            raise MudError("Cannot find World file")
 
     @classmethod
     def disconnect(cls):

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from ..errors import FileServiceError, CrapupError
+from games.mud.exceptions import FileServiceError, MudError
 from .file_service import TextFileService
 
 
@@ -17,4 +17,4 @@ class LogFile(TextFileService):
                 logging.info(text)
         except FileServiceError:
             # loseme()
-            raise CrapupError("Log fault : Access Failure")
+            raise MudError("Log fault : Access Failure")

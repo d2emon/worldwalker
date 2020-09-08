@@ -2,7 +2,7 @@
 Two Phase Game System
 """
 import logging
-from services.errors import CrapupError, GameStopped
+from games.mud.exceptions import MudError, GameStopped
 from services.mud_exe import MudExeServices
 from services.world import WorldService
 from ..bbc import BBC
@@ -61,7 +61,7 @@ class GameGo:
         while True:
             try:
                 self.bbc.run(self.talker.show)
-            except CrapupError as e:
+            except MudError as e:
                 return self.game_over(e)
             except GameStopped as e:
                 return e
@@ -90,7 +90,7 @@ class GameGo:
             return
 
         self.talker.loseme()
-        raise CrapupError("Byeeeeeeeeee  ...........")
+        raise MudError("Byeeeeeeeeee  ...........")
 
     def on_timer(self):
         with WorldService():

@@ -1,4 +1,4 @@
-from .errors import FileServiceError
+from games.mud.exceptions import FileServiceError
 from .file_services import LogFile
 from .world import WorldService
 from .world.player import Player

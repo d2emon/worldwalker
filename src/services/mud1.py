@@ -1,5 +1,5 @@
-from . import config
-from .errors import CrapupError, FileServiceError
+import config.services
+from games.mud.exceptions import MudError, FileServiceError
 from .file_services import Nologin, BanFile, Exe, ResetN, MotD
 from .file_services.person.person import Person
 from .mud_exe import MudExeServices
@@ -19,8 +19,8 @@ def verify_host(f):
         :param hostname:
         :return:
         """
-        if hostname != config.HOST_MACHINE:
-            raise PermissionError("AberMUD is only available on {}, not on {}".format(config.HOST_MACHINE, hostname))
+        if hostname != config.services.HOST_MACHINE:
+            raise PermissionError("AberMUD is only available on {}, not on {}".format(config.services.HOST_MACHINE, hostname))
 
     def decorated(self, *args, **kwargs):
         check_host(self.hostname)
@@ -32,7 +32,7 @@ def verify_host(f):
 
 
 class Mud1Services:
-    hostname = config.HOST_MACHINE
+    hostname = config.services.HOST_MACHINE
 
     def __init__(self, user_id):
         self.user_id = user_id
@@ -140,7 +140,7 @@ class Mud1Services:
         try:
             return Person(self.user_id, username, password).add()
         except FileServiceError:
-            raise CrapupError("No persona file....\n")
+            raise MudError("No persona file....\n")
 
     @verify_host
     def put_password(self, username, old_password, new_password):

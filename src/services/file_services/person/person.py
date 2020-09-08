@@ -1,4 +1,4 @@
-from ...errors import CrapupError
+from games.mud.exceptions import MudError
 from ...utils import test_valid_username
 from .pfl import Pfl
 
@@ -38,7 +38,7 @@ class Person:
         if not value:
             raise ValueError
         if "." in value:
-            raise CrapupError("\nIllegal characters in user name\n")
+            raise MudError("\nIllegal characters in user name\n")
         if not check_username(value):
             raise ValueError()
 
@@ -46,7 +46,7 @@ class Person:
             test_valid_username(value)
         except ValueError as e:
             print(e)
-            raise CrapupError("Bye Bye")
+            raise MudError("Bye Bye")
 
         return value
 
