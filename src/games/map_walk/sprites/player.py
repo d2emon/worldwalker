@@ -1,7 +1,7 @@
 import pygame
 import config
 from pygame.sprite import Sprite
-from red_earth import PLAYER_SPEED
+from games.map_walk.red_earth import PLAYER_SPEED
 
 
 class Player(Sprite):

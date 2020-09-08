@@ -1,8 +1,8 @@
 import pygame
 from pygame.sprite import LayeredUpdates
-from sprites.map import MapSprite
-from sprites.player import Player
-from window import Window
+from games.map_walk.sprites.map import MapSprite
+from games.map_walk.sprites.player import Player
+from games.map_walk.window import Window
 
 
 class Sprites(LayeredUpdates):
