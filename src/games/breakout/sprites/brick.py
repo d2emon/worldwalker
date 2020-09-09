@@ -1,20 +1,23 @@
 import pygame
-from .sprite import BreakoutSprite
+from pygame.sprite import Sprite
 
 
-class Brick(BreakoutSprite):
+class Brick(Sprite):
     def __init__(
         self,
-        rect=None,
-        color=None,
+        pos=None,
         effect=None,
     ):
-        self.color = color or (0, 0, 255)
-        super().__init__(rect or pygame.Rect(0, 0, 80, 20))
+        super().__init__()
+        self.rect = pygame.Rect(0, 0, 80, 20)
+        self.image = self.draw()
+        self.rect.center = pos or self.rect.center
+
         self.effect = effect
         self.points = 10
 
-    def draw(self):
-        image = pygame.Surface((self.rect.width, self.rect.height))
-        image.fill(self.color)
+    @classmethod
+    def draw(cls):
+        image = pygame.Surface((80, 20), pygame.SRCALPHA)
+        image.fill((0, 0, 255))
         return image

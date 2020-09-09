@@ -1,8 +1,8 @@
 import pygame
-from .sprite import BreakoutSprite
+from windows.controls.moving import Moving
 
 
-class Paddle(BreakoutSprite):
+class Paddle(Moving):
     class States:
         STAND = 0
         RIGHT = 1
@@ -10,25 +10,22 @@ class Paddle(BreakoutSprite):
 
     def __init__(
         self,
-        rect=None,
         pos=None,
-        color=None,
-        speed=10,
+        base_speed=10,
     ):
-        self.color = color or (255, 0, 0)
-        super().__init__(
-            rect or pygame.Rect(300, 400, 80, 20),
-            pos,
-        )
+        super().__init__(pygame.Rect(300, 400, 80, 20), (0, 0))
+        self.image = self.draw()
+        self.rect.center = pos or self.rect.center
 
         self.lives = 5
         self.score = 0
         self.state = self.States.STAND
-        self.__base_speed= speed
+        self.__base_speed = base_speed
 
-    def draw(self):
-        image = pygame.Surface((self.rect.width, self.rect.height))
-        image.fill(self.color)
+    @classmethod
+    def draw(cls):
+        image = pygame.Surface((80, 20), pygame.SRCALPHA)
+        image.fill((255, 0, 0))
         return image
 
     @property

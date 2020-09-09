@@ -1,8 +1,8 @@
 import pygame
+import random
 from windows.windows import Window
 from windows.screen import Screen
-from windows.controls import TextObject
-from ..intersect import intersect, COLLIDE_TOP, COLLIDE_BOTTOM, COLLIDE_LEFT, COLLIDE_RIGHT
+from ..intersect import intersect, COLLIDE_TOP, COLLIDE_BOTTOM
 from ..sprites import Paddle, Brick, Ball
 
 
@@ -30,31 +30,22 @@ class GameScreen(Screen):
         self.events.emit(self.EVENT_START)
 
     def add_paddle(self, pos=(0, 0)):
-        paddle = Paddle(
-            pygame.Rect(0, 0, 80, 20),
-            pos,
-        )
-        self.sprites.add(paddle)
-        return paddle
-
-    def add_brick(self, pos=(0, 0)):
-        brick = Brick(
-            pygame.Rect(0, 0, 80, 20).move(
-                10 + pos[0] * (80 + 2),
-                10 + pos[1] * (20 + 2),
-            ),
-            (0, 0, 255),
-        )
-        self.sprites.add(brick)
-        return brick
+        sprite = Paddle(pos)
+        self.sprites.add(sprite)
+        return sprite
 
     def add_ball(self, pos=(0, 0)):
-        ball = Ball(
-            pygame.Rect(0, 0, 10, 10),
-            pos,
-        )
-        self.sprites.add(ball)
-        return ball
+        sprite = Ball(pos, (random.randint(-2, 2), 1))
+        self.sprites.add(sprite)
+        return sprite
+
+    def add_brick(self, pos=(0, 0)):
+        brick = Brick((
+            10 + pos[0] * (40 + 1),
+            10 + pos[1] * (10 + 1),
+        ))
+        self.sprites.add(brick)
+        return brick
 
     def remove_brick(self, brick):
         self.paddle.score += brick.points

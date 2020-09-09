@@ -1,31 +1,25 @@
 import random
 import pygame
-from pygame import draw, Rect
-from .sprite import BreakoutSprite
+from windows.controls.moving import Moving
 
 
-class Ball(BreakoutSprite):
+class Ball(Moving):
     def __init__(
         self,
-        rect=None,
         pos=None,
-        color=None,
-        radius=5,
-        speed=None,
+        speed=(0, 1),
     ):
-        self.r = radius
-        self.color = color or (0, 255, 0)
-        super().__init__(
-            rect or pygame.Rect(0, 0, 10, 10),
-            pos,
-            speed or (random.randint(-2, 2), 1),
-        )
+        super().__init__(pygame.Rect(0, 0, 10, 10), speed)
+        self.image = self.draw()
+        self.rect.center = pos or self.rect.center
 
-    def draw(self):
-        image = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
-        rect = image.get_rect()
-        pygame.draw.circle(image, self.color, rect.center, self.r)
-        pygame.draw.circle(image, (255, 0, 0), (2, 2), 2)
+    @classmethod
+    def draw(cls):
+        color = (0, 255, 0)
+        r = 5
+
+        image = pygame.Surface((10, 10), pygame.SRCALPHA)
+        pygame.draw.circle(image, color, image.get_rect().center, r)
         return image
 
     def reverse_x(self):
