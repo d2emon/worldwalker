@@ -4,12 +4,11 @@ from .sorry import Sorry
 
 
 class ErrorItem(NestedItem):
+    item_type = 'error'
+
     class ItemGenerator(NestedItem.ItemGenerator):
-        default_name = 'error'
-        name_generator = NameGenerator("Uh oh... It looks like you didn't supply a valid element to create.")
+        description_generator = NameGenerator("Uh oh... It looks like you didn't supply a valid element to create.")
 
         @classmethod
         def children(cls):
-            return [
-                cls.child(Sorry),
-            ]
+            yield lambda: cls.child('Sorry')

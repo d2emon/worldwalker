@@ -4,12 +4,11 @@ from .consolation_universe import ConsolationUniverse
 
 
 class Sorry(NestedItem):
+    item_type = 'sorry'
+
     class ItemGenerator(NestedItem.ItemGenerator):
-        default_name = 'sorry'
-        name_generator = NameGenerator("(Sorry!)")
+        description_generator = NameGenerator("(Sorry!)")
 
         @classmethod
         def children(cls):
-            return [
-                cls.child(ConsolationUniverse),
-            ]
+            yield lambda: cls.child('ConsolationUniverse')
