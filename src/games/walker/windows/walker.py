@@ -1,6 +1,6 @@
 import pygame
 import config
-from games.map_walk.window import Window
+from windows.windows import Window
 from player import Player
 from bgmap import BgMap
 from background import Background

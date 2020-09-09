@@ -1,5 +1,5 @@
 #! /usr/bin/python
-from windows.walker import WalkerWindow
+from games.walker.windows.walker import WalkerWindow
 
 
 def main():

@@ -1,6 +1,6 @@
 import config
 from games.map_walk.screens.main import MainScreen
-from games.map_walk.window import Window
+from windows.windows.window import Window
 
 
 class MapWalkWindow(Window):

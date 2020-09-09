@@ -1,4 +1,4 @@
-from windows.map_walk import MapWalkWindow
+from games.map_walk.windows.map_walk import MapWalkWindow
 
 
 def main():
