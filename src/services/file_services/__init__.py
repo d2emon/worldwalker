@@ -1,4 +1,4 @@
-from .person import Uaf, Pfl
+from .person import User, PersonService
 # ROOMS = "/cygdrive/c/Programs/Adv/AberMUD2/mud/TEXT/ROOMS/"
 from .log_file import LogFile
 from .ban_file import BanFile

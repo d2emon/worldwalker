@@ -1,5 +1,5 @@
 from games.mud.exceptions import FileServiceError, MudError
-from services.file_services.person import Uaf
+from services.file_services import PersonService
 
 
 class Person:
@@ -11,14 +11,12 @@ class Person:
         self.level = level
 
     @classmethod
-    def find(cls, name):
-        data = Uaf.find(name)
-        if data is None:
-            return None
-        return cls(**data)
+    def find(cls, user_id):
+        user = PersonService.by_user_id(user_id)
+        return cls(**user) if user is not None else None
 
-    def save(self, name):
-        Uaf.save(name, self)
+    def save(self, user_id):
+        PersonService.save(user_id, self)
 
     def decpers(self):
         return self.name, self.strength, self.score, self.level, self.sex

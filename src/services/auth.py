@@ -1,7 +1,5 @@
 import config.services
-from games.mud.exceptions import FileServiceError
-from .file_services import Nologin, BanFile
-from .file_services.person.person import Person
+from .file_services import Nologin, BanFile, User
 
 
 def verify_host(f):
@@ -33,56 +31,35 @@ def verify_host(f):
 
 
 @verify_host
+def validate(**kwargs):
+    return {field: User.validate(field, value) for field, value in kwargs.items()}
+
+
+@verify_host
+def post_user(**kwargs):
+    return User(**kwargs).add()
+
+
+@verify_host
+def get_user(user_id):
+    return User.by_username(user_id).as_dict()
+
+
+@verify_host
+def put_user(user_id, **kwargs):
+    return User.by_username(user_id).update(**kwargs).save()
+
+
+@verify_host
+def delete_user(user_id):
+    return User.by_username(user_id).delete()
+
+
+@verify_host
 def get_auth(username, password):
-    return Person.auth(username, password)
+    return User.auth(username, password).as_dict()
 
 
 @verify_host
-def get_user(username):
-    """
-    Return block data for user or -1 if not exist
-
-    :param username:
-    :return:
-    """
-    return Person.find(username)
-
-
-@verify_host
-def post_user(user_id, username, password):
-    return Person(user_id, username, password).add()
-
-
-@verify_host
-def put_user(user_id, username, password):
-    try:
-        # delete me and tack me on end!
-        __delete_user(username)
-        return Person(user_id, username, password).add()
-    except FileServiceError:
-        return
-
-
-@verify_host
-def validate(field, value):
-    if field == 'username':
-        return Person.validate_username(value)
-    elif field == 'password':
-        return Person.validate_password(value)
-
-
-@verify_host
-def put_password(username, old_password, new_password):
-    Person.auth(username, old_password)
-    return put_user(username, new_password)
-
-
-@verify_host
-def delete_user(username):
-    """
-    For delete and edit
-
-    :param username:
-    :return:
-    """
-    return Person.delete(username)
+def put_password(username, password, new_password):
+    return User.auth(username, password).update(password=new_password).save()
