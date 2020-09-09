@@ -11,14 +11,14 @@ class MapWalkWindow(Window):
             size=config.SCREEN.SIZE,
         )
 
-        self.events[self.INIT] = self.on_init
+        self.events.events[self.INIT] = self.on_init
 
         self.screen = None
 
-    def on_init(self):
+    def on_init(self, *args, **kwargs):
         self.screen = MainScreen(self.surface.get_rect())
-        self.events.update(self.screen.events)
-        self.events[self.DRAW] = self.on_draw
+        self.events.events.update(self.screen.events)
+        self.events.events[self.DRAW] = self.on_draw
 
-    def on_draw(self):
+    def on_draw(self, *args, **kwargs):
         self.surface.blit(self.screen, (0, 0))

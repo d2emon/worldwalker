@@ -24,7 +24,7 @@ class MainScreen(pygame.Surface):
 
         self.events = {
             Window.UPDATE: self.__on_update,
-            pygame.KEYDOWN: self.__on_key_down,
+            Window.KEYDOWN: self.__on_key_down,
         }
 
     @property
@@ -35,12 +35,11 @@ class MainScreen(pygame.Surface):
     def map_sprite(self):
         return self.sprites.map_sprite
 
-    def __on_update(self):
+    def __on_update(self, *args, **kwargs):
         self.sprites.update()
         self.sprites.draw(self)
 
-    def __on_key_down(self):
-        keys = pygame.key.get_pressed()
+    def __on_key_down(self, *args, keys=None, **kwargs):
         speed = self.player.speed
         if keys[pygame.K_LEFT]:
             self.map_sprite.move(-speed, 0)
