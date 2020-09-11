@@ -1,6 +1,8 @@
-from ..database import genders
+from genelib.fng import genders
+from genelib.fng.named import Gendered
+from genelib.fng.namegen import GenderedFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
-from ..genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator, unique_with
+from ..genelib import SyllablicGenerator, build_name_generator, unique_with
 
 
 class BaseWyvernNameGenerator(SyllablicGenerator):
@@ -126,21 +128,17 @@ class Wyvern(Gendered):
     different reason entirely. Either way I focused on these kinds of names in this generator. If you are looking for
     more melodic names the dragon name generator is a great place to start.
     """
-    MALE = genders.MALE
-    FEMALE = genders.FEMALE
-    NEUTRAL = genders.NEUTRAL
-
-    name_generator = GenderedNameGenerator({
-        MALE: build_name_generator(
+    name_generator = GenderedFactory(
+        male=build_name_generator(
             (MaleWyvernNameGenerator1, 0, 7),
             (MaleWyvernNameGenerator2, 7, 10),
         ),
-        FEMALE: build_name_generator(
+        female=build_name_generator(
             (FemaleWyvernNameGenerator1, 0, 7),
             (FemaleWyvernNameGenerator2, 7, 10),
         ),
-        NEUTRAL: build_name_generator(
+        neutral=build_name_generator(
             (WyvernNameGenerator1, 0, 7),
             (WyvernNameGenerator2, 7, 10),
         ),
-    })
+    )

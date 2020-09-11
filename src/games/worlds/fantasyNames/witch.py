@@ -1,6 +1,7 @@
-from ..database import genders
+from genelib.fng import genders
+from genelib.fng.named import Gendered
+from genelib.fng.namegen import GenderedFactory, NameFactory
 from ..database.provider import group_providers_from_list
-from ..genelib import NameGenerator, GenderedNameGenerator, Gendered
 
 
 DATABASE = 'witch'
@@ -11,7 +12,7 @@ PARTS = [
 ]
 
 
-class BaseWitchNameGenerator(NameGenerator):
+class BaseWitchNameGenerator(NameFactory):
     default_providers = group_providers_from_list(DATABASE, PARTS)
     used_parts = PARTS
 
@@ -37,10 +38,7 @@ class Witch(Gendered):
     names in this generator focus on the more regular sounding names, rather than the more fantasy-themed names you'll
     find in some of the other related name generators.
     """
-    MALE = genders.MALE
-    FEMALE = genders.FEMALE
-
-    name_generator = GenderedNameGenerator({
-        MALE: MaleWitchNameGenerator,
-        FEMALE: FemaleWitchNameGenerator,
-    })
+    name_generator = GenderedFactory(
+        male=MaleWitchNameGenerator,
+        female=FemaleWitchNameGenerator,
+    )

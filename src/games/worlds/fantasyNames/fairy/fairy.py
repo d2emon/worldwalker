@@ -1,7 +1,7 @@
-from games.worlds.database import genders
-from games.worlds.genelib import GenderedNameGenerator, Gendered
-from .male import MaleFairyNameGenerator
-from .female import FemaleFairyNameGenerator
+from genelib.fng.named import Gendered
+from genelib.fng.namegen import GenderedFactory
+from .male import MaleNameFactory
+from .female import FemaleNameFactory
 
 
 class Fairy(Gendered):
@@ -15,10 +15,8 @@ class Fairy(Gendered):
     are vicious, vile and evil. I've had quite a few name submissions with 'evil fairy' names, so you'll find those in
     here as well.
     """
-    MALE = genders.MALE
-    FEMALE = genders.FEMALE
-
-    name_generator = GenderedNameGenerator({
-        MALE: MaleFairyNameGenerator,
-        FEMALE: FemaleFairyNameGenerator,
-    })
+    class NameFactory(Gendered.NameFactory):
+        factory = GenderedFactory(
+            male=MaleNameFactory,
+            female=FemaleNameFactory,
+        )

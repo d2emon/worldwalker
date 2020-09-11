@@ -13,7 +13,7 @@ from .descr.realm import Realm
 from .descr.weapons import Shotgun
 from .descr.weapons import Staff
 
-from . import genders
+from genelib.fng import genders
 from .fillers import fill, describe
 
 

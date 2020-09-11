@@ -20,7 +20,7 @@ class GroupDataProvider(ListDataProvider):
 
     @classmethod
     def from_list(cls, key, items):
-        return {item_id: cls(key, values) for item_id, values in enumerate(items)}
+        return {values: cls(key, values) for item_id, values in enumerate(items)}
 
     @classmethod
     def from_dict(cls, key, items):

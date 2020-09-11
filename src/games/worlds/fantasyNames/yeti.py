@@ -1,6 +1,8 @@
-from ..database import genders
+from genelib.fng import genders
+from genelib.fng.named import Gendered
+from genelib.fng.namegen import GenderedFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
-from ..genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator, unique_with
+from ..genelib import SyllablicGenerator, build_name_generator, unique_with
 
 
 class BaseYetiNameGenerator(SyllablicGenerator):
@@ -164,24 +166,20 @@ class Yeti(Gendered):
     focused primarily on the Himalayan regions, but also took some inspiration for some of the lesser known variants of
     'yeti' out there, like the before mentioned Yeren and Yowie.
     """
-    MALE = genders.MALE
-    FEMALE = genders.FEMALE
-    NEUTRAL = genders.NEUTRAL
-
-    name_generator = GenderedNameGenerator({
-        MALE: build_name_generator(
+    name_generator = GenderedFactory(
+        male=build_name_generator(
             (MaleYetiNameGenerator1, 0, 6),
             (MaleYetiNameGenerator2, 6, 8),
             (MaleYetiNameGenerator3, 8, 10),
         ),
-        FEMALE: build_name_generator(
+        female=build_name_generator(
             (FemaleYetiNameGenerator1, 0, 6),
             (FemaleYetiNameGenerator2, 6, 8),
             (FemaleYetiNameGenerator3, 8, 10),
         ),
-        NEUTRAL: build_name_generator(
+        neutral=build_name_generator(
             (YetiNameGenerator1, 0, 6),
             (YetiNameGenerator2, 6, 8),
             (YetiNameGenerator3, 8, 10),
         ),
-    })
+    )

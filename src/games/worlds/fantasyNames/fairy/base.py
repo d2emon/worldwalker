@@ -1,8 +1,8 @@
+from genelib.fng.namegen import NameFactory
 from games.worlds.database.provider import group_providers_from_list
-from games.worlds.genelib import NameGenerator
 
 
-class BaseFairyNameGenerator(NameGenerator):
+class BaseNameFactory(NameFactory):
     __DATABASE = 'fairy'
     __PARTS = [
         'namesMale',
@@ -12,3 +12,19 @@ class BaseFairyNameGenerator(NameGenerator):
     ]
     default_providers = group_providers_from_list(__DATABASE, __PARTS)
     used_parts = __PARTS
+
+    @property
+    def names_male(self):
+        return self.name_parts()['namesMale']
+
+    @property
+    def names_female(self):
+        return self.name_parts()['namesFemale']
+
+    @property
+    def names_family(self):
+        return self.name_parts()['namesFamily']
+
+    @property
+    def names_family_2(self):
+        return self.name_parts()['namesFamily2']

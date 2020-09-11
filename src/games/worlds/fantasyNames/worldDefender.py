@@ -1,5 +1,7 @@
+from genelib.fng.named import Named
+from genelib.fng.namegen import NameFactory
 from ..database.provider import group_providers_from_list
-from games.worlds.genelib import NameGenerator, Named, build_name_generator
+from games.worlds.genelib import build_name_generator
 
 
 DATABASE = 'world-defender'
@@ -11,7 +13,7 @@ PARTS = [
 ]
 
 
-class BaseWorldDefenderNameGenerator(NameGenerator):
+class BaseWorldDefenderNameGenerator(NameFactory):
     NAME_V1 = 1
     NAME_V2 = 2
     NAME_V3 = 3

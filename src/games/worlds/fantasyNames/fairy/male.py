@@ -1,7 +1,10 @@
 from games.worlds.database import genders
-from .base import BaseFairyNameGenerator
+from .base import BaseNameFactory
 
 
-class MaleFairyNameGenerator(BaseFairyNameGenerator):
+class MaleNameFactory(BaseNameFactory):
     gender = genders.MALE
-    template = "{namesMale} {namesFamily}{namesFamily2}"
+
+    @property
+    def name(self):
+        return f'{self.names_male} {self.names_family}{self.names_family_2}'

@@ -1,6 +1,8 @@
-from ..database import genders
+from genelib.fng import genders
+from genelib.fng.named import Gendered
+from genelib.fng.namegen import ComplexFactory, GenderedFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
-from ..genelib import SyllablicGenerator, GenderedNameGenerator, ComplexNameGenerator, Gendered
+from ..genelib import SyllablicGenerator
 
 
 class BaseWizardNameGenerator(SyllablicGenerator):
@@ -147,24 +149,20 @@ class Wizard(Gendered):
     I've also tried to make sure many different types of fantasy styles are part of this generator, from the more
     easily pronounceable friendly names, to the less pronounceable, demonic or evil sounding names.
     """
-    MALE = genders.MALE
-    FEMALE = genders.FEMALE
-    NEUTRAL = genders.NEUTRAL
-
-    name_generator = GenderedNameGenerator({
-        MALE: ComplexNameGenerator([
+    name_generator = GenderedFactory(
+        male=ComplexFactory(
             MaleWizardNameGenerator1,
             MaleWizardNameGenerator2,
             MaleWizardNameGenerator3,
-        ]),
-        FEMALE: ComplexNameGenerator([
+        ),
+        female=ComplexFactory(
             FemaleWizardNameGenerator1,
             FemaleWizardNameGenerator2,
             FemaleWizardNameGenerator3,
-        ]),
-        NEUTRAL: ComplexNameGenerator([
+        ),
+        neutral=ComplexFactory(
             WizardNameGenerator1,
             WizardNameGenerator2,
             WizardNameGenerator3,
-        ]),
-    })
+        ),
+    )

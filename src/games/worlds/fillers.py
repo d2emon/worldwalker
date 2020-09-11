@@ -1,30 +1,19 @@
-from . import genders
-
-
-__GENDERS = {
-    genders.NEUTRAL: 0,
-    genders.MALE: 1,
-    genders.FEMALE: 2,
-}
-
-
 def show_names(decorated):
-    def f(item_class, *args, **kwargs):
-        items = decorated(item_class, *args, **kwargs)
+    def f(item_class, *args, count=10, **kwargs):
         title = item_class.__name__
         gender = kwargs.get('gender')
 
         print()
         print(f'{title} ({gender})' if gender else title)
-        for itemId, item in enumerate(items):
+        for itemId in range(count):
+            item = decorated(item_class, *args, **kwargs)
             print(itemId + 1, str(item))
     return f
 
 
 @show_names
-def fill(item_class, *args, count=10, gender=None, **kwargs):
-    args = (__GENDERS.get(gender), *args) if gender is not None else args
-    return [item_class.generate(*args) for _ in range(count)]
+def fill(item_class, *args, **kwargs):
+    return item_class.generate(*args, **kwargs)
 
 
 @show_names

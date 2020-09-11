@@ -1,5 +1,6 @@
+from genelib.fng.named import Named
 from ..database.provider import group_providers_from_list, group_providers_from_dict
-from games.worlds.genelib import SyllablicGenerator, Named, build_name_generator, unique_with
+from games.worlds.genelib import SyllablicGenerator, build_name_generator, unique_with
 
 
 class BaseZaratanNameGenerator(SyllablicGenerator):

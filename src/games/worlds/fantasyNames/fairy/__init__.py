@@ -1,4 +1,4 @@
 from .fairy import Fairy
-from .base import BaseFairyNameGenerator
-from .male import MaleFairyNameGenerator
-from .female import FemaleFairyNameGenerator
+from .base import BaseNameFactory
+from .male import MaleNameFactory
+from .female import FemaleNameFactory

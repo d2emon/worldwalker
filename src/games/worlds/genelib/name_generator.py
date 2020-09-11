@@ -1,46 +1,8 @@
-import random
-from ..database import genders
-from .swear import test_swear
+from genelib.fng.namegen import ComplexFactory, NameFactory
 from .data_provider import DataProvider
 
 
-class NameGenerator:
-    default_providers = dict()
-    gender = genders.NEUTRAL
-    name_type = 0
-
-    template = ""
-    used_parts = []
-
-    def __init__(self, providers=None):
-        self.providers = providers or self.default_providers
-        self.data = self.__ready_providers()
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        self.reset()
-        name = self.name()
-        valid = test_swear(str(name))
-        if not valid:
-            return next(self)
-        return name
-
-    def __ready_providers(self):
-        return {key: value.ready() for key, value in self.providers.items()}
-
-    def reset(self):
-        self.data = self.__ready_providers()
-
-    def name_parts(self):
-        return {part: next(self.data[part]) for part in self.used_parts}
-
-    def name(self):
-        return self.template.format(**self.name_parts())
-
-
-class ListNameGenerator(NameGenerator):
+class ListNameGenerator(NameFactory):
     default_provider = DataProvider([])
 
     template = "{provider}"
@@ -59,7 +21,7 @@ class SyllableGenerator(ListNameGenerator):
         return next(self.data['provider'])
 
 
-class SyllablicGenerator(NameGenerator):
+class SyllablicGenerator(NameFactory):
     syllable_providers = dict()
     GLUE = ""
 
@@ -108,76 +70,11 @@ class SyllablicGenerator(NameGenerator):
         return self.from_syllables(self.syllables(), self.template())
 
 
-class ComplexNameGenerator:
-    def __init__(self, name_generators):
-        self.__generator_id = None
-        self.__cache = dict()
-        self.name_generators = name_generators
-
-    def get_cached(self, name_generator):
-        cached = self.__cache.get(name_generator)
-        if cached:
-            return cached
-
-        if isinstance(name_generator, type):
-            cached = name_generator()
-        else:
-            cached = name_generator
-
-        self.__cache[name_generator] = cached
-        return cached
-
-    @property
-    def generator_ids(self):
-        return range(len(self.name_generators))
-
-    @property
-    def generator_id(self):
-        if self.__generator_id is not None:
-            return self.__generator_id
-        return random.choice(self.generator_ids)
-
-    @generator_id.setter
-    def generator_id(self, value):
-        self.__generator_id = value
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if len(self.name_generators) <= 0:
-            return None
-
-        name_generator = self.get_cached(self.name_generators[self.generator_id])
-        return next(name_generator)
-
-
-class GenderedNameGenerator(ComplexNameGenerator):
-    def __init__(self, name_generators=None):
-        super().__init__(name_generators or dict())
-
-    @property
-    def generator_ids(self):
-        return list(self.name_generators.keys())
-
-    @property
-    def genders(self):
-        return self.generator_ids
-
-    @property
-    def gender(self):
-        return self.generator_id
-
-    @gender.setter
-    def gender(self, value):
-        self.generator_id = value
-
-
 def build_name_generator(*args):
     name_generators = []
     for arg in args:
         name_generator, min_id, max_id = arg
         for _ in range(min_id, max_id):
             name_generators.append(name_generator)
-    return ComplexNameGenerator(name_generators)
+    return ComplexFactory(*name_generators)
 
