@@ -1,6 +1,6 @@
+from ..database import genders
 from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator, unique_with
-from ..genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
 class BaseYetiNameGenerator(SyllablicGenerator):
@@ -73,7 +73,7 @@ class YetiNameRulesV3(YetiNameRulesV2):
 
 
 class BaseMaleYetiNameGenerator(BaseYetiNameGenerator):
-    gender = GENDER_MALE
+    gender = genders.MALE
     syllable_providers = group_providers_from_dict('yeti', {
         1: 'nm1',
         2: 'nm2',
@@ -89,7 +89,7 @@ class BaseMaleYetiNameGenerator(BaseYetiNameGenerator):
 
 
 class BaseFemaleYetiNameGenerator(BaseYetiNameGenerator):
-    gender = GENDER_FEMALE
+    gender = genders.FEMALE
     syllable_providers = group_providers_from_dict('yeti', {
         1: 'nm5',
         2: 'nm6',
@@ -103,7 +103,7 @@ class BaseFemaleYetiNameGenerator(BaseYetiNameGenerator):
 
 
 class BaseNeutralYetiNameGenerator(BaseYetiNameGenerator):
-    gender = GENDER_NEUTRAL
+    gender = genders.NEUTRAL
     syllable_providers = group_providers_from_dict('yeti', {
         1: 'nm10',
         2: 'nm11',
@@ -164,9 +164,9 @@ class Yeti(Gendered):
     focused primarily on the Himalayan regions, but also took some inspiration for some of the lesser known variants of
     'yeti' out there, like the before mentioned Yeren and Yowie.
     """
-    MALE = GENDER_MALE
-    FEMALE = GENDER_FEMALE
-    NEUTRAL = GENDER_NEUTRAL
+    MALE = genders.MALE
+    FEMALE = genders.FEMALE
+    NEUTRAL = genders.NEUTRAL
 
     name_generator = GenderedNameGenerator({
         MALE: build_name_generator(

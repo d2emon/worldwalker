@@ -1,6 +1,6 @@
+from ..database import genders
 from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator, GenderedNameGenerator, ComplexNameGenerator, Gendered
-from ..genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
 class BaseWizardNameGenerator(SyllablicGenerator):
@@ -53,15 +53,15 @@ class WizardNameRulesV3(WizardNameRulesV2):
 
 
 class BaseMaleWizardNameGenerator(BaseWizardNameGenerator):
-    gender = GENDER_MALE
+    gender = genders.MALE
 
 
 class BaseNeutralWizardNameGenerator(BaseWizardNameGenerator):
-    gender = GENDER_NEUTRAL
+    gender = genders.NEUTRAL
 
 
 class BaseFemaleWizardNameGenerator(BaseWizardNameGenerator):
-    gender = GENDER_FEMALE
+    gender = genders.FEMALE
 
 
 class MaleWizardNameGenerator1(WizardNameRulesV1, BaseMaleWizardNameGenerator):
@@ -147,9 +147,9 @@ class Wizard(Gendered):
     I've also tried to make sure many different types of fantasy styles are part of this generator, from the more
     easily pronounceable friendly names, to the less pronounceable, demonic or evil sounding names.
     """
-    MALE = GENDER_MALE
-    FEMALE = GENDER_FEMALE
-    NEUTRAL = GENDER_NEUTRAL
+    MALE = genders.MALE
+    FEMALE = genders.FEMALE
+    NEUTRAL = genders.NEUTRAL
 
     name_generator = GenderedNameGenerator({
         MALE: ComplexNameGenerator([

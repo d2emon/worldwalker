@@ -1,6 +1,6 @@
+from ..database import genders
 from ..database.provider import group_providers_from_list
 from ..genelib import NameGenerator, GenderedNameGenerator, Gendered
-from ..genelib.genders import GENDER_MALE, GENDER_FEMALE
 
 
 DATABASE = 'witch'
@@ -17,12 +17,12 @@ class BaseWitchNameGenerator(NameGenerator):
 
 
 class MaleWitchNameGenerator(BaseWitchNameGenerator):
-    gender = GENDER_MALE
+    gender = genders.MALE
     template = "{nm3} {nm2}"
 
 
 class FemaleWitchNameGenerator(BaseWitchNameGenerator):
-    gender = GENDER_FEMALE
+    gender = genders.FEMALE
     template = "{nm1} {nm2}"
 
 
@@ -37,8 +37,8 @@ class Witch(Gendered):
     names in this generator focus on the more regular sounding names, rather than the more fantasy-themed names you'll
     find in some of the other related name generators.
     """
-    MALE = GENDER_MALE
-    FEMALE = GENDER_FEMALE
+    MALE = genders.MALE
+    FEMALE = genders.FEMALE
 
     name_generator = GenderedNameGenerator({
         MALE: MaleWitchNameGenerator,

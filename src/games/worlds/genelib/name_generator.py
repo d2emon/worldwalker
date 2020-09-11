@@ -1,12 +1,12 @@
 import random
+from ..database import genders
 from .swear import test_swear
 from .data_provider import DataProvider
-from .genders import GENDER_NEUTRAL
 
 
 class NameGenerator:
     default_providers = dict()
-    gender = GENDER_NEUTRAL
+    gender = genders.NEUTRAL
     name_type = 0
 
     template = ""

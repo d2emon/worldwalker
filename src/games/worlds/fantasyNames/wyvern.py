@@ -1,6 +1,6 @@
+from ..database import genders
 from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator, unique_with
-from ..genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
 
 class BaseWyvernNameGenerator(SyllablicGenerator):
@@ -50,7 +50,7 @@ class WyvernNameRulesV2(WyvernNameRulesV1):
 
 
 class BaseMaleWyvernNameGenerator(BaseWyvernNameGenerator):
-    gender = GENDER_MALE
+    gender = genders.MALE
     syllable_providers = group_providers_from_dict('wyvern', {
         1: 'nm1',
         2: 'nm2',
@@ -64,7 +64,7 @@ class BaseMaleWyvernNameGenerator(BaseWyvernNameGenerator):
 
 
 class BaseFemaleWyvernNameGenerator(BaseWyvernNameGenerator):
-    gender = GENDER_FEMALE
+    gender = genders.FEMALE
     syllable_providers = group_providers_from_dict('wyvern', {
         1: 'nm6',
         2: 'nm7',
@@ -78,7 +78,7 @@ class BaseFemaleWyvernNameGenerator(BaseWyvernNameGenerator):
 
 
 class BaseNeutralWyvernNameGenerator(BaseWyvernNameGenerator):
-    gender = GENDER_NEUTRAL
+    gender = genders.NEUTRAL
     syllable_providers = group_providers_from_dict('wyvern', {
         1: 'nm11',
         2: 'nm12',
@@ -126,9 +126,9 @@ class Wyvern(Gendered):
     different reason entirely. Either way I focused on these kinds of names in this generator. If you are looking for
     more melodic names the dragon name generator is a great place to start.
     """
-    MALE = GENDER_MALE
-    FEMALE = GENDER_FEMALE
-    NEUTRAL = GENDER_NEUTRAL
+    MALE = genders.MALE
+    FEMALE = genders.FEMALE
+    NEUTRAL = genders.NEUTRAL
 
     name_generator = GenderedNameGenerator({
         MALE: build_name_generator(
