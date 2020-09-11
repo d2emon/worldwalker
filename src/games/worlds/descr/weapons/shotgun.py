@@ -1,10 +1,11 @@
 from ...genelib.descriptionGenerator import DescriptionGenerator
-from ...database import get_providers_from_db, NumberDataProvider
+from ...database.provider import list_providers
+from ...database.provider.number_data import NumberDataProvider
 from .weapon import Weapon
 
 
 PROVIDERS = {
-    **get_providers_from_db('shotgun'),
+    **list_providers('shotgun'),
     'nm6': NumberDataProvider(600, 1100),
     'nm7_2': NumberDataProvider(100, 300),
     'nm8': NumberDataProvider(21, 48, 10),

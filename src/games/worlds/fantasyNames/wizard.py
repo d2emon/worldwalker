@@ -1,4 +1,4 @@
-from ..database import get_data_providers, get_syllable_providers
+from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator, GenderedNameGenerator, ComplexNameGenerator, Gendered
 from ..genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
@@ -8,7 +8,7 @@ class BaseWizardNameGenerator(SyllablicGenerator):
     NAME_V2 = 2
     NAME_V3 = 3
     name_type = NAME_V1
-    default_providers = get_data_providers('wizard', [
+    default_providers = group_providers_from_list('wizard', [
         'nm1',
         'nm2',
         'nm3',
@@ -65,14 +65,14 @@ class BaseFemaleWizardNameGenerator(BaseWizardNameGenerator):
 
 
 class MaleWizardNameGenerator1(WizardNameRulesV1, BaseMaleWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         5: 'nm3',
         6: 'nm5',
     })
 
 
 class MaleWizardNameGenerator2(WizardNameRulesV2, BaseMaleWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         2: 'nm2',
         5: 'nm3',
         6: 'nm5',
@@ -80,7 +80,7 @@ class MaleWizardNameGenerator2(WizardNameRulesV2, BaseMaleWizardNameGenerator):
 
 
 class MaleWizardNameGenerator3(WizardNameRulesV3, BaseMaleWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         1: 'nm1',
         2: 'nm4',
         5: 'nm3',
@@ -89,14 +89,14 @@ class MaleWizardNameGenerator3(WizardNameRulesV3, BaseMaleWizardNameGenerator):
 
 
 class FemaleWizardNameGenerator1(WizardNameRulesV1, BaseFemaleWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         5: 'nm3',
         6: 'nm8',
     })
 
 
 class FemaleWizardNameGenerator2(WizardNameRulesV2, BaseFemaleWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         2: 'nm6',
         5: 'nm3',
         6: 'nm8',
@@ -104,7 +104,7 @@ class FemaleWizardNameGenerator2(WizardNameRulesV2, BaseFemaleWizardNameGenerato
 
 
 class FemaleWizardNameGenerator3(WizardNameRulesV3, BaseFemaleWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         1: 'nm1',
         2: 'nm7',
         5: 'nm3',
@@ -113,14 +113,14 @@ class FemaleWizardNameGenerator3(WizardNameRulesV3, BaseFemaleWizardNameGenerato
 
 
 class WizardNameGenerator1(WizardNameRulesV1, BaseNeutralWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         5: 'nm3',
         6: 'nm9',
     })
 
 
 class WizardNameGenerator2(WizardNameRulesV2, BaseNeutralWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         2: 'nm10',
         5: 'nm3',
         6: 'nm9',
@@ -128,7 +128,7 @@ class WizardNameGenerator2(WizardNameRulesV2, BaseNeutralWizardNameGenerator):
 
 
 class WizardNameGenerator3(WizardNameRulesV3, BaseNeutralWizardNameGenerator):
-    syllable_providers = get_syllable_providers('wizard', {
+    syllable_providers = group_providers_from_dict('wizard', {
         1: 'nm1',
         2: 'nm11',
         5: 'nm3',

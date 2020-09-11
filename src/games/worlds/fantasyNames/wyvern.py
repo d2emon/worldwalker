@@ -1,4 +1,4 @@
-from ..database import get_data_providers, get_syllable_providers
+from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator, GenderedNameGenerator, Gendered, build_name_generator, unique_with
 from ..genelib.genders import GENDER_NEUTRAL, GENDER_MALE, GENDER_FEMALE
 
@@ -7,7 +7,7 @@ class BaseWyvernNameGenerator(SyllablicGenerator):
     NAME_V1 = 1
     NAME_V2 = 2
     name_type = NAME_V1
-    default_providers = get_data_providers('wyvern', [
+    default_providers = group_providers_from_list('wyvern', [
         'nm1',
         'nm2',
         'nm3',
@@ -51,7 +51,7 @@ class WyvernNameRulesV2(WyvernNameRulesV1):
 
 class BaseMaleWyvernNameGenerator(BaseWyvernNameGenerator):
     gender = GENDER_MALE
-    syllable_providers = get_syllable_providers('wyvern', {
+    syllable_providers = group_providers_from_dict('wyvern', {
         1: 'nm1',
         2: 'nm2',
         3: 'nm3',
@@ -65,7 +65,7 @@ class BaseMaleWyvernNameGenerator(BaseWyvernNameGenerator):
 
 class BaseFemaleWyvernNameGenerator(BaseWyvernNameGenerator):
     gender = GENDER_FEMALE
-    syllable_providers = get_syllable_providers('wyvern', {
+    syllable_providers = group_providers_from_dict('wyvern', {
         1: 'nm6',
         2: 'nm7',
         3: 'nm8',
@@ -79,7 +79,7 @@ class BaseFemaleWyvernNameGenerator(BaseWyvernNameGenerator):
 
 class BaseNeutralWyvernNameGenerator(BaseWyvernNameGenerator):
     gender = GENDER_NEUTRAL
-    syllable_providers = get_syllable_providers('wyvern', {
+    syllable_providers = group_providers_from_dict('wyvern', {
         1: 'nm11',
         2: 'nm12',
         3: 'nm13',

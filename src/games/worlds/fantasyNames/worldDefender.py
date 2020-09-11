@@ -1,4 +1,4 @@
-from ..database import get_data_providers
+from ..database.provider import group_providers_from_list
 from games.worlds.genelib import NameGenerator, Named, build_name_generator
 
 
@@ -17,7 +17,7 @@ class BaseWorldDefenderNameGenerator(NameGenerator):
     NAME_V3 = 3
     NAME_V4 = 4
     name_type = NAME_V1
-    default_providers = get_data_providers(DATABASE, PARTS)
+    default_providers = group_providers_from_list(DATABASE, PARTS)
     used_parts = PARTS
 
 

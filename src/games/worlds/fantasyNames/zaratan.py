@@ -1,4 +1,4 @@
-from ..database import get_data_providers, get_syllable_providers
+from ..database.provider import group_providers_from_list, group_providers_from_dict
 from games.worlds.genelib import SyllablicGenerator, Named, build_name_generator, unique_with
 
 
@@ -6,7 +6,7 @@ class BaseZaratanNameGenerator(SyllablicGenerator):
     NAME_V1 = 1
     NAME_V2 = 2
     name_type = NAME_V1
-    default_providers = get_data_providers('zaratan', [
+    default_providers = group_providers_from_list('zaratan', [
         'nm1',
         'nm2',
         'nm3',
@@ -14,7 +14,7 @@ class BaseZaratanNameGenerator(SyllablicGenerator):
         'nm5',
         'nm6',
     ])
-    syllable_providers = get_syllable_providers('zaratan', {
+    syllable_providers = group_providers_from_dict('zaratan', {
         1: 'nm1',
         2: 'nm2',
         3: 'nm3',

@@ -1,7 +1,7 @@
 from ..genelib.descriptionGenerator import DescriptionGenerator
-from ..database import get_providers_from_db
+from ..database.provider import list_providers
 from .descriptive import Descriptive
-from ..database.descr.realm import DATA
+from db.fng.descr.realm import DATA
 
 import random
 
@@ -213,7 +213,7 @@ ADVENTURE_CONTINUE = 'nm21'
 
 
 PROVIDERS = {
-    **get_providers_from_db('realm'),
+    **list_providers('realm'),
 }
 DATA_GENERATORS = {
     'rnd1': MOVEMENT,

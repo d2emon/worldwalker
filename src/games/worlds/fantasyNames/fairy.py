@@ -1,4 +1,4 @@
-from ..database import get_data_providers
+from ..database.provider import group_providers_from_list
 from ..genelib import NameGenerator, GenderedNameGenerator, Gendered
 from ..genelib.genders import GENDER_MALE, GENDER_FEMALE
 
@@ -13,7 +13,7 @@ PARTS = [
 
 
 class BaseFairyNameGenerator(NameGenerator):
-    default_providers = get_data_providers(DATABASE, PARTS)
+    default_providers = group_providers_from_list(DATABASE, PARTS)
     used_parts = PARTS
 
 

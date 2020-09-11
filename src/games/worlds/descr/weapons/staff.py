@@ -1,10 +1,11 @@
 from ...genelib.descriptionGenerator import DescriptionGenerator
-from ...database import get_providers_from_db, LengthProvider
+from ...database.provider import list_providers
+from ...database.provider.length import LengthProvider
 from .weapon import Weapon
 
 
 PROVIDERS = {
-    **get_providers_from_db('staff'),
+    **list_providers('staff'),
     'nm1': LengthProvider(160, 220),
 }
 DATA_GENERATORS = {
