@@ -40,7 +40,9 @@ class WitchCoven(Named):
     themes for the names in this generator. A coven's name is usually a very personal choice however, but hopefully
     this name generator will be helpful nonetheless.
     """
-    name_generator = build_name_generator(
-        (WitchCovenNameGenerator1, 0, 5),
-        (WitchCovenNameGenerator2, 5, 10),
-    )
+
+    class NameFactory(Named.NameFactory):
+        factory = build_name_generator(
+            (WitchCovenNameGenerator1, 0, 5),
+            (WitchCovenNameGenerator2, 5, 10),
+        )

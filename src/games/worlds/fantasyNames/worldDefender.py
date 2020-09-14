@@ -54,9 +54,11 @@ class WorldDefender(Named):
     World Warden', 'Keeper of Life', and 'The Ancient Shepherd'. Some names will fit certain types of defenders better
     than others, but there's plenty to pick from, so you're bound to find a name that suits your needs.
     """
-    name_generator = build_name_generator(
-        (WorldDefenderNameGenerator1, 0, 3),
-        (WorldDefenderNameGenerator2, 3, 6),
-        (WorldDefenderNameGenerator3, 6, 8),
-        (WorldDefenderNameGenerator4, 8, 10),
-    )
+
+    class NameFactory(Named.NameFactory):
+        factory = build_name_generator(
+            (WorldDefenderNameGenerator1, 0, 3),
+            (WorldDefenderNameGenerator2, 3, 6),
+            (WorldDefenderNameGenerator3, 6, 8),
+            (WorldDefenderNameGenerator4, 8, 10),
+        )

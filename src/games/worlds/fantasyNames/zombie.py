@@ -13,4 +13,6 @@ class Zombie(Named):
     belchers to crawlers and runners, there's hundreds of different types of zombies both in fiction and in this
     generator, so there's plenty to pick from and plenty to fill your zombie world with.
     """
-    name_generator = ZombieNameGenerator()
+
+    class NameFactory(Named.NameFactory):
+        factory = ZombieNameGenerator()

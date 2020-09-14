@@ -149,20 +149,22 @@ class Wizard(Gendered):
     I've also tried to make sure many different types of fantasy styles are part of this generator, from the more
     easily pronounceable friendly names, to the less pronounceable, demonic or evil sounding names.
     """
-    name_generator = GenderedFactory(
-        male=ComplexFactory(
-            MaleWizardNameGenerator1,
-            MaleWizardNameGenerator2,
-            MaleWizardNameGenerator3,
-        ),
-        female=ComplexFactory(
-            FemaleWizardNameGenerator1,
-            FemaleWizardNameGenerator2,
-            FemaleWizardNameGenerator3,
-        ),
-        neutral=ComplexFactory(
-            WizardNameGenerator1,
-            WizardNameGenerator2,
-            WizardNameGenerator3,
-        ),
-    )
+
+    class NameFactory(Gendered.NameFactory):
+        factory = GenderedFactory(
+            male=ComplexFactory(
+                MaleWizardNameGenerator1,
+                MaleWizardNameGenerator2,
+                MaleWizardNameGenerator3,
+            ),
+            female=ComplexFactory(
+                FemaleWizardNameGenerator1,
+                FemaleWizardNameGenerator2,
+                FemaleWizardNameGenerator3,
+            ),
+            neutral=ComplexFactory(
+                WizardNameGenerator1,
+                WizardNameGenerator2,
+                WizardNameGenerator3,
+            ),
+        )

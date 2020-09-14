@@ -5,12 +5,9 @@ from .complex import ComplexFactory
 class GenderedFactory(ComplexFactory):
     def __init__(self, *args, male=None, female=None, neutral=None, **kwargs):
         super().__init__(*args, **kwargs)
-        if male:
-            self.factories[genders.MALE] = male
-        if female:
-            self.factories[genders.MALE] = female
-        if neutral:
-            self.factories[genders.MALE] = neutral
+        self.factories[genders.MALE] = male
+        self.factories[genders.FEMALE] = female
+        self.factories[genders.NEUTRAL] = neutral
 
     @property
     def genders(self):

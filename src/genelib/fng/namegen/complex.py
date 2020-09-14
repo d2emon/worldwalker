@@ -27,6 +27,8 @@ class ComplexFactory:
 
     @property
     def factory_id(self):
+        if len(self.factory_ids) <= 0:
+            return None
         if self.__factory_id is None:
             self.__factory_id = random.choice(self.factory_ids)
         return self.__factory_id
@@ -40,10 +42,10 @@ class ComplexFactory:
         return self.get(self.factory_id)
 
     def get(self, factory_id):
-        return self.__cache.get_item(self.factories[factory_id])
+        return self.__cache.get_item(self.factories.get(factory_id)) if factory_id else None
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        return next(self.factory) if len(self.factories) > 0 else None
+        return next(self.factory) if self.factory else None

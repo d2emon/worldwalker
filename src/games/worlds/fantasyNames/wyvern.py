@@ -128,17 +128,19 @@ class Wyvern(Gendered):
     different reason entirely. Either way I focused on these kinds of names in this generator. If you are looking for
     more melodic names the dragon name generator is a great place to start.
     """
-    name_generator = GenderedFactory(
-        male=build_name_generator(
-            (MaleWyvernNameGenerator1, 0, 7),
-            (MaleWyvernNameGenerator2, 7, 10),
-        ),
-        female=build_name_generator(
-            (FemaleWyvernNameGenerator1, 0, 7),
-            (FemaleWyvernNameGenerator2, 7, 10),
-        ),
-        neutral=build_name_generator(
-            (WyvernNameGenerator1, 0, 7),
-            (WyvernNameGenerator2, 7, 10),
-        ),
-    )
+
+    class NameFactory(Gendered.NameFactory):
+        factory = GenderedFactory(
+            male=build_name_generator(
+                (MaleWyvernNameGenerator1, 0, 7),
+                (MaleWyvernNameGenerator2, 7, 10),
+            ),
+            female=build_name_generator(
+                (FemaleWyvernNameGenerator1, 0, 7),
+                (FemaleWyvernNameGenerator2, 7, 10),
+            ),
+            neutral=build_name_generator(
+                (WyvernNameGenerator1, 0, 7),
+                (WyvernNameGenerator2, 7, 10),
+            ),
+        )

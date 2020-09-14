@@ -166,20 +166,22 @@ class Yeti(Gendered):
     focused primarily on the Himalayan regions, but also took some inspiration for some of the lesser known variants of
     'yeti' out there, like the before mentioned Yeren and Yowie.
     """
-    name_generator = GenderedFactory(
-        male=build_name_generator(
-            (MaleYetiNameGenerator1, 0, 6),
-            (MaleYetiNameGenerator2, 6, 8),
-            (MaleYetiNameGenerator3, 8, 10),
-        ),
-        female=build_name_generator(
-            (FemaleYetiNameGenerator1, 0, 6),
-            (FemaleYetiNameGenerator2, 6, 8),
-            (FemaleYetiNameGenerator3, 8, 10),
-        ),
-        neutral=build_name_generator(
-            (YetiNameGenerator1, 0, 6),
-            (YetiNameGenerator2, 6, 8),
-            (YetiNameGenerator3, 8, 10),
-        ),
-    )
+
+    class NameFactory(Gendered.NameFactory):
+        factory = GenderedFactory(
+            male=build_name_generator(
+                (MaleYetiNameGenerator1, 0, 6),
+                (MaleYetiNameGenerator2, 6, 8),
+                (MaleYetiNameGenerator3, 8, 10),
+            ),
+            female=build_name_generator(
+                (FemaleYetiNameGenerator1, 0, 6),
+                (FemaleYetiNameGenerator2, 6, 8),
+                (FemaleYetiNameGenerator3, 8, 10),
+            ),
+            neutral=build_name_generator(
+                (YetiNameGenerator1, 0, 6),
+                (YetiNameGenerator2, 6, 8),
+                (YetiNameGenerator3, 8, 10),
+            ),
+        )

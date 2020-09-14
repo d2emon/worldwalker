@@ -67,7 +67,9 @@ class Zaratan(Named):
     generally still have the same large and docile feel to them, but there's plenty to pick from on both ends of the
     spectrum.
     """
-    name_generator = build_name_generator(
-        (ZaratanNameGenerator1, 0, 5),
-        (ZaratanNameGenerator2, 5, 10),
-    )
+
+    class NameFactory(Named.NameFactory):
+        factory = build_name_generator(
+            (ZaratanNameGenerator1, 0, 5),
+            (ZaratanNameGenerator2, 5, 10),
+        )

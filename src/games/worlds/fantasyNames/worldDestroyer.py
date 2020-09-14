@@ -53,9 +53,11 @@ class WorldDestroyer(Named):
     If you combine them you could end up with a long sequence of titles, similar to how royalty sometimes has multiple
     titles, but in a more gruesome way when it comes to world destroyers.
     """
-    name_generator = build_name_generator(
-        (WorldDestroyerNameGenerator1, 0, 3),
-        (WorldDestroyerNameGenerator2, 3, 6),
-        (WorldDestroyerNameGenerator3, 6, 8),
-        (WorldDestroyerNameGenerator4, 8, 10),
-    )
+
+    class NameFactory(Named.NameFactory):
+        factory = build_name_generator(
+            (WorldDestroyerNameGenerator1, 0, 3),
+            (WorldDestroyerNameGenerator2, 3, 6),
+            (WorldDestroyerNameGenerator3, 6, 8),
+            (WorldDestroyerNameGenerator4, 8, 10),
+        )
