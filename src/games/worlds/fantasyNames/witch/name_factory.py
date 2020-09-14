@@ -2,6 +2,7 @@ from genelib.fng import genders
 from genelib.fng.namegen import GenderedFactory, NamedFactory
 from genelib.fng.name_factory import GenderedNameFactory
 from games.worlds.database.provider import group_providers_from_list
+from .name import WitchName
 
 
 class WitchNameFactory(GenderedNameFactory):
@@ -14,18 +15,18 @@ class WitchNameFactory(GenderedNameFactory):
             ]))
 
     class Male(Base):
-        gender = genders.MALE
-
-        @classmethod
-        def name(cls, nm2='', nm3='', **kwargs):
-            return f'{nm3} {nm2}'
+        def name(self, **kwargs):
+            return WitchName(
+                gender=genders.MALE,
+                **kwargs,
+            )
 
     class Female(Base):
-        gender = genders.FEMALE
-
-        @classmethod
-        def name(cls, nm1='', nm2='', **kwargs):
-            return f'{nm1} {nm2}'
+        def name(self, **kwargs):
+            return WitchName(
+                gender=genders.FEMALE,
+                **kwargs,
+            )
 
     factory = GenderedFactory(
         male=Male,

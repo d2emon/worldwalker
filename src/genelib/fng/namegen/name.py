@@ -1,5 +1,5 @@
 from .base import BaseNamedFactory
-from .swear import test_swear
+from ..name import Name
 
 
 class NamedFactory(BaseNamedFactory):
@@ -14,14 +14,17 @@ class NamedFactory(BaseNamedFactory):
     def name_parts(self):
         return {part: next(self.data[part]) for part in self.data.keys()}
 
-    @classmethod
-    def name(cls, **kwargs):
-        return ''
+    def name(self, **kwargs):
+        return Name(
+            name='',
+            gender=self.gender,
+            **kwargs,
+        )
 
     @property
     def factory(self):
         while True:
             self.reset()
-            name = str(self.name(**self.name_parts()))
-            if test_swear(name):
+            name = self.name(**self.name_parts())
+            if name.test_swear():
                 yield name

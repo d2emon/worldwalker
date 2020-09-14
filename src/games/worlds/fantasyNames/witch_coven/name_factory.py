@@ -1,6 +1,7 @@
 from genelib.fng.namegen import NamedFactory, PercentsFactory
 from genelib.fng.name_factory import NameFactory
 from games.worlds.database.provider import group_providers_from_list
+from .name import WitchCovenName
 
 
 class Base(NamedFactory):
@@ -15,21 +16,19 @@ class Base(NamedFactory):
             'nm3',
         ]))
 
+    def name(self, **kwargs):
+        return WitchCovenName(
+            name_type=self.name_type,
+            **kwargs,
+        )
+
 
 class Name1(Base):
     name_type = 1
 
-    @classmethod
-    def name(cls, nm1='', nm3='', **kwargs):
-        return f'The {nm1} {nm3}'
-
 
 class Name2(Base):
     name_type = 2
-
-    @classmethod
-    def name(cls, nm2='', nm3='', **kwargs):
-        return f'{nm3} of {nm2}'
 
 
 class WitchCovenNameFactory(NameFactory):
