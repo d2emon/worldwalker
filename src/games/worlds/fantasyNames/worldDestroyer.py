@@ -1,7 +1,6 @@
 from genelib.fng.named import Named
-from genelib.fng.namegen import NameFactory
+from genelib.fng.namegen import NameFactory, ComplexFactory
 from ..database.provider import group_providers_from_list
-from games.worlds.genelib import build_name_generator
 
 
 DATABASE = 'world-destroyer'
@@ -55,9 +54,9 @@ class WorldDestroyer(Named):
     """
 
     class NameFactory(Named.NameFactory):
-        factory = build_name_generator(
-            (WorldDestroyerNameGenerator1, 0, 3),
-            (WorldDestroyerNameGenerator2, 3, 6),
-            (WorldDestroyerNameGenerator3, 6, 8),
-            (WorldDestroyerNameGenerator4, 8, 10),
+        factory = ComplexFactory(
+            *(WorldDestroyerNameGenerator1 for _ in range(0, 3)),
+            *(WorldDestroyerNameGenerator2 for _ in range(3, 6)),
+            *(WorldDestroyerNameGenerator3 for _ in range(6, 8)),
+            *(WorldDestroyerNameGenerator4 for _ in range(8, 10)),
         )

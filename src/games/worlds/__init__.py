@@ -1,6 +1,6 @@
 from .fantasyNames.fairy import Fairy
 from .fantasyNames.witch import Witch
-from .fantasyNames.witchCoven import WitchCoven
+from games.worlds.fantasyNames.witch_coven.witch_coven import WitchCoven
 from .fantasyNames.wizard import Wizard
 from .fantasyNames.worldDefender import WorldDefender
 from .fantasyNames.worldDestroyer import WorldDestroyer

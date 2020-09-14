@@ -1,8 +1,8 @@
 from genelib.fng import genders
 from genelib.fng.named import Gendered
-from genelib.fng.namegen import GenderedFactory
+from genelib.fng.namegen import GenderedFactory, ComplexFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
-from ..genelib import SyllablicGenerator, build_name_generator, unique_with
+from ..genelib import SyllablicGenerator, unique_with
 
 
 class BaseWyvernNameGenerator(SyllablicGenerator):
@@ -131,16 +131,16 @@ class Wyvern(Gendered):
 
     class NameFactory(Gendered.NameFactory):
         factory = GenderedFactory(
-            male=build_name_generator(
-                (MaleWyvernNameGenerator1, 0, 7),
-                (MaleWyvernNameGenerator2, 7, 10),
+            male=ComplexFactory(
+                *(MaleWyvernNameGenerator1 for _ in range(0, 7)),
+                *(MaleWyvernNameGenerator2 for _ in range(7, 10)),
             ),
-            female=build_name_generator(
-                (FemaleWyvernNameGenerator1, 0, 7),
-                (FemaleWyvernNameGenerator2, 7, 10),
+            female=ComplexFactory(
+                *(FemaleWyvernNameGenerator1 for _ in range(0, 7)),
+                *(FemaleWyvernNameGenerator2 for _ in range(7, 10)),
             ),
-            neutral=build_name_generator(
-                (WyvernNameGenerator1, 0, 7),
-                (WyvernNameGenerator2, 7, 10),
+            neutral=ComplexFactory(
+                *(WyvernNameGenerator1 for _ in range(0, 7)),
+                *(WyvernNameGenerator2 for _ in range(7, 10)),
             ),
         )

@@ -1,6 +1,7 @@
 from genelib.fng.named import Named
+from genelib.fng.namegen import ComplexFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
-from games.worlds.genelib import SyllablicGenerator, build_name_generator, unique_with
+from games.worlds.genelib import SyllablicGenerator, unique_with
 
 
 class BaseZaratanNameGenerator(SyllablicGenerator):
@@ -69,7 +70,7 @@ class Zaratan(Named):
     """
 
     class NameFactory(Named.NameFactory):
-        factory = build_name_generator(
-            (ZaratanNameGenerator1, 0, 5),
-            (ZaratanNameGenerator2, 5, 10),
+        factory = ComplexFactory(
+            *(ZaratanNameGenerator1 for _ in range(0, 5)),
+            *(ZaratanNameGenerator2 for _ in range(5, 10)),
         )

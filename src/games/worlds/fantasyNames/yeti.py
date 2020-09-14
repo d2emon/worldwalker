@@ -1,8 +1,8 @@
 from genelib.fng import genders
 from genelib.fng.named import Gendered
-from genelib.fng.namegen import GenderedFactory
+from genelib.fng.namegen import GenderedFactory, ComplexFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
-from ..genelib import SyllablicGenerator, build_name_generator, unique_with
+from ..genelib import SyllablicGenerator, unique_with
 
 
 class BaseYetiNameGenerator(SyllablicGenerator):
@@ -169,19 +169,19 @@ class Yeti(Gendered):
 
     class NameFactory(Gendered.NameFactory):
         factory = GenderedFactory(
-            male=build_name_generator(
-                (MaleYetiNameGenerator1, 0, 6),
-                (MaleYetiNameGenerator2, 6, 8),
-                (MaleYetiNameGenerator3, 8, 10),
+            male=ComplexFactory(
+                *(MaleYetiNameGenerator1 for _ in range(0, 6)),
+                *(MaleYetiNameGenerator2 for _ in range(6, 8)),
+                *(MaleYetiNameGenerator3 for _ in range(8, 10)),
             ),
-            female=build_name_generator(
-                (FemaleYetiNameGenerator1, 0, 6),
-                (FemaleYetiNameGenerator2, 6, 8),
-                (FemaleYetiNameGenerator3, 8, 10),
+            female=ComplexFactory(
+                *(FemaleYetiNameGenerator1 for _ in range(0, 6)),
+                *(FemaleYetiNameGenerator2 for _ in range(6, 8)),
+                *(FemaleYetiNameGenerator3 for _ in range(8, 10)),
             ),
-            neutral=build_name_generator(
-                (YetiNameGenerator1, 0, 6),
-                (YetiNameGenerator2, 6, 8),
-                (YetiNameGenerator3, 8, 10),
+            neutral=ComplexFactory(
+                *(YetiNameGenerator1 for _ in range(0, 6)),
+                *(YetiNameGenerator2 for _ in range(6, 8)),
+                *(YetiNameGenerator3 for _ in range(8, 10)),
             ),
         )

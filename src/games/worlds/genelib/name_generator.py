@@ -68,13 +68,3 @@ class SyllablicGenerator(NameFactory):
 
     def name(self):
         return self.from_syllables(self.syllables(), self.template())
-
-
-def build_name_generator(*args):
-    name_generators = []
-    for arg in args:
-        name_generator, min_id, max_id = arg
-        for _ in range(min_id, max_id):
-            name_generators.append(name_generator)
-    return ComplexFactory(*name_generators)
-

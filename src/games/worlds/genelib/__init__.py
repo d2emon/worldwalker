@@ -1,5 +1,5 @@
 from .data_provider import DataProvider
-from .name_generator import ListNameGenerator, SyllablicGenerator, build_name_generator
+from .name_generator import ListNameGenerator, SyllablicGenerator
 
 
 def unique_with(*syllable_ids):

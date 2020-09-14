@@ -7,6 +7,7 @@ class Named:
 
         @classmethod
         def next(cls, *args, **kwargs):
+            cls.factory.factory_id = None
             return next(cls.factory)
 
     def __init__(self, name='', *args, **kwargs):
