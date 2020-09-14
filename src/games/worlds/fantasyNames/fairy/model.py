@@ -1,7 +1,5 @@
 from genelib.fng.named import Gendered
-from genelib.fng.namegen import GenderedFactory
-from .male import MaleNameFactory
-from .female import FemaleNameFactory
+from .name_factory import FairyNameFactory
 
 
 class Fairy(Gendered):
@@ -15,8 +13,4 @@ class Fairy(Gendered):
     are vicious, vile and evil. I've had quite a few name submissions with 'evil fairy' names, so you'll find those in
     here as well.
     """
-    class NameFactory(Gendered.NameFactory):
-        factory = GenderedFactory(
-            male=MaleNameFactory,
-            female=FemaleNameFactory,
-        )
+    name_factory = FairyNameFactory

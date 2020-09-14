@@ -1,6 +1,6 @@
 from genelib.fng import genders
-from genelib.fng.named import Gendered
-from genelib.fng.namegen import GenderedFactory, ComplexFactory
+from genelib.fng.namegen import GenderedFactory, ComplexFactory, PercentsFactory
+from genelib.fng.name_factory import GenderedNameFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator, unique_with
 
@@ -10,23 +10,6 @@ class BaseYetiNameGenerator(SyllablicGenerator):
     NAME_V2 = 2
     NAME_V3 = 3
     name_type = NAME_V1
-    default_providers = group_providers_from_list('yeti', [
-        'nm1',
-        'nm2',
-        'nm3',
-        'nm4',
-        'nm4b',
-        'nm5',
-        'nm6',
-        'nm7',
-        'nm8',
-        'nm9',
-        'nm10',
-        'nm11',
-        'nm12',
-        'nm13',
-        'nm14',
-    ])
     templates = {
         NAME_V1: (1, 2, 3, 4, 5),
         NAME_V2: (1, 2, 3, 4, 6, 7, 5),
@@ -35,6 +18,25 @@ class BaseYetiNameGenerator(SyllablicGenerator):
 
     min1 = 5
     min2 = 15
+
+    def __init__(self, providers=None):
+        super().__init__(providers or group_providers_from_list('yeti', [
+            'nm1',
+            'nm2',
+            'nm3',
+            'nm4',
+            'nm4b',
+            'nm5',
+            'nm6',
+            'nm7',
+            'nm8',
+            'nm9',
+            'nm10',
+            'nm11',
+            'nm12',
+            'nm13',
+            'nm14',
+        ]))
 
     @classmethod
     def template(cls):
@@ -154,34 +156,21 @@ class YetiNameGenerator3(YetiNameRulesV3, BaseNeutralYetiNameGenerator):
     pass
 
 
-class Yeti(Gendered):
-    """
-    Yetis are ape-like humanoids who supposedly inhabit the Himalayan regions and are part of popular folklore,
-    religion and mythologies. There are many variants in other regions too, like Bigfoot, the Yeren, the Yowie and so
-    on.
-
-    Yetis and similar creatures aren't often given personal names, in many cases because they're the only specimen
-    believed to exist. This made creating a name generator a little tricky, but since these creatures do inhabit
-    specific regions of the world I decided to take inspiration from those regions to create naming conventions. I
-    focused primarily on the Himalayan regions, but also took some inspiration for some of the lesser known variants of
-    'yeti' out there, like the before mentioned Yeren and Yowie.
-    """
-
-    class NameFactory(Gendered.NameFactory):
-        factory = GenderedFactory(
-            male=ComplexFactory(
-                *(MaleYetiNameGenerator1 for _ in range(0, 6)),
-                *(MaleYetiNameGenerator2 for _ in range(6, 8)),
-                *(MaleYetiNameGenerator3 for _ in range(8, 10)),
-            ),
-            female=ComplexFactory(
-                *(FemaleYetiNameGenerator1 for _ in range(0, 6)),
-                *(FemaleYetiNameGenerator2 for _ in range(6, 8)),
-                *(FemaleYetiNameGenerator3 for _ in range(8, 10)),
-            ),
-            neutral=ComplexFactory(
-                *(YetiNameGenerator1 for _ in range(0, 6)),
-                *(YetiNameGenerator2 for _ in range(6, 8)),
-                *(YetiNameGenerator3 for _ in range(8, 10)),
-            ),
-        )
+class NameFactory(GenderedNameFactory):
+    factory = GenderedFactory(
+        male=PercentsFactory({
+            60: MaleYetiNameGenerator1,
+            80: MaleYetiNameGenerator2,
+            100: MaleYetiNameGenerator3,
+        }),
+        female=PercentsFactory({
+            60: FemaleYetiNameGenerator1,
+            80: FemaleYetiNameGenerator2,
+            100: FemaleYetiNameGenerator3,
+        }),
+        neutral=PercentsFactory({
+            60: YetiNameGenerator1,
+            80: YetiNameGenerator2,
+            100: YetiNameGenerator3,
+        }),
+    )

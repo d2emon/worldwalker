@@ -1,5 +1,5 @@
 FAIRY_DATA = {
-    'namesMale': [
+    'names_male': [
         "Acorn", "Aed", "Aeden", "Alaneo", "Albedo", "Ali", "Almond", "Aloha", "Anthurium", "Aodh", "Aphid", "Apogee",
         "Aqua", "Ash", "Astro", "Aven", "Avo", "Axis", "Badger", "Barley", "Basil", "Bear", "Berry", "Bim", "Birch",
         "Blathnat", "Blaze", "Bracken", "Bramble", "Briar", "Brock", "Bud", "Bumble", "Calico", "Canyon", "Caraway",
@@ -20,7 +20,7 @@ FAIRY_DATA = {
         "Thistle", "Tidal", "Tiger", "Timber", "Timothy", "Tiny", "Tori", "Trevan", "Trumpet", "Turnip", "Twig",
         "Walnut", "Willow", "Winnie", "Wolf", "Woods", "Zephyr"
     ],
-    'namesFemale': [
+    'names_female': [
         "Pervinca", "Hiedra", "Vinca", "Dandelia", "Dandelion", "Clavelina", "Clavellina", "Vulparia", "Luparia",
         "Belladonna", "Passiflora", "Pimpinella", "Eupherbia", "Poinsetia", "Rafflesia", "Phyre", "Abeyance", "Abigail",
         "Abyss", "Acacia", "Adriata", "Alcyone", "Alexa", "Alexandra", "Alexi", "Alexia", "Ali", "Alina", "Allium",
@@ -79,7 +79,7 @@ FAIRY_DATA = {
         "Wind", "Windy", "Winnie", "Winter", "Wispa", "Woods", "Wrassey", "Wren", "Xenops", "Yasmine", "Yavia", "Yitri",
         "Yucca"
     ],
-    'namesFamily': [
+    'names_family': [
         "Air", "Almond", "Amber", "Apple", "Aspen", "Beauty", "Beech", "Better", "Bird", "Bitter", "Black", "Blue",
         "Bramble", "Briar", "Bright", "Broom", "Bubble", "Bumble", "Candle", "Carrot", "Cat", "Cedar", "Chilly",
         "Cinnamon", "Citrus", "Cloud", "Cloudy", "Cocoa", "Copper", "Cotton", "Cozy", "Cricket", "Crystal", "Cute",
@@ -95,7 +95,7 @@ FAIRY_DATA = {
         "Swift", "Tangle", "Thunder", "Tiger", "Toad", "Tree", "Tulip", "Tumble", "Twinkle", "Twisty", "Vanilla",
         "Water", "Turtle", "Whiffle", "White", "Wild", "Willow", "Windy", "Winter", "Wonder", "Wood", "Wrinkle"
     ],
-    'namesFamily2': [
+    'names_family_2': [
         "bead", "beam", "bee", "bay", "bees", "bell", "belle", "berry", "bird", "dove", "bite", "bloom", "blossom",
         "boots", "bottom", "breath", "breeze", "briar", "bud", "bug", "bush", "butter", "button", "cliff", "cloud",
         "clove", "clover", "cone", "creek", "crystal", "cup", "curl", "dale", "dance", "dash", "dew", "drop", "dust",

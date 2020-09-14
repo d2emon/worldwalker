@@ -1,7 +1,5 @@
 from genelib.fng.named import Gendered
-from genelib.fng.namegen import GenderedFactory
-from .male import MaleNameFactory
-from .female import FemaleNameFactory
+from .name_factory import WitchNameFactory
 
 
 class Witch(Gendered):
@@ -15,8 +13,4 @@ class Witch(Gendered):
     names in this generator focus on the more regular sounding names, rather than the more fantasy-themed names you'll
     find in some of the other related name generators.
     """
-    class NameFactory(Gendered.NameFactory):
-        factory = GenderedFactory(
-            male=MaleNameFactory,
-            female=FemaleNameFactory,
-        )
+    name_factory = WitchNameFactory

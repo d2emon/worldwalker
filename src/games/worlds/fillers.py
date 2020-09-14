@@ -13,7 +13,7 @@ def show_names(decorated):
 
 @show_names
 def fill(item_class, *args, **kwargs):
-    return item_class.generate(*args, **kwargs)
+    return item_class.factory(*args, **kwargs)
 
 
 @show_names

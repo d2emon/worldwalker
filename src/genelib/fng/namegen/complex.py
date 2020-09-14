@@ -1,7 +1,8 @@
 import random
+from .base import BaseNamedFactory
 
 
-class ComplexFactory:
+class ComplexFactory(BaseNamedFactory):
     class Cache:
         def __init__(self):
             self.__items = {}
@@ -42,10 +43,4 @@ class ComplexFactory:
         return self.get(self.factory_id)
 
     def get(self, factory_id):
-        return self.__cache.get_item(self.factories.get(factory_id)) if factory_id else None
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return next(self.factory) if self.factory else None
+        return self.__cache.get_item(self.factories.get(factory_id))

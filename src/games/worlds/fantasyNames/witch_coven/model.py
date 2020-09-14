@@ -1,6 +1,5 @@
 from genelib.fng.named import Named
-from genelib.fng.namegen import ComplexFactory
-from .name import NameFactory1, NameFactory2
+from .name_factory import WitchCovenNameFactory
 
 
 class WitchCoven(Named):
@@ -13,9 +12,4 @@ class WitchCoven(Named):
     themes for the names in this generator. A coven's name is usually a very personal choice however, but hopefully
     this name generator will be helpful nonetheless.
     """
-
-    class NameFactory(Named.NameFactory):
-        factory = ComplexFactory(
-            *(NameFactory1 for _ in range(0, 5)),
-            *(NameFactory2 for _ in range(5, 10)),
-        )
+    name_factory = WitchCovenNameFactory

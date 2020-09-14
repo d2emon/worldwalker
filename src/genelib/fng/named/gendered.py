@@ -1,18 +1,11 @@
-import random
-from ..namegen import GenderedFactory
+from .. import genders
+from ..name_factory import GenderedNameFactory
 from .named import Named
 
 
 class Gendered(Named):
-    class NameFactory(Named.NameFactory):
-        factory = GenderedFactory()
+    name_factory = GenderedNameFactory
 
-        @classmethod
-        def __name_factory(cls, gender):
-            factories = cls.factory.get(gender) or [None]
-            return random.choice(factories)
-
-        @classmethod
-        def next(cls, gender, *args, **kwargs):
-            cls.factory.gender = gender
-            return next(cls.factory)
+    def __init__(self, name='', gender=genders.NEUTRAL, *args, **kwargs):
+        super().__init__(name, *args, **kwargs)
+        self.gender = gender

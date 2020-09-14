@@ -1,25 +1,22 @@
-from genelib.fng.named import Named
-from genelib.fng.namegen import NameFactory, ComplexFactory
+from genelib.fng.namegen import NamedFactory, ComplexFactory, PercentsFactory
+from genelib.fng.name_factory import NameFactory as BaseNameFactory
 from ..database.provider import group_providers_from_list
 
 
-DATABASE = 'world-defender'
-PARTS = [
-    'nm1',
-    'nm2',  # nm2.splice(rnd2, 1)
-    'nm3',  # nm3.splice(rnd, 1)
-    'nm4',
-]
-
-
-class BaseWorldDefenderNameGenerator(NameFactory):
+class BaseWorldDefenderNameGenerator(NamedFactory):
     NAME_V1 = 1
     NAME_V2 = 2
     NAME_V3 = 3
     NAME_V4 = 4
     name_type = NAME_V1
-    default_providers = group_providers_from_list(DATABASE, PARTS)
-    used_parts = PARTS
+
+    def __init__(self, providers=None):
+        super().__init__(providers or group_providers_from_list('world-defender', [
+            'nm1',
+            'nm2',  # nm2.splice(rnd2, 1)
+            'nm3',  # nm3.splice(rnd, 1)
+            'nm4',
+        ]))
 
 
 class WorldDefenderNameGenerator1(BaseWorldDefenderNameGenerator):
@@ -42,22 +39,10 @@ class WorldDefenderNameGenerator4(BaseWorldDefenderNameGenerator):
     template = "The {nm3} {nm1} {nm2}"
 
 
-class WorldDefender(Named):
-    """
-    There are all sorts of world defenders of course. Godly beings with vast powers, fighters who've sworn to protect
-    all life, or even just a humble activist trying to make the world a better place. While this generator generally
-    focuses more on the fantasy themed world defenders, the names in this generator could fit every kind of world
-    defender.
-
-    The names in this generator, which could arguably simply be called titles, come in the forms of names like 'The
-    World Warden', 'Keeper of Life', and 'The Ancient Shepherd'. Some names will fit certain types of defenders better
-    than others, but there's plenty to pick from, so you're bound to find a name that suits your needs.
-    """
-
-    class NameFactory(Named.NameFactory):
-        factory = ComplexFactory(
-            *(WorldDefenderNameGenerator1 for _ in range(0, 3)),
-            *(WorldDefenderNameGenerator2 for _ in range(3, 6)),
-            *(WorldDefenderNameGenerator3 for _ in range(6, 8)),
-            *(WorldDefenderNameGenerator4 for _ in range(8, 10)),
-        )
+class NameFactory(BaseNameFactory):
+    factory = PercentsFactory({
+        30: WorldDefenderNameGenerator1,
+        60: WorldDefenderNameGenerator2,
+        80: WorldDefenderNameGenerator3,
+        100: WorldDefenderNameGenerator4,
+    })

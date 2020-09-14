@@ -1,13 +1,14 @@
 from .fantasyNames.fairy import Fairy
 from .fantasyNames.witch import Witch
-from games.worlds.fantasyNames.witch_coven.witch_coven import WitchCoven
-from .fantasyNames.wizard import Wizard
-from .fantasyNames.worldDefender import WorldDefender
-from .fantasyNames.worldDestroyer import WorldDestroyer
-from .fantasyNames.wyvern import Wyvern
-from .fantasyNames.yeti import Yeti
-from .fantasyNames.zaratan import Zaratan
-from .fantasyNames.zombie import Zombie
+from .fantasyNames.witch_coven import WitchCoven
+# from .fantasyNames.wizard import Wizard
+# from .fantasyNames.worldDefender import WorldDefender
+# from .fantasyNames.worldDestroyer import WorldDestroyer
+# from .fantasyNames.wyvern import Wyvern
+# from .fantasyNames.yeti import Yeti
+# from .fantasyNames.zaratan import Zaratan
+# from .fantasyNames.zombie import Zombie
+from .fantasyNames.models import Wizard, WorldDefender, WorldDestroyer, Wyvern, Yeti, Zaratan, Zombie
 
 from .descr.realm import Realm
 from .descr.weapons import Shotgun

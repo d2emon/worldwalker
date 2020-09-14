@@ -1,6 +1,6 @@
 from genelib.fng import genders
-from genelib.fng.named import Gendered
 from genelib.fng.namegen import ComplexFactory, GenderedFactory
+from genelib.fng.name_factory import GenderedNameFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator
 
@@ -10,24 +10,26 @@ class BaseWizardNameGenerator(SyllablicGenerator):
     NAME_V2 = 2
     NAME_V3 = 3
     name_type = NAME_V1
-    default_providers = group_providers_from_list('wizard', [
-        'nm1',
-        'nm2',
-        'nm3',
-        'nm4',
-        'nm5',
-        'nm6',
-        'nm7',
-        'nm8',
-        'nm9',
-        'nm10',
-        'nm11',
-    ])
     templates = {
         NAME_V1: (5, 6),
         NAME_V2: (2, 5, 6),
         NAME_V3: (1, 2, 5, 6),
     }
+
+    def __init__(self, providers=None):
+        super().__init__(providers or group_providers_from_list('wizard', [
+            'nm1',
+            'nm2',
+            'nm3',
+            'nm4',
+            'nm5',
+            'nm6',
+            'nm7',
+            'nm8',
+            'nm9',
+            'nm10',
+            'nm11',
+        ]))
 
     @classmethod
     def template(cls):
@@ -138,33 +140,21 @@ class WizardNameGenerator3(WizardNameRulesV3, BaseNeutralWizardNameGenerator):
     })
 
 
-class Wizard(Gendered):
-    """
-    Wizard names vary greatly from one work of fiction to another. Some choose to stick more to real names, like many
-    names in Harry Potter, while others stick to fantasy-style names, like in Lord of the Rings.
-
-    This generator generally sticks to the fantasy-style names, as there are plenty of name generators for real names.
-    However, there are plenty of names which could also be used as a fairly unique real name.
-
-    I've also tried to make sure many different types of fantasy styles are part of this generator, from the more
-    easily pronounceable friendly names, to the less pronounceable, demonic or evil sounding names.
-    """
-
-    class NameFactory(Gendered.NameFactory):
-        factory = GenderedFactory(
-            male=ComplexFactory(
-                MaleWizardNameGenerator1,
-                MaleWizardNameGenerator2,
-                MaleWizardNameGenerator3,
-            ),
-            female=ComplexFactory(
-                FemaleWizardNameGenerator1,
-                FemaleWizardNameGenerator2,
-                FemaleWizardNameGenerator3,
-            ),
-            neutral=ComplexFactory(
-                WizardNameGenerator1,
-                WizardNameGenerator2,
-                WizardNameGenerator3,
-            ),
-        )
+class NameFactory(GenderedNameFactory):
+    factory = GenderedFactory(
+        male=ComplexFactory(
+            MaleWizardNameGenerator1,
+            MaleWizardNameGenerator2,
+            MaleWizardNameGenerator3,
+        ),
+        female=ComplexFactory(
+            FemaleWizardNameGenerator1,
+            FemaleWizardNameGenerator2,
+            FemaleWizardNameGenerator3,
+        ),
+        neutral=ComplexFactory(
+            WizardNameGenerator1,
+            WizardNameGenerator2,
+            WizardNameGenerator3,
+        ),
+    )

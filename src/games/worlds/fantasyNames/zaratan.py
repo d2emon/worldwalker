@@ -1,5 +1,5 @@
-from genelib.fng.named import Named
-from genelib.fng.namegen import ComplexFactory
+from genelib.fng.namegen import ComplexFactory, PercentsFactory
+from genelib.fng.name_factory import NameFactory as BaseNameFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
 from games.worlds.genelib import SyllablicGenerator, unique_with
 
@@ -8,14 +8,6 @@ class BaseZaratanNameGenerator(SyllablicGenerator):
     NAME_V1 = 1
     NAME_V2 = 2
     name_type = NAME_V1
-    default_providers = group_providers_from_list('zaratan', [
-        'nm1',
-        'nm2',
-        'nm3',
-        'nm4',
-        'nm5',
-        'nm6',
-    ])
     syllable_providers = group_providers_from_dict('zaratan', {
         1: 'nm1',
         2: 'nm2',
@@ -30,6 +22,16 @@ class BaseZaratanNameGenerator(SyllablicGenerator):
         NAME_V1: (1, 2, 3, 4, 5),
         NAME_V2: (1, 2, 3, 4, 6, 7, 5),
     }
+
+    def __init__(self, providers=None):
+        super().__init__(providers or group_providers_from_list('zaratan', [
+            'nm1',
+            'nm2',
+            'nm3',
+            'nm4',
+            'nm5',
+            'nm6',
+        ]))
 
     @classmethod
     def template(cls):
@@ -52,25 +54,8 @@ class ZaratanNameGenerator2(BaseZaratanNameGenerator):
         return rules
 
 
-class Zaratan(Named):
-    """
-    Zaratan are giant sea turtles, big enough to support a small island ecosystem on their shells. As a result they're
-    often mistaken for islands, especially when they're in the middle of the ocean, and their movement is difficult to
-    detect.
-
-    Zaratan are common in many works of fiction, but vary a lot in terms of personality, purpose, and any meaning they
-    may have. In some cases they're wise, in some they're aggressive, and in others they might simply be docile beings
-    swimming across the oceans. Unfortunately there wasn't much to work with in terms of names, but the term zaratan
-    does seem to come from Spanish.
-
-    For this generator I mostly focused on bigger sounding names, often with more melodic and gentle tones. But I also
-    included Spanish influences, as well as some other influences for a wider variety of possible names. The names will
-    generally still have the same large and docile feel to them, but there's plenty to pick from on both ends of the
-    spectrum.
-    """
-
-    class NameFactory(Named.NameFactory):
-        factory = ComplexFactory(
-            *(ZaratanNameGenerator1 for _ in range(0, 5)),
-            *(ZaratanNameGenerator2 for _ in range(5, 10)),
-        )
+class NameFactory(BaseNameFactory):
+    factory = PercentsFactory({
+        50: ZaratanNameGenerator1,
+        100: ZaratanNameGenerator2,
+    })

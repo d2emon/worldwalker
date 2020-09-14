@@ -1,25 +1,22 @@
-from genelib.fng.named import Named
-from genelib.fng.namegen import NameFactory, ComplexFactory
+from genelib.fng.namegen import NamedFactory, ComplexFactory, PercentsFactory
+from genelib.fng.name_factory import NameFactory as BaseNameFactory
 from ..database.provider import group_providers_from_list
 
 
-DATABASE = 'world-destroyer'
-PARTS = [
-    'nm1',
-    'nm2',  # nm2.splice(rnd2, 1)
-    'nm3',  # nm3.splice(rnd, 1)
-    'nm4',
-]
-
-
-class BaseWorldDestroyerNameGenerator(NameFactory):
+class BaseWorldDestroyerNameGenerator(NamedFactory):
     NAME_V1 = 1
     NAME_V2 = 2
     NAME_V3 = 3
     NAME_V4 = 4
     name_type = NAME_V1
-    default_providers = group_providers_from_list(DATABASE, PARTS)
-    used_parts = PARTS
+
+    def __init__(self, providers=None):
+        super().__init__(providers or group_providers_from_list('world-destroyer', [
+            'nm1',
+            'nm2',  # nm2.splice(rnd2, 1)
+            'nm3',  # nm3.splice(rnd, 1)
+            'nm4',
+        ]))
 
 
 class WorldDestroyerNameGenerator1(BaseWorldDestroyerNameGenerator):
@@ -42,21 +39,10 @@ class WorldDestroyerNameGenerator4(BaseWorldDestroyerNameGenerator):
     template = "The {nm3} {nm1} {nm2}"
 
 
-class WorldDestroyer(Named):
-    """
-    World destroyers come in many different shapes and sizes, from a relatively small creature with (un)godly powers to
-    massive, planet-sized beings who consume entire galaxies. This name generator is aimed at all of those and anything
-    in between, though, to some extent, you could see the names in this generator as titles, rather than as names.
-    You'll find results like 'Ruiner of Realms', 'The Grand Consumer' and 'Undoer of Life'.
-
-    If you combine them you could end up with a long sequence of titles, similar to how royalty sometimes has multiple
-    titles, but in a more gruesome way when it comes to world destroyers.
-    """
-
-    class NameFactory(Named.NameFactory):
-        factory = ComplexFactory(
-            *(WorldDestroyerNameGenerator1 for _ in range(0, 3)),
-            *(WorldDestroyerNameGenerator2 for _ in range(3, 6)),
-            *(WorldDestroyerNameGenerator3 for _ in range(6, 8)),
-            *(WorldDestroyerNameGenerator4 for _ in range(8, 10)),
-        )
+class NameFactory(BaseNameFactory):
+    factory = PercentsFactory({
+        30: WorldDestroyerNameGenerator1,
+        60: WorldDestroyerNameGenerator2,
+        80: WorldDestroyerNameGenerator3,
+        100: WorldDestroyerNameGenerator4,
+    })

@@ -1,12 +1,11 @@
-from genelib.fng.namegen import ComplexFactory, NameFactory
+from genelib.fng.namegen import ComplexFactory, NamedFactory
 from .data_provider import DataProvider
 
 
-class ListNameGenerator(NameFactory):
+class ListNameGenerator(NamedFactory):
     default_provider = DataProvider([])
 
     template = "{provider}"
-    used_parts = ["provider"]
 
     def __init__(self, provider=None):
         provider = provider or self.default_provider
@@ -17,11 +16,11 @@ class SyllableGenerator(ListNameGenerator):
     def __init__(self, provider):
         super().__init__(provider)
 
-    def name(self):
+    def name(self, **kwargs):
         return next(self.data['provider'])
 
 
-class SyllablicGenerator(NameFactory):
+class SyllablicGenerator(NamedFactory):
     syllable_providers = dict()
     GLUE = ""
 
@@ -66,5 +65,5 @@ class SyllablicGenerator(NameFactory):
             str(syllables[syllable_id]) for syllable_id in order
         ])
 
-    def name(self):
+    def name(self, **kwargs):
         return self.from_syllables(self.syllables(), self.template())

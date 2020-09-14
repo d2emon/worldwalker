@@ -1,14 +1,8 @@
-from ..namegen import ComplexFactory
+from .. import genders
 
 
 class Named:
-    class NameFactory:
-        factory = ComplexFactory()
-
-        @classmethod
-        def next(cls, *args, **kwargs):
-            cls.factory.factory_id = None
-            return next(cls.factory)
+    name_factory = None
 
     def __init__(self, name='', *args, **kwargs):
         self.name = str(name)
@@ -21,5 +15,9 @@ class Named:
         return self.title
 
     @classmethod
-    def generate(cls, *args, **kwargs):
-        return cls(cls.NameFactory.next(*args, **kwargs), *args, **kwargs)
+    def factory(cls, *args, **kwargs):
+        name = cls.name_factory.next(*args, **kwargs)
+        return cls(
+            name=name.name if name else '',
+            gender=name.gender if name else genders.NEUTRAL,
+        )

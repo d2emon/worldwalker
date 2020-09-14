@@ -1,6 +1,6 @@
 from genelib.fng import genders
-from genelib.fng.named import Gendered
-from genelib.fng.namegen import GenderedFactory, ComplexFactory
+from genelib.fng.namegen import GenderedFactory, ComplexFactory, PercentsFactory
+from genelib.fng.name_factory import GenderedNameFactory
 from ..database.provider import group_providers_from_list, group_providers_from_dict
 from ..genelib import SyllablicGenerator, unique_with
 
@@ -9,27 +9,29 @@ class BaseWyvernNameGenerator(SyllablicGenerator):
     NAME_V1 = 1
     NAME_V2 = 2
     name_type = NAME_V1
-    default_providers = group_providers_from_list('wyvern', [
-        'nm1',
-        'nm2',
-        'nm3',
-        'nm4',
-        'nm5',
-        'nm6',
-        'nm7',
-        'nm8',
-        'nm9',
-        'nm10',
-        'nm11',
-        'nm12',
-        'nm13',
-        'nm14',
-        'nm15',
-    ])
     templates = {
         NAME_V1: (1, 2, 3, 4, 5),
         NAME_V2: (1, 2, 3, 4, 6, 7, 5),
     }
+
+    def __init__(self, providers=None):
+        super().__init__(providers or group_providers_from_list('wyvern', [
+            'nm1',
+            'nm2',
+            'nm3',
+            'nm4',
+            'nm5',
+            'nm6',
+            'nm7',
+            'nm8',
+            'nm9',
+            'nm10',
+            'nm11',
+            'nm12',
+            'nm13',
+            'nm14',
+            'nm15',
+        ]))
 
     @classmethod
     def template(cls):
@@ -117,30 +119,18 @@ class WyvernNameGenerator2(WyvernNameRulesV2, BaseNeutralWyvernNameGenerator):
     pass
 
 
-class Wyvern(Gendered):
-    """
-    Wyverns are creatures similar to dragons, except they only have 2 legs and usually a barbed tail. Wyverns usually
-    also don't breathe fire either, but their bite is venemous. However, all these details vary from work of fiction to
-    work of fiction.
-
-    As far as names go, wyvern names tend to be far more vicious sounding than their dragon counterparts, perhaps
-    because wyverns are often depicted as less intelligent and more animalistic and aggressive or perhaps for a
-    different reason entirely. Either way I focused on these kinds of names in this generator. If you are looking for
-    more melodic names the dragon name generator is a great place to start.
-    """
-
-    class NameFactory(Gendered.NameFactory):
-        factory = GenderedFactory(
-            male=ComplexFactory(
-                *(MaleWyvernNameGenerator1 for _ in range(0, 7)),
-                *(MaleWyvernNameGenerator2 for _ in range(7, 10)),
-            ),
-            female=ComplexFactory(
-                *(FemaleWyvernNameGenerator1 for _ in range(0, 7)),
-                *(FemaleWyvernNameGenerator2 for _ in range(7, 10)),
-            ),
-            neutral=ComplexFactory(
-                *(WyvernNameGenerator1 for _ in range(0, 7)),
-                *(WyvernNameGenerator2 for _ in range(7, 10)),
-            ),
-        )
+class NameFactory(GenderedNameFactory):
+    factory = GenderedFactory(
+        male=PercentsFactory({
+            70: MaleWyvernNameGenerator1,
+            100: MaleWyvernNameGenerator2,
+        }),
+        female=PercentsFactory({
+            70: FemaleWyvernNameGenerator1,
+            100: FemaleWyvernNameGenerator2,
+        }),
+        neutral=PercentsFactory({
+            70: WyvernNameGenerator1,
+            100: WyvernNameGenerator2,
+        }),
+    )
