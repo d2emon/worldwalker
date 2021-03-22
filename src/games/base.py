@@ -1,9 +1,9 @@
 import pygame
 from windows import states
-from .window import Window
+from .game import Game
 
 
-class GameWindow(Window):
+class GameWindow(Game):
     def __init__(
         self,
         caption='Game',
@@ -12,9 +12,11 @@ class GameWindow(Window):
         **config,
     ):
         super().__init__(
-            caption=caption,
-            fps=fps,
-            size=size,
+            window_config={
+                'caption': caption,
+                'fps': fps,
+                'size': size,
+            },
         )
         self.config = config
         self.events.update({
@@ -30,12 +32,13 @@ class GameWindow(Window):
         self.objects = []
         self.screen = None
 
-    def set_screen(self, screen, state=None):
+    def set_screen(self, screen, state=None, events=None):
         if state is not None:
             self.state = state
 
         self.screen = screen
-        self.events.events.update(self.screen.events.events)
+        screen.events.listeners.append(self.events)
+        self.screen.events.update(events or {})
 
     @property
     def is_showing(self):

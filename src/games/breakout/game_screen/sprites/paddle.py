@@ -1,5 +1,7 @@
 import pygame
 from windows.controls.moving import Moving
+from games.breakout.intersect import intersect
+from games.breakout.game_screen.sprites.ball import Ball
 
 
 class Paddle(Moving):
@@ -17,10 +19,20 @@ class Paddle(Moving):
         self.image = self.draw()
         self.rect.center = pos or self.rect.center
 
+        self.state = self.States.STAND
+        self.ball = None
+        self.__base_speed = base_speed
+
         self.lives = 5
         self.score = 0
-        self.state = self.States.STAND
-        self.__base_speed = base_speed
+
+    @property
+    def has_started(self):
+        return self.ball is not None
+
+    @property
+    def game_over(self):
+        return self.lives <= 0
 
     @classmethod
     def draw(cls):
@@ -37,10 +49,6 @@ class Paddle(Moving):
         else:
             return 0, 0
 
-    @property
-    def game_over(self):
-        return self.lives <= 0
-
     def move_left(self):
         self.state = self.States.LEFT
 
@@ -50,5 +58,24 @@ class Paddle(Moving):
     def stop(self):
         self.state = self.States.STAND
 
+    def start(self, pos):
+        self.ball = Ball(*pos)
+
     def loose(self):
+        # self.sound_effects['paddle_hit'].play()
         self.lives -= 1
+        self.ball = None
+
+    def update(self, *args):
+        super().update(*args)
+
+        if self.ball is None:
+            return
+
+        if self.ball.fallen:
+            return self.loose()
+
+        edge = intersect(self.ball.rect, self.rect)
+        if edge is not None:
+            # self.sound_effects['paddle_hit'].play()
+            self.ball.hit_paddle(edge, self.speed)

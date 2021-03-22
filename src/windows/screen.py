@@ -20,8 +20,8 @@ class Screen(pygame.Surface):
     def load_image(self):
         return pygame.image.load(self.BACKGROUND_IMAGE)
 
-    def update(self):
-        self.sprites.update()
+    def update(self, *args):
+        self.sprites.update(*args)
 
     def draw(self):
         self.blit(self.image, self.pos)

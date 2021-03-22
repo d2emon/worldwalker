@@ -3,7 +3,8 @@ from games.breakout import Breakout
 
 
 def main():
-    Breakout().run()
+    game = Breakout()
+    game()
 
 
 if __name__ == "__main__":
