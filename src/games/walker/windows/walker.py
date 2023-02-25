@@ -1,13 +1,13 @@
 import pygame
 import config
-from windows.windows import Window
+from utils.game import Game
 from player import Player
 from bgmap import BgMap
 from background import Background
 from grid import MapGrid
 
 
-class WalkerWindow(Window):
+class WalkerWindow(Game):
     CONTROLS = {
         pygame.K_LEFT: (-1, None),
         pygame.K_RIGHT: (1, None),
@@ -23,8 +23,8 @@ class WalkerWindow(Window):
             size=config.SCREEN.SIZE,
         )
 
-        self.events[pygame.KEYDOWN] = self.on_key_down
-        self.events[pygame.KEYUP] = self.on_key_up
+        # self.events[pygame.KEYDOWN] = self.on_key_down
+        # self.events[pygame.KEYUP] = self.on_key_up
 
         self.screen = None
 
@@ -40,7 +40,7 @@ class WalkerWindow(Window):
     def on_key_down(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
-            self.close()
+            self.playing = True
         for key in self.CONTROLS.keys():
             if keys[key]:
                 c = self.CONTROLS[key]
@@ -65,14 +65,14 @@ class WalkerWindow(Window):
                     self.y_vel = 0
 
     def on_init(self):
-        # self.screen = MainScreen(self.surface.get_rect())
-        # self.events.update(self.screen.events)
-        # self.events[self.DRAW] = self.on_draw
+        # # self.screen = MainScreen(self.surface.get_rect())
+        # # self.events.update(self.screen.events)
+        # # self.events[self.DRAW] = self.on_draw
 
         pygame.font.init()
         self.my_font = pygame.font.SysFont('Sans', 16)
 
-        self.bg = Background((self.surface.get_width(), self.surface.get_height()))
+        self.bg = Background((self.window.get_width(), self.window.get_height()))
 
         self.game_map = BgMap(*config.MAP_POS)
         self.hero = Player(*config.PLAYER_POS)
@@ -82,16 +82,16 @@ class WalkerWindow(Window):
     def on_draw(self):
         # self.surface.blit(self.screen, (0, 0))
 
-        self.bg.draw(self.surface)
+        self.bg.draw(self.window)
 
         self.game_map.update(self.x_vel, self.y_vel)
-        self.game_map.draw(self.surface)
+        self.game_map.draw(self.window)
 
         if self.show_grid:
-            self.map_grid.draw(self.surface)
+            self.map_grid.draw(self.window)
 
-        self.hero.draw(self.surface)
+        self.hero.draw(self.window)
 
         coords = "{}, {}".format(self.game_map.x, self.game_map.y)
         text_surface = self.my_font.render(coords, False, (0, 0, 0))
-        self.surface.blit(text_surface, (0, 0))
+        self.window.blit(text_surface, (0, 0))

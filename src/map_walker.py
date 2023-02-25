@@ -1,11 +1,9 @@
-from games.map_walk.windows.map_walk import MapWalkWindow
+from games.map_walk import MapWalk
 
 
 def main():
-    window = MapWalkWindow()
-    window.show()
-    while window.is_showing:
-        window.update()
+    window = MapWalk()
+    window()
 
 
 if __name__ == '__main__':

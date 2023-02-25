@@ -1,4 +1,4 @@
-from game.events import GameEvents
+from events.game import GameEvents
 
 KEY_DOWN = GameEvents.KEY_DOWN
 KEY_UP = GameEvents.KEY_UP

@@ -1,5 +1,5 @@
 import pygame
-from events.window import WindowEvents
+from .window import WindowEvents
 
 
 class GameEvents(WindowEvents):
@@ -31,7 +31,7 @@ class GameEvents(WindowEvents):
             pygame.MOUSEBUTTONUP: self.on_key_event,
             pygame.MOUSEMOTION: self.on_key_event,
         })
-        self.events.update(events or {})
+        self.update(events or {})
 
     # Events
     def on_key_event(self, event_type, *args, **kwargs):
@@ -42,8 +42,7 @@ class GameEvents(WindowEvents):
             keys=pygame.key.get_pressed(),
         )
 
-    def on_mouse_event(self, event_type, *args, **kwargs):
-        event = kwargs.get('event')
+    def on_mouse_event(self, event_type, *args, event=None, **kwargs):
         self.emit(
             self.__EVENT_MAP.get(event_type),
             *args,

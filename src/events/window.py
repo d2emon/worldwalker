@@ -13,5 +13,5 @@ class WindowEvents(Events):
         for event in events:
             self.emit(event.type, event=event)
 
-        # self.emit(self.UPDATE)
-        # self.emit(self.DRAW)
+        self.emit(self.UPDATE)
+        self.emit(self.DRAW)

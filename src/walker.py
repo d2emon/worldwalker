@@ -4,7 +4,7 @@ from games.walker.windows.walker import WalkerWindow
 
 def main():
     window = WalkerWindow()
-    window.run()
+    window()
 
 
 if __name__ == "__main__":
