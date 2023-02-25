@@ -7,6 +7,7 @@ class Events:
         for listener in self.listeners:
             listener.emit(event_type, *args, **kwargs)
 
+        print(event_type, self.events)
         handler = self.events.get(event_type)
         if not handler:
             return

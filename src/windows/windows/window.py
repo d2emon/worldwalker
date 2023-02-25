@@ -3,6 +3,11 @@ from game.events import GameEvents
 
 
 class Window:
+    INIT = GameEvents.INIT
+    DRAW = GameEvents.DRAW
+    KEYDOWN = GameEvents.KEY_DOWN
+    UPDATE = GameEvents.UPDATE
+
     def __init__(
         self,
         caption='Game',
@@ -28,6 +33,11 @@ class Window:
     @property
     def game_events(self):
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                print ("QUIT")
+                print ("QUIT")
+                print ("QUIT")
+                print (event.type)
             yield event
 
     def show(self):
