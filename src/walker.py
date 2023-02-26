@@ -1,10 +1,10 @@
 #! /usr/bin/python
-from games.walker.windows.walker import WalkerWindow
+from games.walker import Walker
 
 
 def main():
-    window = WalkerWindow()
-    window()
+    game = Walker()
+    game()
 
 
 if __name__ == "__main__":

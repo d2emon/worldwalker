@@ -38,9 +38,9 @@ class Game:
         self.caption = caption
         self.clock = pygame.time.Clock()
         self.events = GameEvents({
-            GameEvents.DRAW: self.draw,
+            # GameEvents.DRAW: self.draw,
             GameEvents.QUIT: self.quit,
-            GameEvents.UPDATE: self.update,
+            # GameEvents.UPDATE: self.update,
         })
         self.fps = fps
         self.__playing = False
@@ -92,8 +92,7 @@ class Game:
 
         while self.playing:
             self.events.process_events(event for event in pygame.event.get())
-            # self.update()
-            # self.draw()
-            self.clock.tick(self.fps)
+            self.update()
+            self.draw()
 
         # To perform exit

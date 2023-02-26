@@ -113,7 +113,7 @@ class MapSprite(Sprite):
             y (float): Moves by y.
         """
         self.viewpoint = self.viewpoint.move(x * self.__step, y * self.__step)
-        print(x, y, self.viewpoint.center)
+        # print(x, y, self.viewpoint.center)
 
     def update(self, *args, **kwargs):
         """Update map image."""
