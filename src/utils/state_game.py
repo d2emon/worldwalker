@@ -25,8 +25,8 @@ class StateGame(Game):
         self.config = config
         self.events.update({
             self.events.INIT: self.on_init,
-            # self.events.UPDATE: self.on_update,
-            # self.events.DRAW: self.on_draw,
+            self.events.UPDATE: self.on_update,
+            self.events.DRAW: self.on_draw,
             self.events.KEY_UP: self.on_key_up,
             self.events.KEY_DOWN: self.on_key_down,
         })
@@ -36,22 +36,28 @@ class StateGame(Game):
         self.state = self.STATE_INITIALIZATION
         self.objects = []
 
-    def set_screen(self, screen, state=None):
+    def set_screen(self, screen, state=None, events=None):
         if state is not None:
             self.state = state
 
         self.screen = screen
         self.events.update(self.screen.events.handlers)
+        if events:
+            self.events.update(events)
+        # screen.events.listeners.append(self.events)
+        self.events.listeners.append(screen.events)
+
+        self.events.update(screen.events.handlers)
 
     @property
     def playing(self):
         return self.state != self.STATE_EXIT
 
-    def game_over(self):
-        self.state = self.STATE_EXIT
-
-    def game_start(self):
+    def start(self):
         self.state = self.STATE_PLAYING
+
+    def stop(self):
+        self.state = self.STATE_EXIT
 
     def game_win(self):
         self.state = self.STATE_WIN
@@ -59,7 +65,7 @@ class StateGame(Game):
     # Events
 
     def on_close(self, *args, **kwargs):
-        self.game_over()
+        self.stop()
 
     def on_draw(self, *args, **kwargs):
         if self.screen is None:
@@ -67,16 +73,17 @@ class StateGame(Game):
 
         self.screen.draw()
         self.window.blit(self.screen, (0, 0))
+        pygame.display.flip()
 
     def on_init(self, *args, **kwargs):
-        self.game_start()
+        self.start()
 
     def on_key_down(self, *args, keys=None, **kwargs):
         if keys is None:
             return
 
         if pygame.K_ESCAPE in keys:
-            self.game_over()
+            self.stop()
 
     def on_key_up(self, *args, **kwargs):
         pass

@@ -1,7 +1,8 @@
 class Events:
-    def __init__(self, handlers=None):
+    def __init__(self, handlers=None, on_emit=None):
         self.handlers = handlers or {}
         self.listeners = []
+        self.on_emit = on_emit
 
     def __send_to_listeners(self, event_type, *args, **kwargs):
         for listener in self.listeners:
@@ -12,10 +13,11 @@ class Events:
         if not handler:
             return
 
+        if self.on_emit:
+            self.on_emit(event_type, *args, **kwargs)
         return handler(event_type, *args, **kwargs)
 
     def emit(self, event_type, *args, **kwargs):
-        # print("EVENT", event_type, args, kwargs)
         self.__send_to_listeners(event_type, *args, **kwargs)
         self.__handle(event_type, *args, **kwargs)
 

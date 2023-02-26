@@ -1,14 +1,14 @@
-from games.base import GameWindow
+from utils.state_game import StateGame
 from windows.controls import TextObject
 from . import events, states
 from .menu_screen import MenuScreen
 from .game_screen import GameScreen
 
 
-class Breakout(GameWindow):
+class Breakout(StateGame):
     def game_menu(self):
         self.set_screen(
-            MenuScreen(self.window.size),
+            MenuScreen(self.size),
             states.MENU,
             events={
                 events.MENU_PLAY: self.on_select_play,
@@ -18,7 +18,7 @@ class Breakout(GameWindow):
 
     def game_play(self):
         self.set_screen(
-            GameScreen(self.window.size),
+            GameScreen(self.size),
             states.PLAYING,
             events={
                 events.EVENT_WIN: self.on_win,
@@ -36,7 +36,7 @@ class Breakout(GameWindow):
         self.game_play()
 
     def on_select_quit(self, *args, **kwargs):
-        self.game_over()
+        self.stop()
 
     def on_win(self, *args, **kwargs):
         TextObject.show_message(self, "YOU WIN!!!", center=True)
@@ -44,4 +44,4 @@ class Breakout(GameWindow):
 
     def on_loose(self, *args, **kwargs):
         TextObject.show_message(self, "YOU LOOSE!!!", center=True)
-        return self.game_over()
+        return self.stop()

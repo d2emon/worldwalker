@@ -56,13 +56,19 @@ class Game:
     def playing(self, value):
         self.__playing = value
 
+    def start(self):
+        self.playing = True
+
+    def stop(self):
+        self.playing = False
+
     def draw(self, *args, **kwargs):
         """Draw game screen."""
         pygame.display.flip()
 
     def quit(self, *args, **kwargs):
         """Close game window."""
-        self.playing = False
+        self.stop()
 
         pygame.quit()
         sys.exit()
@@ -72,7 +78,7 @@ class Game:
         self.window = pygame.display.set_mode(self.size)
         pygame.display.set_caption(self.caption)
         self.events.init_window()
-        self.playing = True
+        self.start()
 
     def update(self, *args, **kwargs):
         """Update game."""
@@ -89,3 +95,5 @@ class Game:
             # self.update()
             # self.draw()
             self.clock.tick(self.fps)
+
+        # To perform exit

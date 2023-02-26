@@ -1,7 +1,7 @@
 import pygame
 from config.games import breakout as config
 from games.breakout.intersect import intersect
-from games.breakout.sprites import Brick
+from ..sprites.brick import Brick
 
 
 class Bricks(pygame.sprite.Group):

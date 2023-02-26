@@ -6,7 +6,7 @@ from ... import events
 
 
 class BreakoutMenuItems(MenuItems):
-    def __init__(self):
+    def __init__(self, on_click):
         super().__init__()
 
         self.font = TextObject.Font(
@@ -22,11 +22,14 @@ class BreakoutMenuItems(MenuItems):
             config.BUTTON_HEIGHT,
         )
 
+        on_emit = lambda event_type, *args, **kwargs : print("BREAKOUT MENU ITEMS", event_type, args, kwargs)
         self.events = Events({
             events.MOUSE_BUTTON_DOWN: self.emit,
             events.MOUSE_BUTTON_UP: self.emit,
             events.MOUSE_MOTION: self.emit,
-        })
+        }, on_emit)
+
+        self.__on_item_click = on_click
 
         self.add_item('PLAY', self.on_select(events.MENU_PLAY))
         self.add_item('QUIT', self.on_select(events.MENU_QUIT))
@@ -55,4 +58,10 @@ class BreakoutMenuItems(MenuItems):
         )
 
     def on_select(self, event_id):
-        return lambda *args, **kwargs: self.events.emit(event_id, *args, **kwargs)
+        # return lambda *args, **kwargs: self.events.emit(event_id, *args, **kwargs)
+        def f(*args, **kwargs):
+            print("SELECT", event_id, args, kwargs)
+            self.events.emit(event_id, *args, **kwargs)
+            self.__on_item_click(event_id, *args, **kwargs)
+        
+        return f
