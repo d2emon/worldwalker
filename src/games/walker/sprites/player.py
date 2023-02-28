@@ -6,75 +6,63 @@ Typical usage example:
 """
 
 import pygame
-from pygame.sprite import Sprite
+import config
 
 
-__PLAYER_SIZE = 10
-__PLAYER_VIEW = 5
-__PLAYER_COLOR = (255, 255, 0)
-__PLAYER_VIEW_COLOR = (0, 0, 255)
-
-
-def __draw_player(image, size, color):
-    """Draw player image.
-
-    Args:
-        image (pygame.Image): Sprite image.
-        size (float): Player size.
-        color (pygame.Color): Player color.
-    """
-    rect = image.get_rect()
-    pygame.draw.circle(image, color, rect.center, size)
-
-
-def __draw_view(image, size, color):
-    """Draw player image.
-
-    Args:
-        image (pygame.Image): Sprite image.
-        size (float): View area size.
-        color (pygame.Color): View area color.
-    """
-    rect = image.get_rect()
-    pygame.draw.circle(image, color, rect.center, size, 2)
-
-
-def draw(scale=1.0):
-    """Draw player image.
-
-    Args:
-        scale (float): Map scale.
-    Returns:
-        pygame.Surface: Loaded image.
-    """
-    radius = __PLAYER_VIEW * scale
-    width = height = radius * 2
-    image = pygame.Surface((width, height), flags=pygame.SRCALPHA)
-    __draw_player(image, __PLAYER_SIZE, __PLAYER_COLOR)
-    __draw_view(image, radius, __PLAYER_VIEW_COLOR)
-    return image
-
-
-class Player(Sprite):
+class Player(pygame.sprite.Sprite):
     """Player sprite.
 
     Attributes:
         image (pygame.Surface): Sprite image.
         rect (pygame.Rect): Sprite rect.
         speed (float): Rect speed.
+        x_vel (int): Rect horyzontal speed.
+        y_vel (int): Rect vertical speed.
     """
 
-    __SPEED = 10
+    __filename = config.Universe.PLAYER
+    __speed = 10
 
-    def __init__(self, center=(0, 0), scale=1.0):
+    def __init__(self, rect, starting_pos=(500, 500)):
         """Initialize sprite.
 
-        Args:
-            center (tuple): Sprite center.
-            scale (float): Image scale.
+        Args
+            rect (pygame.Rect): Screen rect.
+            starting_pos (tuple, optional): Starting position. Defaults to (500, 500).
         """
         super().__init__()
-        self.image = draw(scale)
+        self.image = pygame.image.load(self.__filename)
         self.rect = self.image.get_rect()
-        self.rect.center = center
-        self.speed = self.__SPEED
+        self.rect.center = rect.center
+
+        self.speed = self.__speed
+        self.x_vel = self.y_vel = 0
+        self.starting_pos = starting_pos
+        self.pos = [*starting_pos]
+
+    def __check_constraints(self):
+        for coord, value in enumerate(self.pos):
+            if value < 0:
+                self.pos[coord] = 0
+            if value > 1000:
+                self.pos[coord] = 1000
+
+    def move_viewpoint(self, x, y):
+        """Move sprite viewpoint.
+
+        Args:
+            x (float): Moves by x.
+            y (float): Moves by y.
+        """
+        self.pos[0] += x * self.speed
+        self.pos[1] += y * self.speed
+        self.__check_constraints()
+
+    def move(self):
+        """Move sprite."""
+        self.move_viewpoint(self.x_vel, self.y_vel)
+
+    def reset_viewpoint(self, *args, **kwargs):
+        """Reset player position."""
+        self.pos = [*self.starting_pos]
+        self.__check_constraints()

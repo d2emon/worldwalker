@@ -30,3 +30,8 @@ PLAYER_SIZE = 10
 PLAYER_VIEW = 5 * SCALE
 PLAYER_COLOR = (255, 255, 0)
 PLAYER_VIEW_COLOR = (0, 0, 255)
+
+class Universe:
+    BASE_PATH = os.path.join(files.BASE_PATH, 'walker', 'universe')
+    GLOBAL_MAP = os.path.join(BASE_PATH, 'universe.jpg')
+    PLAYER = os.path.join(BASE_PATH, 'saucer.png')

@@ -4,58 +4,17 @@ Typical usage example:
 
   self.screen = MainScreen(self.window.get_rect())
   self.events.update(self.screen.events)
+
+10^24
 """
 import pygame
-from pygame.sprite import LayeredUpdates
-import config
 from events.game import GameEvents
+from .items import load_items
 from ..controls import CONTROLS
+from ..sprites.background import Background
 from ..sprites.coord_label import CoordLabel
 from ..sprites.map import MapSprite
-from ..sprites.map_image import MapImage
 from ..sprites.player import Player
-
-
-class Sprites(LayeredUpdates):
-    """Sprites for main screen.
-    
-    Attributes:
-      map_sprite (MapSprite): Map sprite.
-      player (Player): Player sprite.
-    """
-
-    def __init__(self, rect):
-        """Intialize main sprites
-
-        Args:
-            rect (pygame.Rect): Screen rect
-        """
-        super().__init__()
-
-        # self.bg = Background((self.window.get_width(), self.window.get_height()))
-        # self.add(image, layer=0)
-
-        map_image = MapImage.scaled(
-            config.MAP_FILE,
-            None, # config.MAP_SCALE,
-            config.SCALE,
-        )
-        self.map_sprite = MapSprite(
-            map_image,
-            rect,
-            config.VIEWPOINT,
-            config.SCALE * config.TIME_SCALE,
-        )
-        self.add(self.map_sprite, layer=1)
-
-        self.player = Player(
-            rect.center,
-            scale=config.SCALE,
-        )
-        self.add(self.player, layer=2)
-
-        self.coords = CoordLabel()
-        self.add(self.coords, layer=3)
 
 
 class MainScreen(pygame.Surface):
@@ -69,23 +28,40 @@ class MainScreen(pygame.Surface):
     def __init__(self, rect, on_exit):
         """Initialize main screen.
 
-        Load game resource: background
-        Load game resource: main field
-        Initialize labels
-
         Args:
             rect (pygame.Rect): Main screen rect
         """
         super().__init__((rect.width, rect.height))
 
-        self.sprites = Sprites(rect)
+        starting_pos = (500, 500)
+        layer_bg = 0
+        layer_map = 1
+        layer_player = 3
+        layer_controls = 4
 
+        # Create sprites
+        
+        self.items = pygame.sprite.Group(*load_items())
+        self.sprites = pygame.sprite.LayeredUpdates()
+
+        background = Background(rect)
+        self.sprites.add(background, layer=layer_bg)
+
+        self.map_sprite = MapSprite(rect, starting_pos, items=self.items)
+        self.sprites.add(self.map_sprite, layer=layer_map)
+
+        self.player = Player(rect, starting_pos)
+        self.sprites.add(self.player, layer=layer_player)
+
+        self.coords_label = CoordLabel()
+        self.sprites.add(self.coords_label, layer=layer_controls)
+
+        # Setup events
         control_events = { key: self.__on_control for key in CONTROLS }
         self.events = {
-            # GameEvents.UPDATE: self.__on_update,
             GameEvents.KEY_DOWN: self.__on_key_event({
                 pygame.K_ESCAPE: on_exit,
-                pygame.K_h: self.map_sprite.reset_viewpoint,
+                pygame.K_h: self.player.reset_viewpoint,
                 pygame.K_g: self.map_sprite.switch_grid,
                 **control_events,
             }),
@@ -94,33 +70,17 @@ class MainScreen(pygame.Surface):
             }),
         }
 
-        self.x_vel = self.y_vel = 0
-        # TODO: Move to player
-
-    @property
-    def map_sprite(self):
-        """Getter for map sprite.
-
-        Returns:
-            MapSprite: Map sprite
-        """
-        return self.sprites.map_sprite
-
-    @property
-    def player(self):
-        """Getter for player sprite.
-
-        Returns:
-            Player: Player sprite.
-        """
-        return self.sprites.player
-
     def __on_control(self, key, *args, **kwargs):
+        """Set player velocity.
+
+        Args:
+            key (number): Pressed key.
+        """
         c = CONTROLS[key]
         if c[0] is not None:
-            self.x_vel = c[0]
+            self.player.x_vel = c[0]
         if c[1] is not None:
-            self.y_vel = c[1]
+            self.player.y_vel = c[1]
 
     def __on_key_event(self, events):
         """On key event decorator.
@@ -138,8 +98,7 @@ class MainScreen(pygame.Surface):
             if not keys:
                 return
 
-            # speed = self.player.speed
-            self.x_vel = self.y_vel = 0
+            self.player.x_vel = self.player.y_vel = 0
 
             for key, handler in events.items():
                 if not keys[key]:
@@ -148,17 +107,16 @@ class MainScreen(pygame.Surface):
                 if not handler:
                     continue
 
-                handler(key)
+                handler(key, *args, **kwargs)
 
         return events_handler
 
     def update(self, *args, **kwargs):
         """On update event."""
 
-        self.map_sprite.move(self.x_vel, self.y_vel)
-
-        self.sprites.coords.x = self.map_sprite.viewpoint.centerx
-        self.sprites.coords.y = self.map_sprite.viewpoint.centery
+        self.player.move()
+        self.map_sprite.set_viewpoint(self.player.pos)
+        self.coords_label.pos = self.player.pos
 
         self.sprites.update()
         self.sprites.draw(self)

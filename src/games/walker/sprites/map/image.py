@@ -17,44 +17,55 @@ class MapImage(pygame.Surface):
 
     Attributes:
         grid (Grid): Grid for image.
-        show_grid (bool): To draw grid.
     """
 
-    def __init__(self, image, step=None):
+    def __init__(self, image, items=None, step=None):
         """Initialize sprite.
 
         Args:
             image (pygame.Image): Base image.
+            items (pygame.sprite.Group, optional): Map items. Defaults to None.
             step (float): Step for grid.
         """
-        super().__init__(image.get_size())
+        super().__init__((1000, 1000))
 
-        self.__map_image = image
+        self.image = image
+
+        self.items = items
 
         self.show_grid = False
-
         self.grid = Grid(
-            size=(200, 300),
-            start=(210, 185),
+            size=(1000, 1000),
             step=step,
         )
 
         self.update()
 
-    def update(self, *args, **kwargs):
-        """Update map image."""
-        self.blit(self.__map_image, self.get_rect())
+    def update(self, show_grid=False):
+        """Update map image.
+        
+        Args:
+            show_grid (bool): To show grid.
+        """
+        self.items.update()
 
-        if self.show_grid:
-            self.grid.draw(self) 
+        self.blit(self.image, self.get_rect())
+
+        if self.items:
+            self.items.draw(self)
+
+        if show_grid:
+            self.grid.draw(self)
 
     @classmethod
-    def scaled(cls, filename, scale=1.0, step=None):
+    def scaled(cls, filename, items, scale=None, step=None):
         """Draw map image.
 
         Args:
             filename (string): Filename with image.
+            items (list): Map items.
             scale (float): Scale for image.
+            step (float): Step for grid.
         Returns:
             pygame.Surface: Loaded image.
         """
@@ -69,4 +80,4 @@ class MapImage(pygame.Surface):
                 ),
             )
 
-        return cls(image, step)
+        return cls(image, items, step=step)

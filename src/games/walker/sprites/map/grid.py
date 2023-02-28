@@ -30,9 +30,7 @@ class Grid:
             image (pygame.Surface): Image to draw grid on it.
         """
         min_x, min_y = self.__start
-        width, height = self.__size
-        max_x = image.get_width() - width
-        max_y = image.get_height() - height
+        max_x, max_y = self.__size
 
         # Fill horyzontal lines
         for x in range(min_x, max_x, self.__step):
