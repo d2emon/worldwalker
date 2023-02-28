@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
     """
 
     __filename = config.Universe.PLAYER
-    __speed = 10
+    speed = 10
 
     def __init__(self, rect, starting_pos=(500, 500)):
         """Initialize sprite.
@@ -35,8 +35,6 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = rect.center
 
-        self.speed = self.__speed
-        self.x_vel = self.y_vel = 0
         self.starting_pos = starting_pos
         self.pos = [*starting_pos]
 
@@ -47,22 +45,28 @@ class Player(pygame.sprite.Sprite):
             if value > 1000:
                 self.pos[coord] = 1000
 
-    def move_viewpoint(self, x, y):
+        return [*self.pos]
+
+    def move_by(self, x_vel, y_vel):
         """Move sprite viewpoint.
 
         Args:
-            x (float): Moves by x.
-            y (float): Moves by y.
+            x_vel (float): Moves by x.
+            y_vel (float): Moves by y.
+
+        Returns:
+            list: Player position.
+        
         """
-        self.pos[0] += x * self.speed
-        self.pos[1] += y * self.speed
-        self.__check_constraints()
+        self.pos[0] += x_vel * self.speed
+        self.pos[1] += y_vel * self.speed
+        return self.__check_constraints()
 
-    def move(self):
-        """Move sprite."""
-        self.move_viewpoint(self.x_vel, self.y_vel)
+    def reset_viewpoint(self):
+        """Reset player position.
 
-    def reset_viewpoint(self, *args, **kwargs):
-        """Reset player position."""
+        Returns:
+            list: Player position.
+        """
         self.pos = [*self.starting_pos]
-        self.__check_constraints()
+        return self.__check_constraints()

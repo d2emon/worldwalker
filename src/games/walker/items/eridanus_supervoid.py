@@ -1,12 +1,12 @@
 """Eridanus supervoid."""
 
-from .square import Square
+from .circular import Circular
 
 
-class EridanusSupervoid(Square):
+class EridanusSupervoid(Circular):
     """item sprite."""
 
-    color = (255, 255, 255)
-    size = 10
     name = 'Eridanus Supervoid'
-    border = 1
+    base_scale = 24
+    base_size = 7.1
+    color = (9, 9, 9)

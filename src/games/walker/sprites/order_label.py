@@ -1,15 +1,15 @@
-"""Coord label.
+"""Order label.
 
 Typical usage example:
 
-  label = CoordLabel()
+  label = OrderLabel()
 """
 
 import pygame
 
 
-class CoordLabel(pygame.sprite.Sprite):
-    """Coord label.
+class OrderLabel(pygame.sprite.Sprite):
+    """Order label.
 
     Attributes:
         image (pygame.Surface): Sprite image.
@@ -29,20 +29,11 @@ class CoordLabel(pygame.sprite.Sprite):
 
         self.color = (255, 255, 255)
         self.font = pygame.font.SysFont('Sans', 16)
-        self.pos = [0, 0]
+        self.value = 24
 
         self.image = pygame.Surface((0, 0))
         self.rect = rect
 
-    @property
-    def label(self):
-        """Get label text.
-
-        Returns:
-            string: Label text.
-        """
-        return f"{self.pos[0]} {self.pos[1]}"
-
     def update(self, *args, **kwargs):
         """Update label."""
-        self.image = self.font.render(self.label, None, self.color)
+        self.image = self.font.render(str(self.value), None, self.color)

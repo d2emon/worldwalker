@@ -6,13 +6,16 @@ import pygame
 class Item(pygame.sprite.Sprite):
     """Item sprite."""
 
-    size = 100
+    base_scale = 0
+    base_size = 100
 
     label_color = (255, 255, 255)
     label_font = 'Sans'
     label_size = 16
 
-    def __init__(self, position=(500, 500)):
+    name = ''
+
+    def __init__(self, position=(500, 500), scale=1.0):
         """Initialize sprite.
 
         Args
@@ -20,13 +23,40 @@ class Item(pygame.sprite.Sprite):
         """
         super().__init__()
 
+        self.scale = scale
         self.image = pygame.Surface((self.size, self.size), flags=pygame.SRCALPHA)
 
         rect = self.image.get_rect()
-        self.draw(rect)
-
         self.rect = pygame.Rect(rect)
         self.rect.center = position
+
+        self.draw(rect)
+
+    @property
+    def size_modifier(self):
+        """Get item diameter.
+
+        Returns:
+            int: Item diameter.
+        """
+        order = self.base_scale - self.scale
+
+        if order < 0:
+            return 1
+
+        if order > 2:
+            return 0
+
+        return 10 ** order
+
+    @property
+    def size(self):
+        """Get item diameter.
+
+        Returns:
+            int: Item diameter.
+        """
+        return int(self.base_size * self.size_modifier)
 
     def draw(self, rect):
         """Draw item.

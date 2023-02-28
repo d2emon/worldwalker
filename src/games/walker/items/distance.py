@@ -9,7 +9,6 @@ class Distance(Item):
 
     color = (0, 255, 0)
     radius = 127
-    name = ''
 
     @property
     def size(self):
@@ -18,7 +17,7 @@ class Distance(Item):
         Returns:
             int: Item diameter.
         """
-        return int(self.radius * 2)
+        return int(self.radius * 2 * self.size_modifier)
 
     def draw(self, rect):
         """Draw item.
@@ -26,6 +25,6 @@ class Distance(Item):
         Args:
             rect (pyugame.Rect): Image rect.
         """
-        pygame.draw.circle(self.image, self.color, rect.center, self.radius, 1)
+        pygame.draw.circle(self.image, self.color, rect.center, self.size / 2, 1)
 
         self.draw_label(self.name, rect.center)

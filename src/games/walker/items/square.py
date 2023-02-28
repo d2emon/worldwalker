@@ -8,8 +8,6 @@ class Square(Item):
     """item sprite."""
 
     color = (128, 128, 128)
-    size = 100
-    name = ''
     border = 0
 
     def draw(self, rect):

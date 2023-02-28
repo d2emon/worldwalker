@@ -7,5 +7,7 @@ class Gigaparsec(Circular):
     """item sprite."""
 
     name = 'Gigaparsec'
-    color = (255, 255, 255)
-    size = 33
+    base_scale = 24 + 1
+    base_size = 3.3
+    color = (128, 128, 128)
+    border = 2
