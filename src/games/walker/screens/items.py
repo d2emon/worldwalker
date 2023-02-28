@@ -36,5 +36,4 @@ def load_items(scale):
             print('>', item.name, 'DISABLED', scale_diff)
             continue
 
-        print(item.name)
         yield item(__random_pos(), scale)
