@@ -38,3 +38,21 @@ class DistanceFromNeptune(Distance):
     base_scale = 12
     color = (0, 255, 0)
     radius = 4.47
+
+
+class DistanceFromEarth(Distance):
+    """item sprite."""
+
+    name = 'Distance from Earth to Sun'
+    base_scale = 9 + 2
+    color = (0, 255, 0)
+    radius = 1.50
+
+
+class DistanceToMoon(Distance):
+    """item sprite."""
+
+    name = 'Distance from Earth to Moon'
+    base_scale = 6 + 2
+    color = (0, 255, 0)
+    radius = 3.80

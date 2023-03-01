@@ -6,10 +6,13 @@ from .clusters import CLUSTERS
 from .galaxies import GALAXIES
 from .nebulas import NEBULAS
 from.globular_clusters import GLOBULAR_CLUSTERS
-from .sun_system import OortsCloud
+from .sun_system import OortsCloud, KuipersBelt, DistanceFromVoyager, DistanceFromNeptune, DistanceFromEarth, DistanceToMoon
 from .light_year import LightYear, LightDay
 from .parsec import Parsec, Gigaparsec
 from .from_sun import DistanceFromSunToProximaCentauri, DistanceFromAlphaToProximaCentauri, DistanceFromSedna, DistanceFromHaleBopp
+from .stars import STARS
+from .total_human import TotalHumanHeight
+from .planets import PLANETS
 
 
 ITEMS  = [
@@ -22,8 +25,11 @@ ITEMS  = [
     *GALAXIES,
     *NEBULAS,
     *GLOBULAR_CLUSTERS,
-    OortsCloud,
+    OortsCloud, KuipersBelt, DistanceFromVoyager, DistanceFromNeptune, DistanceFromEarth, DistanceToMoon,
     LightYear, LightDay,
     Parsec,
     DistanceFromSunToProximaCentauri, DistanceFromAlphaToProximaCentauri, DistanceFromSedna, DistanceFromHaleBopp,
+    *STARS,
+    TotalHumanHeight,
+    *PLANETS,
 ]
