@@ -31,7 +31,6 @@ class Item(pygame.sprite.Sprite):
         self.rect.center = position
 
         self.draw(rect)
-        print(self.name, self.size)
 
     @property
     def size_modifier(self):

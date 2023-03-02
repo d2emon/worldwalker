@@ -19,29 +19,37 @@ class MapImage(pygame.Surface):
         grid (Grid): Grid for image.
     """
 
-    def __init__(self, image, items=None, step=None):
+    __cached_image = None
+    show_grid = True
+
+    def __init__(self, image, items=None, size=(1000, 1000), step=None):
         """Initialize sprite.
 
         Args:
             image (pygame.Image): Base image.
             items (pygame.sprite.Group, optional): Map items. Defaults to None.
+            size (tuple): Map size.
             step (float): Step for grid.
         """
-        super().__init__((1000, 1000))
+        super().__init__(size)
 
         self.image = image
-
         self.items = items
+        self.size = size
 
-        self.show_grid = False
         self.grid = Grid(
-            size=(1000, 1000),
+            size=size,
             step=step,
         )
 
         self.update()
 
-    def update(self, show_grid=False):
+    def switch_grid(self):
+        """Switch show grid."""
+        MapImage.show_grid = not self.show_grid
+        self.update()
+
+    def update(self):
         """Update map image.
         
         Args:
@@ -54,21 +62,26 @@ class MapImage(pygame.Surface):
         if self.items:
             self.items.draw(self)
 
-        if show_grid:
+        if self.show_grid:
             self.grid.draw(self)
 
     @classmethod
-    def scaled(cls, filename, items, scale=None, step=None):
+    def scaled(cls, filename, items, size=(1000, 1000), scale=None, step=None):
         """Draw map image.
 
         Args:
             filename (string): Filename with image.
             items (list): Map items.
+            size (tuple): Map size.
             scale (float): Scale for image.
             step (float): Step for grid.
         Returns:
             pygame.Surface: Loaded image.
         """
+        if cls.__cached_image:
+            print("Reload from cache")
+            return cls(cls.__cached_image, items, size=size, step=step)
+
         image = pygame.image.load(filename)
 
         if scale:
@@ -80,4 +93,5 @@ class MapImage(pygame.Surface):
                 ),
             )
 
-        return cls(image, items, step=step)
+        cls.__cached_image = image
+        return cls(image, items, size=size, step=step)

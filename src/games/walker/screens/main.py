@@ -16,6 +16,7 @@ from ..sprites.coord_label import CoordLabel
 from ..sprites.order_label import OrderLabel
 from ..sprites.map import MapSprite
 from ..sprites.player import Player
+from ..sprites.loading import LoadingLabel
 
 
 class MainScreen(pygame.Surface):
@@ -28,6 +29,7 @@ class MainScreen(pygame.Surface):
 
     max_scale = 24
     min_scale = 0
+    __size = 5000
 
     # Layers
     layer_bg = 0
@@ -35,7 +37,7 @@ class MainScreen(pygame.Surface):
     layer_player = 3
     layer_controls = 4
 
-    def __init__(self, rect, on_exit):
+    def __init__(self, rect, on_exit, game):
         """Initialize main screen.
 
         Args:
@@ -44,10 +46,17 @@ class MainScreen(pygame.Surface):
         """
         super().__init__((rect.width, rect.height))
 
+        self.game = game
         self.rect = rect
         self.__scale = 24
         self.__x_vel = self.__y_vel = 0
-        self.starting_pos = (500, 500)
+
+        center = int(self.__size / 2)
+        self.starting_pos = center, center
+        self.field_size = self.__size, self.__size
+
+        # Show loading
+        # self.show_loading()
 
         # Create sprites
 
@@ -59,7 +68,11 @@ class MainScreen(pygame.Surface):
         background = Background(rect)
         self.sprites.add(background, layer=self.layer_bg)
 
-        self.player = Player(rect, self.starting_pos)
+        self.player = Player(
+            rect,
+            starting_pos=self.starting_pos,
+            field_size=self.field_size,
+        )
         self.sprites.add(self.player, layer=self.layer_player)
 
         self.coords_label = CoordLabel(pygame.Rect(0, 0, 100, 100))
@@ -87,15 +100,42 @@ class MainScreen(pygame.Surface):
             }),
         }
 
+    def show_loading(self):
+        print("Show Loading...")
+        rect = self.game.window.get_rect()
+        loading = LoadingLabel(rect)
+        self.game.window.blit(loading.image, loading.rect)
+        self.game.update()
+        self.game.draw_bg()
+
     def reload_map(self, scale):
+        """Reload level map
+
+        Args:
+            scale (int): Map scale.
+        """
+
+        # Show loading
+        print("Loading...")
+        self.show_loading()
+
         print(scale)
         if self.map_sprite:
             self.sprites.remove(self.map_sprite)
 
-        self.items = pygame.sprite.Group(*load_items(scale))
-        self.map_sprite = MapSprite(self.rect, self.starting_pos, items=self.items)
+        self.items = pygame.sprite.Group(*load_items(scale, self.__size))
+        for item in self.items:
+            print(f"\t{item.rect.center}\t{item.rect.size}\t{item.name}")
+
+        self.map_sprite = MapSprite(
+            self.rect,
+            items=self.items,
+            starting_pos=self.starting_pos,
+            size=self.field_size,
+        )
 
         self.sprites.add(self.map_sprite, layer=self.layer_map)
+        print("Loaded...")
 
     @property
     def scale(self):

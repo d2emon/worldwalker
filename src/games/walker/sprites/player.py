@@ -23,7 +23,7 @@ class Player(pygame.sprite.Sprite):
     __filename = config.Universe.PLAYER
     speed = 10
 
-    def __init__(self, rect, starting_pos=(500, 500)):
+    def __init__(self, rect, starting_pos=(500, 500), field_size=(1000, 1000)):
         """Initialize sprite.
 
         Args
@@ -35,6 +35,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = rect.center
 
+        self.field_size = field_size
         self.starting_pos = starting_pos
         self.pos = [*starting_pos]
 
@@ -42,8 +43,8 @@ class Player(pygame.sprite.Sprite):
         for coord, value in enumerate(self.pos):
             if value < 0:
                 self.pos[coord] = 0
-            if value > 1000:
-                self.pos[coord] = 1000
+            if value > self.field_size[coord]:
+                self.pos[coord] = self.field_size[coord]
 
         return [*self.pos]
 

@@ -33,5 +33,5 @@ PLAYER_VIEW_COLOR = (0, 0, 255)
 
 class Universe:
     BASE_PATH = os.path.join(files.BASE_PATH, 'walker', 'universe')
-    GLOBAL_MAP = os.path.join(BASE_PATH, 'universe.jpg')
+    GLOBAL_MAP = os.path.join(BASE_PATH, 'universe.png')
     PLAYER = os.path.join(BASE_PATH, 'saucer.png')

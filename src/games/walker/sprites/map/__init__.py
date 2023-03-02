@@ -26,29 +26,42 @@ class MapSprite(pygame.sprite.Sprite):
     __filename = config.Universe.GLOBAL_MAP
     __grid_step = 100
 
-    def __init__(self, rect, starting_pos=(500, 500), items=None):
+    __bg_image = None
+
+    def __init__(
+        self,
+        rect,
+        items=None,
+        starting_pos=(500, 500),
+        size=(1000, 1000),
+    ):
         """Initialize sprite.
 
         Args:
             rect (pygame.Rect): Sprite rect.
-            starting_pos (tuple, optional): Starting viewpoint. Defaults to (0, 0).
-            items (pygame.sprite.Group, optional): Map items. Defaults to (0, 0).
+            items (pygame.sprite.Group): Map items.
+            starting_pos (tuple, optional): Starting viewpoint. Defaults to (500, 500).
+            size (tuple, optional): Starting viewpoint. Defaults to (1000, 1000).
         """
         super().__init__()
 
         self.image = pygame.Surface((rect.width, rect.height))
         self.rect = pygame.Rect(rect)
 
-        self.__bg_image = BackgroundImage((rect.width, rect.height))
+        if self.__bg_image is None:
+            MapSprite.__bg_image = BackgroundImage((rect.width, rect.height))
+
         self.__map_image = MapImage.scaled(
             self.__filename,
-            step=self.__grid_step,
             items=items,
+            size=size,
+            step=self.__grid_step,
         )
 
         self.items = items
         self.show_grid = False
         self.starting_pos = starting_pos
+        self.size = size
         self.viewpoint = pygame.Rect(rect)
 
         self.reset_viewpoint()
@@ -67,8 +80,9 @@ class MapSprite(pygame.sprite.Sprite):
 
     def switch_grid(self, *args, **kwargs):
         """Switch show grid."""
-        self.show_grid = not self.show_grid
-        self.__map_image.update(self.show_grid)
+        # self.show_grid = not self.show_grid
+        self.__map_image.switch_grid()
+        # self.__map_image.update(self.show_grid)
 
     def update(self, *args, **kwargs):
         """Update map image."""

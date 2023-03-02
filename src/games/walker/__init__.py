@@ -10,6 +10,7 @@ import pygame
 import config
 from utils.game import Game
 from .screens.main import MainScreen
+from .sprites.loading import LoadingLabel
 
 
 class Walker(Game):
@@ -57,9 +58,11 @@ class Walker(Game):
         # Initialze font
         pygame.font.init()
 
+        # Load screen
         self.screen = MainScreen(
             self.window.get_rect(),
             self.on_quit,
+            self,
         )
         self.events.update(self.screen.events)
 
@@ -93,7 +96,9 @@ class Walker(Game):
         Draw main field and update rect
         Draw labels and update rect
         """
-        self.window.blit(self.screen, (0, 0))
+        if self.screen:
+            self.window.blit(self.screen, (0, 0))
+
         super().draw(*args, **kwargs)
 
     def update(self, *args, **kwargs):
