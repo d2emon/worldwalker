@@ -5,7 +5,7 @@ from .distance_great_attractor import DistanceToGreatAttractor
 from .clusters import CLUSTERS
 from .galaxies import GALAXIES
 from .nebulas import NEBULAS
-from.globular_clusters import GLOBULAR_CLUSTERS
+from .globular_clusters import GLOBULAR_CLUSTERS
 from .sun_system import OortsCloud, KuipersBelt, DistanceFromVoyager, DistanceFromNeptune, DistanceFromEarth, DistanceToMoon
 from .light_year import LightYear, LightDay
 from .parsec import Parsec, Gigaparsec
@@ -13,6 +13,11 @@ from .from_sun import DistanceFromSunToProximaCentauri, DistanceFromAlphaToProxi
 from .stars import STARS
 from .total_human import TotalHumanHeight
 from .planets import PLANETS
+from .countries import COUNTRIES
+from .structures import STRUCTURES
+from .mountains import MOUNTAINS
+from .marathon import Marathon
+from .comets import COMETS
 
 
 ITEMS  = [
@@ -32,4 +37,9 @@ ITEMS  = [
     *STARS,
     TotalHumanHeight,
     *PLANETS,
+    *COUNTRIES,
+    *STRUCTURES,
+    *MOUNTAINS,
+    Marathon,
+    *COMETS,
 ]

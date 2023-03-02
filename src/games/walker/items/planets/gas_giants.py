@@ -1,4 +1,4 @@
-"""Stars."""
+"""Planets."""
 
 from ..circular import Circular
 

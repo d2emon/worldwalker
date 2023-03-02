@@ -62,3 +62,11 @@ class SiriusB(Star):
     base_scale = 6 + 1
     base_size = 1.10
     color = color(255)
+
+
+class NeutronStar(Star):
+    """Item sprite."""
+    name = 'Neutron Star'
+    base_scale = 3 + 1
+    base_size = 2.40
+    color = (255, 255, 255)
