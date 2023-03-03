@@ -26,6 +26,7 @@ class MapSprite(pygame.sprite.Sprite):
         items=None,
         starting_pos=(500, 500),
         size=(1000, 1000),
+        grid_step=100
     ):
         """Initialize sprite.
 
@@ -40,7 +41,8 @@ class MapSprite(pygame.sprite.Sprite):
         self.image = pygame.Surface((rect.width, rect.height))
         self.rect = pygame.Rect(rect)
 
-        self.__map_image = resource.map_sprite(size)
+        grid = resource.map_grid(size, grid_step, force=True)
+        self.__map_image = resource.map_sprite(size, grid, force=True)
         self.sprites = pygame.sprite.OrderedUpdates(
             resource.map_background(rect),
         )

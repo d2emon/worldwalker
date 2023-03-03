@@ -18,8 +18,8 @@ def load_cached(key):
         key (Any): Cache key.
     """
     def wrapper(func):
-        def wrapped(*args, **kwargs):
-            image = __cache.get(key)
+        def wrapped(*args, force=False, **kwargs):
+            image = __cache.get(key) if not force else None
 
             if image is not None:
                 print(f"LOAD FROM CACHE '{key}'")
@@ -96,17 +96,16 @@ def map_background(rect):
 
 
 @load_cached('map_sprite')
-def map_sprite(size):
+def map_sprite(size, grid):
     """Get map sprite.
 
     Returns:
         pygame.Sprite: Map sprite.
     """
-    grid_step = 100
     return MapImage(
         map_image(),
         size=size,
-        grid=map_grid(size, step=grid_step),
+        grid=grid,
     )
 
 

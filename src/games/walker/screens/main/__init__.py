@@ -9,11 +9,11 @@ Typical usage example:
 """
 import pygame
 from events.game import GameEvents
-from .items import load_items
 from .player import Player
+from .controls import CONTROLS
+from ...level.level import Level
+from ...level.universe import Universe
 from ... import resource
-from ...controls import CONTROLS
-from ...sprites.map import MapSprite
 
 
 class MainScreen(pygame.Surface):
@@ -48,8 +48,9 @@ class MainScreen(pygame.Surface):
         self.__scale = 24
         self.__x_vel = self.__y_vel = 0
 
-        self.starting_pos = [int(i / 2) for i in self.__size]
         self.field_size = self.__size
+
+        starting_pos = [int(i / 2) for i in self.__size]
 
         # Show loading
         # self.show_loading()
@@ -66,7 +67,7 @@ class MainScreen(pygame.Surface):
 
         self.player = Player(
             screen_pos=rect.center,
-            starting_pos=self.starting_pos,
+            starting_pos=starting_pos,
             field_size=self.field_size,
         )
         self.sprites.add(self.player, layer=self.layer_player)
@@ -96,6 +97,14 @@ class MainScreen(pygame.Surface):
             }),
         }
 
+    @property
+    def starting_pos(self):
+        return self.player.starting_pos
+
+    @starting_pos.setter
+    def starting_pos(self, value):
+        self.player.starting_pos = value
+
     def show_loading(self):
         """Show loading label."""
         print("Show Loading...")
@@ -104,6 +113,20 @@ class MainScreen(pygame.Surface):
         self.game.window.blit(loading.image, loading.rect)
         self.game.update()
         self.game.draw_bg()
+
+    def load_level(self, level):
+        """Load level data.
+
+        Args:
+            level (Level): Game level.
+        """
+        self.starting_pos = level.starting_pos
+        self.items = level.items
+
+        if self.map_sprite:
+            self.sprites.remove(self.map_sprite)
+        self.map_sprite = level.map_sprite
+        self.sprites.add(self.map_sprite, layer=self.layer_map)
 
     def reload_map(self, scale):
         """Reload level map
@@ -117,22 +140,20 @@ class MainScreen(pygame.Surface):
         self.show_loading()
 
         print(scale)
-        if self.map_sprite:
-            self.sprites.remove(self.map_sprite)
 
-        self.items = pygame.sprite.Group(*load_items(scale, self.__size))
+        if self.scale == 24:
+            print("Universe")
+            level = Universe(scale)
+        else:
+            level = Level(scale)
+
+        level.load(self.rect)
+        self.load_level(level)
+
+        print("Loaded...")
+
         for item in self.items:
             print(f"\t{item.rect.center}\t{item.rect.size}\t{item.name}")
-
-        self.map_sprite = MapSprite(
-            self.rect,
-            items=self.items,
-            starting_pos=self.starting_pos,
-            size=self.field_size,
-        )
-
-        self.sprites.add(self.map_sprite, layer=self.layer_map)
-        print("Loaded...")
 
     @property
     def scale(self):
