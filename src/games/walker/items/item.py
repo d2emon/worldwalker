@@ -6,57 +6,31 @@ import pygame
 class Item(pygame.sprite.Sprite):
     """Item sprite."""
 
-    base_scale = 0
-    base_size = 100
-
     label_color = (255, 255, 255)
     label_font = 'Sans'
     label_size = 16
 
-    name = ''
-
-    def __init__(self, position=(500, 500), scale=1.0):
+    def __init__(self, name='', position=(500, 500), size=(100, 100), color=(0, 0, 0), border=0):
         """Initialize sprite.
 
         Args
             position (tuple, optional): Starting position. Defaults to (500, 500).
+            size (tuple, optional): Item size. Defaults to (100, 100).
         """
         super().__init__()
 
-        self.scale = scale
-        self.image = pygame.Surface((self.size, self.size), flags=pygame.SRCALPHA)
+        self.name = name
+        self.size = size
+        self.color = color
+        self.border = border
+
+        self.image = pygame.Surface(size, flags=pygame.SRCALPHA)
 
         rect = self.image.get_rect()
         self.rect = pygame.Rect(rect)
         self.rect.center = position
 
         self.draw(rect)
-
-    @property
-    def size_modifier(self):
-        """Get item diameter.
-
-        Returns:
-            int: Item diameter.
-        """
-        order = self.base_scale - self.scale
-
-        if order < 0:
-            return 1
-
-        if order > 2:
-            return 0
-
-        return 10 ** order
-
-    @property
-    def size(self):
-        """Get item diameter.
-
-        Returns:
-            int: Item diameter.
-        """
-        return int(self.base_size * self.size_modifier)
 
     def draw(self, rect):
         """Draw item.
@@ -80,3 +54,56 @@ class Item(pygame.sprite.Sprite):
         rect.center = position
 
         self.image.blit(label, rect)
+
+
+class ItemFactory:
+    """Item sprite factory."""
+
+    model = Item
+    default_name = ''
+    base_scale = 0
+    base_size = 1.0
+    color = (0, 0, 0)
+    border = 0
+
+    def __init__(self, name=None, scale=None, size=None, color=None, border=None):
+        self.name = name or self.default_name
+        self.item_size = size or self.base_size
+        self.scale = scale or self.base_scale
+        self.item_color = color or self.color
+        self.item_border = border or self.border
+
+    def get_size_modifier(self, scale=1.0):
+        """Get item size modifier.
+
+        Returns:
+            int: Item size modifier.
+        """
+        order = self.scale - scale
+
+        if order < 0:
+            return 0
+
+        if order > 2:
+            return 0
+
+        return 10 ** order
+
+    def get_size(self, scale=1.0):
+        """Get item size.
+
+        Returns:
+            int: Item size.
+        """
+        modifier = self.get_size_modifier(scale)
+        return int(self.item_size * modifier)
+
+    def __call__(self, position=(500, 500), scale=1.0):
+        size = self.get_size(scale)
+        return self.model(
+            name=self.name,
+            position=position,
+            size=(size, size),
+            color=self.item_color,
+            border=self.item_border,
+        )

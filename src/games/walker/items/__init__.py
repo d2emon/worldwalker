@@ -1,14 +1,13 @@
-from .hubble_deep_field import HubbleDeepField
-from .hcb_greate_wall import HerculesCoronaBorealisGreatWall
-from .eridanus_supervoid import EridanusSupervoid
-from .distance_great_attractor import DistanceToGreatAttractor
+from .distances import DISTANCES
+from .space_walls import WALLS
+from .supervoids import SUPERVOIDS
 from .clusters import CLUSTERS
 from .galaxies import GALAXIES
 from .nebulas import NEBULAS
 from .globular_clusters import GLOBULAR_CLUSTERS
 from .sun_system import OortsCloud, KuipersBelt, DistanceFromVoyager, DistanceFromNeptune, DistanceFromEarth, DistanceToMoon
 from .light_year import LightYear, LightDay
-from .parsec import Parsec, Gigaparsec
+from .measures import MEASURES
 from .from_sun import DistanceFromSunToProximaCentauri, DistanceFromAlphaToProximaCentauri, DistanceFromSedna, DistanceFromHaleBopp
 from .stars import STARS
 from .total_human import TotalHumanHeight
@@ -20,19 +19,13 @@ from .marathon import Marathon
 from .comets import COMETS
 
 
-ITEMS  = [
-    HubbleDeepField,
-    HerculesCoronaBorealisGreatWall,
-    Gigaparsec,
-    EridanusSupervoid,
-    DistanceToGreatAttractor,
-    *CLUSTERS,
+CLASSES  = [
     *GALAXIES,
     *NEBULAS,
     *GLOBULAR_CLUSTERS,
     OortsCloud, KuipersBelt, DistanceFromVoyager, DistanceFromNeptune, DistanceFromEarth, DistanceToMoon,
     LightYear, LightDay,
-    Parsec,
+    # Parsec,
     DistanceFromSunToProximaCentauri, DistanceFromAlphaToProximaCentauri, DistanceFromSedna, DistanceFromHaleBopp,
     *STARS,
     TotalHumanHeight,
@@ -42,4 +35,21 @@ ITEMS  = [
     *MOUNTAINS,
     Marathon,
     *COMETS,
+]
+ITEMS = [
+    *DISTANCES,
+    *WALLS,
+    *SUPERVOIDS,
+    *MEASURES,
+    *CLUSTERS,
+    *(
+        c(
+            name=c.name,
+            scale=c.base_scale,
+            size=c.base_size,
+            color=c.color,
+            border=c.border,
+        )
+        for c in CLASSES
+    ),
 ]

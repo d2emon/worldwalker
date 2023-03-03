@@ -16,8 +16,9 @@ def load_items(scale, size):
     Yields:
         pygame.Sprite: Map item
     """
+    # print(ITEMS)
     for item in ITEMS:
-        scale_diff = item.base_scale - scale
+        scale_diff = item.scale - scale
         if scale_diff < 0:
             print('<', item.name, 'DISABLED', scale_diff)
             continue
