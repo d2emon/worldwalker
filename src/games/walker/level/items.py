@@ -15,8 +15,6 @@ def load_items(scale, size, step=100):
     Yields:
         pygame.Sprite: Map item
     """
-    # print(ITEMS)
-    print('STEP', step)
     for item in ITEMS:
         scale_diff = item.scale - scale
         if scale_diff < 0:
