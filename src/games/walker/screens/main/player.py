@@ -6,7 +6,7 @@ Typical usage example:
 """
 
 import pygame
-import config
+from ... import resource
 
 
 class Player(pygame.sprite.Sprite):
@@ -19,22 +19,22 @@ class Player(pygame.sprite.Sprite):
         x_vel (int): Rect horyzontal speed.
         y_vel (int): Rect vertical speed.
     """
-
-    __filename = config.Universe.PLAYER
     speed = 10
 
-    def __init__(self, rect, starting_pos=(500, 500), field_size=(1000, 1000)):
+    def __init__(self, screen_pos=(500, 500), starting_pos=(500, 500), field_size=(1000, 1000)):
         """Initialize sprite.
 
         Args
-            rect (pygame.Rect): Screen rect.
+            screen_pos (tuple, optional): Starting position on scren. Defaults to (500, 500).
             starting_pos (tuple, optional): Starting position. Defaults to (500, 500).
+            field_size (tuple, optional): Field size. Defaults to (1000, 1000).
         """
         super().__init__()
-        self.image = pygame.image.load(self.__filename)
-        self.rect = self.image.get_rect()
-        self.rect.center = rect.center
 
+        self.image = resource.player_image()
+        self.rect = self.image.get_rect()
+
+        self.rect.center = screen_pos
         self.field_size = field_size
         self.starting_pos = starting_pos
         self.pos = [*starting_pos]

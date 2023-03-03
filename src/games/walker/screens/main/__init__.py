@@ -10,13 +10,10 @@ Typical usage example:
 import pygame
 from events.game import GameEvents
 from .items import load_items
-from ..controls import CONTROLS
-from ..sprites.background import Background
-from ..sprites.coord_label import CoordLabel
-from ..sprites.order_label import OrderLabel
-from ..sprites.map import MapSprite
-from ..sprites.player import Player
-from ..sprites.loading import LoadingLabel
+from .player import Player
+from ... import resource
+from ...controls import CONTROLS
+from ...sprites.map import MapSprite
 
 
 class MainScreen(pygame.Surface):
@@ -29,7 +26,7 @@ class MainScreen(pygame.Surface):
 
     max_scale = 24
     min_scale = 0
-    __size = 5000
+    __size = 5000, 5000
 
     # Layers
     layer_bg = 0
@@ -51,9 +48,8 @@ class MainScreen(pygame.Surface):
         self.__scale = 24
         self.__x_vel = self.__y_vel = 0
 
-        center = int(self.__size / 2)
-        self.starting_pos = center, center
-        self.field_size = self.__size, self.__size
+        self.starting_pos = [int(i / 2) for i in self.__size]
+        self.field_size = self.__size
 
         # Show loading
         # self.show_loading()
@@ -65,20 +61,20 @@ class MainScreen(pygame.Surface):
 
         self.sprites = pygame.sprite.LayeredUpdates()
 
-        background = Background(rect)
+        background = resource.main_screen_background(rect)
         self.sprites.add(background, layer=self.layer_bg)
 
         self.player = Player(
-            rect,
+            screen_pos=rect.center,
             starting_pos=self.starting_pos,
             field_size=self.field_size,
         )
         self.sprites.add(self.player, layer=self.layer_player)
 
-        self.coords_label = CoordLabel(pygame.Rect(0, 0, 100, 100))
+        self.coords_label = resource.coord_label(pygame.Rect(0, 0, 100, 100))
         self.sprites.add(self.coords_label, layer=self.layer_controls)
 
-        self.order_label = OrderLabel(pygame.Rect(0, 100, 100, 100))
+        self.order_label = resource.order_label(pygame.Rect(0, 100, 100, 100))
         self.sprites.add(self.order_label, layer=self.layer_controls)
 
         self.reload_map(self.scale)
@@ -101,9 +97,10 @@ class MainScreen(pygame.Surface):
         }
 
     def show_loading(self):
+        """Show loading label."""
         print("Show Loading...")
         rect = self.game.window.get_rect()
-        loading = LoadingLabel(rect)
+        loading = resource.loading(rect)
         self.game.window.blit(loading.image, loading.rect)
         self.game.update()
         self.game.draw_bg()

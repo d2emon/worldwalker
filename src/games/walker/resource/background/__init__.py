@@ -6,6 +6,7 @@ Typical usage example:
 """
 
 import pygame
+from ... import resource
 from .image import BackgroundImage
 
 
@@ -25,5 +26,6 @@ class Background(pygame.sprite.Sprite):
         """
         super().__init__()
 
-        self.image = BackgroundImage((rect.width, rect.height))
         self.rect = pygame.Rect(rect)
+        self.image = BackgroundImage(self.rect.size)
+        

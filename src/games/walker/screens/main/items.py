@@ -1,13 +1,13 @@
 """Items for map."""
 
 import random
-from ..items import ITEMS
+from ...items import ITEMS
 
 
 def __random_pos(size):
     delta = 100
-    max_pos = int(size / delta)
-    return [random.randrange(0, max_pos) * delta for _ in range(2)]
+    max_pos = [int(i / delta) for i in size]
+    return [random.randrange(0, max_pos[i]) * delta for i in range(2)]
 
 
 def load_items(scale, size):

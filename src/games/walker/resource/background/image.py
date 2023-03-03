@@ -20,4 +20,9 @@ class BackgroundImage(pygame.Surface):
         super().__init__(size)
 
         self.color = (0, 0, 0)
+        self.draw()
+
+    def draw(self):
+        """Draw sprite."""
         self.fill(self.color)
+

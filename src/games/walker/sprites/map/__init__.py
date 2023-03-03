@@ -6,10 +6,7 @@ Typical usage example:
 """
 
 import pygame
-import config
-from .image import MapImage
-from ...screens.items import load_items
-from ..background.image import BackgroundImage
+from ... import resource
 
 
 class MapSprite(pygame.sprite.Sprite):
@@ -22,11 +19,6 @@ class MapSprite(pygame.sprite.Sprite):
         starting_pos (tuple): Starting viewpoint.
         viewpoint (pygame.Rect): Source rect.
     """
-
-    __filename = config.Universe.GLOBAL_MAP
-    __grid_step = 100
-
-    __bg_image = None
 
     def __init__(
         self,
@@ -48,23 +40,35 @@ class MapSprite(pygame.sprite.Sprite):
         self.image = pygame.Surface((rect.width, rect.height))
         self.rect = pygame.Rect(rect)
 
-        if self.__bg_image is None:
-            MapSprite.__bg_image = BackgroundImage((rect.width, rect.height))
-
-        self.__map_image = MapImage.scaled(
-            self.__filename,
-            items=items,
-            size=size,
-            step=self.__grid_step,
+        self.__map_image = resource.map_sprite(size)
+        self.sprites = pygame.sprite.OrderedUpdates(
+            resource.map_background(rect),
         )
 
         self.items = items
-        self.show_grid = False
+        self.__map_image.update()
+
         self.starting_pos = starting_pos
         self.size = size
         self.viewpoint = pygame.Rect(rect)
 
         self.reset_viewpoint()
+
+    @property
+    def items(self):
+        return self.__map_image.items
+
+    @items.setter
+    def items(self, value):
+        self.__map_image.items = value
+
+    @property
+    def show_grid(self):
+        return self.__map_image.show_grid
+
+    @show_grid.setter
+    def show_grid(self, value):
+        self.__map_image.show_grid = value
 
     def set_viewpoint(self, viewpoint):
         """Set map viewpoint.
@@ -80,11 +84,11 @@ class MapSprite(pygame.sprite.Sprite):
 
     def switch_grid(self, *args, **kwargs):
         """Switch show grid."""
-        # self.show_grid = not self.show_grid
         self.__map_image.switch_grid()
-        # self.__map_image.update(self.show_grid)
 
     def update(self, *args, **kwargs):
         """Update map image."""
-        self.image.blit(self.__bg_image, self.rect)
+        self.sprites.update(*args, **kwargs)
+        self.sprites.draw(self.image)
+
         self.image.blit(self.__map_image, self.rect, self.viewpoint)

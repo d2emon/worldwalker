@@ -10,7 +10,6 @@ import pygame
 import config
 from utils.game import Game
 from .screens.main import MainScreen
-from .sprites.loading import LoadingLabel
 
 
 class Walker(Game):
