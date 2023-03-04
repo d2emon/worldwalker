@@ -42,13 +42,13 @@ class MapSprite(pygame.sprite.Sprite):
         self.rect = pygame.Rect(rect)
 
         grid = resource.map_grid(size, grid_step, force=True)
-        self.__map_image = resource.map_sprite(size, grid, force=True)
+        self.map_image = resource.map_sprite(size, grid, force=True)
         self.sprites = pygame.sprite.OrderedUpdates(
             resource.map_background(rect),
         )
 
         self.items = items
-        self.__map_image.update()
+        self.map_image.update()
 
         self.starting_pos = starting_pos
         self.size = size
@@ -58,19 +58,19 @@ class MapSprite(pygame.sprite.Sprite):
 
     @property
     def items(self):
-        return self.__map_image.items
+        return self.map_image.items
 
     @items.setter
     def items(self, value):
-        self.__map_image.items = value
+        self.map_image.items = value
 
     @property
     def show_grid(self):
-        return self.__map_image.show_grid
+        return self.map_image.show_grid
 
     @show_grid.setter
     def show_grid(self, value):
-        self.__map_image.show_grid = value
+        self.map_image.show_grid = value
 
     def set_viewpoint(self, viewpoint):
         """Set map viewpoint.
@@ -86,11 +86,11 @@ class MapSprite(pygame.sprite.Sprite):
 
     def switch_grid(self, *args, **kwargs):
         """Switch show grid."""
-        self.__map_image.switch_grid()
+        self.map_image.switch_grid()
 
     def update(self, *args, **kwargs):
         """Update map image."""
         self.sprites.update(*args, **kwargs)
         self.sprites.draw(self.image)
 
-        self.image.blit(self.__map_image, self.rect, self.viewpoint)
+        self.image.blit(self.map_image, self.rect, self.viewpoint)

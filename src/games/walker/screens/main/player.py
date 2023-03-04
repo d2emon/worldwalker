@@ -35,9 +35,25 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         self.rect.center = screen_pos
-        self.field_size = field_size
-        self.starting_pos = starting_pos
+        self.__field_size = field_size
+        self.__starting_pos = starting_pos
         self.pos = [*starting_pos]
+
+        self.level = None
+
+    @property
+    def field_size(self):
+        if self.level:
+            return self.level.size
+        else:
+            return self.__field_size
+
+    @property
+    def starting_pos(self):
+        if self.level:
+            return self.level.starting_pos
+        else:
+            return self.__starting_pos
 
     def __check_constraints(self):
         for coord, value in enumerate(self.pos):

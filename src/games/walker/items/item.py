@@ -10,7 +10,15 @@ class Item(pygame.sprite.Sprite):
     label_font = 'Sans'
     label_size = 16
 
-    def __init__(self, name='', position=(500, 500), size=(100, 100), color=(0, 0, 0), border=0):
+    def __init__(
+        self,
+        name='',
+        position=(500, 500),
+        size=(100, 100),
+        color=(0, 0, 0),
+        border=0,
+        visible=True,
+    ):
         """Initialize sprite.
 
         Args
@@ -23,6 +31,7 @@ class Item(pygame.sprite.Sprite):
         self.size = size
         self.color = color
         self.border = border
+        self.visible = visible
 
         self.image = pygame.Surface(size, flags=pygame.SRCALPHA)
 
@@ -66,12 +75,21 @@ class ItemFactory:
     color = (0, 0, 0)
     border = 0
 
-    def __init__(self, name=None, scale=None, size=None, color=None, border=None):
+    def __init__(
+        self,
+        name=None,
+        scale=None,
+        size=None,
+        color=None,
+        border=None,
+        visible=True,
+    ):
         self.name = name or self.default_name
         self.item_size = size or self.base_size
         self.scale = scale or self.base_scale
         self.item_color = color or self.color
         self.item_border = border or self.border
+        self.visible = visible
 
     def get_size_modifier(self, scale=1.0):
         """Get item size modifier.
@@ -89,21 +107,25 @@ class ItemFactory:
 
         return 10 ** order
 
-    def get_size(self, scale=1.0):
+    def get_size(self, size=None, scale=1.0):
         """Get item size.
 
         Returns:
             int: Item size.
         """
-        modifier = self.get_size_modifier(scale)
-        return int(self.item_size * modifier)
+        if size is None:
+            size = (self.item_size, self.item_size)
 
-    def __call__(self, position=(500, 500), scale=1.0):
-        size = self.get_size(scale)
+        modifier = self.get_size_modifier(scale)
+        return [int(item * modifier) for item in size]
+
+    def __call__(self, position=(500, 500), scale=1.0, size=None):
+        item_size = self.get_size(size, scale)
         return self.model(
             name=self.name,
             position=position,
-            size=(size, size),
+            size=item_size,
             color=self.item_color,
             border=self.item_border,
+            visible=self.visible,
         )

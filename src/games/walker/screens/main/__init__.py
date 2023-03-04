@@ -12,7 +12,7 @@ from events.game import GameEvents
 from .player import Player
 from .controls import CONTROLS
 from ...level.level import Level
-from ...level.universe import Universe
+from ...level.universe import Universe, SpaceWall, SuperclusterComplexLevel
 from ... import resource
 
 
@@ -101,9 +101,9 @@ class MainScreen(pygame.Surface):
     def starting_pos(self):
         return self.player.starting_pos
 
-    @starting_pos.setter
-    def starting_pos(self, value):
-        self.player.starting_pos = value
+    # @starting_pos.setter
+    # def starting_pos(self, value):
+    #     self.player.starting_pos = value
 
     def show_loading(self):
         """Show loading label."""
@@ -120,7 +120,10 @@ class MainScreen(pygame.Surface):
         Args:
             level (Level): Game level.
         """
-        self.starting_pos = level.starting_pos
+        # self.starting_pos = level.starting_pos
+        self.player.level = level
+        self.player.reset_viewpoint()
+
         self.items = level.items
 
         if self.map_sprite:
@@ -141,19 +144,20 @@ class MainScreen(pygame.Surface):
 
         print(scale)
 
-        if self.scale == 24:
-            print("Universe")
-            level = Universe(scale)
-        else:
-            level = Level(scale)
+        scale_levels = {
+            24: Universe,
+            23: SpaceWall,
+            22: SuperclusterComplexLevel,
+        }
+        level_class = scale_levels.get(scale, Level)
+
+        print(level_class)
+        level = level_class(scale)
 
         level.load(self.rect)
         self.load_level(level)
 
         print("Loaded...")
-
-        for item in self.items:
-            print(f"\t{item.rect.center}\t{item.rect.size}\t{item.name}")
 
     @property
     def scale(self):

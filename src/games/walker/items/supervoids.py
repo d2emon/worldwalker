@@ -4,7 +4,7 @@ from .circular import Circular
 
 
 class Supervoid(Circular):
-    def __init__(self, name, size=None):
+    def __init__(self, name, size=7.0):
         super().__init__(
             name,
             scale=24,
