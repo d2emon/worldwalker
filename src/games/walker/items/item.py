@@ -6,7 +6,7 @@ import pygame
 class Item(pygame.sprite.Sprite):
     """Item sprite."""
 
-    label_color = (255, 255, 255)
+    # label_color = (255, 255, 255)
     label_font = 'Sans'
     label_size = 16
 
@@ -17,6 +17,7 @@ class Item(pygame.sprite.Sprite):
         size=(100, 100),
         color=(0, 0, 0),
         border=0,
+        label_color=(255, 255, 255),
         visible=True,
     ):
         """Initialize sprite.
@@ -31,6 +32,8 @@ class Item(pygame.sprite.Sprite):
         self.size = size
         self.color = color
         self.border = border
+        self.label_color = label_color
+
         self.visible = visible
 
         self.image = pygame.Surface(size, flags=pygame.SRCALPHA)
@@ -74,6 +77,7 @@ class ItemFactory:
     base_size = 1.0
     color = (0, 0, 0)
     border = 0
+    label_color = (255, 255, 255)
 
     def __init__(
         self,
@@ -82,6 +86,7 @@ class ItemFactory:
         size=None,
         color=None,
         border=None,
+        label_color=None,
         visible=True,
     ):
         self.name = name or self.default_name
@@ -89,6 +94,7 @@ class ItemFactory:
         self.scale = scale or self.base_scale
         self.item_color = color or self.color
         self.item_border = border or self.border
+        self.item_label_color = label_color or self.label_color
         self.visible = visible
 
     def get_size_modifier(self, scale=1.0):
@@ -127,5 +133,6 @@ class ItemFactory:
             size=item_size,
             color=self.item_color,
             border=self.item_border,
+            label_color=self.label_color,
             visible=self.visible,
         )

@@ -22,7 +22,7 @@ class Distance(ItemFactory):
     radius = 127
     model = DistanceSprite
 
-    def __init__(self, name=None, scale=None, size=None, color=None, border=None):
+    def __init__(self, name=None, scale=None, size=None, color=None, border=None, **kwargs):
         diameter = (size if size is not None else self.radius) * 2
         super().__init__(
             name=name,
@@ -30,4 +30,5 @@ class Distance(ItemFactory):
             size=diameter,
             color=color,
             border=border,
+            **kwargs,
         )
