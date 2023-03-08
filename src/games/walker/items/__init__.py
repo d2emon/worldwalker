@@ -18,6 +18,9 @@ from .mountains import MOUNTAINS
 from .marathon import Marathon
 from .comets import COMETS
 
+from .galaxies.galaxies import GALAXIES as NORMAL_GALAXIES
+from .galaxies.small_galaxies import GALAXIES as SMALL_GALAXIES
+
 
 CLASSES  = [
     *GALAXIES,
@@ -38,10 +41,14 @@ CLASSES  = [
 ]
 ITEMS = [
     *DISTANCES,
+    *MEASURES,
+
     *WALLS,
     *SUPERVOIDS,
-    *MEASURES,
     *CLUSTERS,
+    *NORMAL_GALAXIES,
+    *SMALL_GALAXIES,
+
     *(
         c(
             name=c.name,

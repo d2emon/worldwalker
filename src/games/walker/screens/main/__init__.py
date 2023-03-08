@@ -4,15 +4,15 @@ Typical usage example:
 
   self.screen = MainScreen(self.window.get_rect())
   self.events.update(self.screen.events)
-
-10^24
 """
 import pygame
+import random
 from events.game import GameEvents
 from .player import Player
 from .controls import CONTROLS
 from ...level.level import Level
-from ...level.universe import Universe, SpaceWall, SuperclusterComplexLevel
+from ...level.universe import Universe, SpaceWall, SuperclusterComplexLevel, SupervoidLevel
+from ...level.galaxy_cluster import GalaxyClusterLevel, GalaxyGroupComplexLevel, GalaxyGroupLevel
 from ... import resource
 
 
@@ -120,8 +120,19 @@ class MainScreen(pygame.Surface):
         Args:
             level (Level): Game level.
         """
+        if self.player:
+            self.sprites.remove(self.player)
+        self.player = Player(
+            screen_pos=self.rect.center,
+            starting_pos=level.starting_pos,
+            field_size=self.field_size,
+            zoom_size=level.zoom_size,
+            level=level,
+        )
+        self.sprites.add(self.player, layer=self.layer_player)
         # self.starting_pos = level.starting_pos
-        self.player.level = level
+        # self.player.level = level
+        # self.player.zoom_size = level.zoom_size
         self.player.reset_viewpoint()
 
         self.items = level.items
@@ -145,18 +156,22 @@ class MainScreen(pygame.Surface):
         print(scale)
 
         scale_levels = {
-            24: Universe,
-            23: SpaceWall,
-            22: SuperclusterComplexLevel,
+            24: [Universe],
+            23: [SpaceWall],
+            22: [SuperclusterComplexLevel, SupervoidLevel],
+            21: [GalaxyClusterLevel],
+            20: [GalaxyGroupComplexLevel],
+            19: [GalaxyGroupLevel],
         }
-        level_class = scale_levels.get(scale, Level)
+        level_classes = scale_levels.get(scale, [Level])
+        level_class = random.choice(level_classes)
 
-        print(level_class)
         level = level_class(scale)
 
         level.load(self.rect)
         self.load_level(level)
 
+        print(level.__class__, level.size)
         print("Loaded...")
 
     @property

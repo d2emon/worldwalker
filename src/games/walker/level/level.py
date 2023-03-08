@@ -19,7 +19,9 @@ class Level:
         step (int): Map items grid.
     """
 
+    cell = 100
     default_size = 5000, 5000
+    zoom_size = 100, 100
 
     def __init__(self, scale):
         """Initialize level.
@@ -43,7 +45,7 @@ class Level:
         Returns:
             int: Map grid step.
         """
-        return 100
+        return self.cell
 
     @property
     def max_pos(self):

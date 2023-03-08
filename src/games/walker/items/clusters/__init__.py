@@ -20,9 +20,9 @@ class SuperclusterComplex(GalaxyGroup):
 
 CLUSTERS = [
     SuperclusterComplex('Pisces-Cetus Supercluster Complex', size=1.0, visible=False),
-    Cluster('Virgo Supercluster', size=2.80),
-    Cluster('Virgo Cluster', size=1.30),
-    Cluster('Fornax Cluster', size=2.00),
-    GalaxyGroup('Local Group', size=9.50),
-    GalaxyGroup('Abell 2029', size=6.00),
+    Cluster('Virgo Supercluster', size=2.80, visible=False),
+    Cluster('Virgo Cluster', size=1.30, visible=False),
+    Cluster('Fornax Cluster', size=2.00, visible=False),
+    GalaxyGroup('Local Group', size=9.50, visible=False),
+    GalaxyGroup('Abell 2029', size=6.00, visible=False),
 ]

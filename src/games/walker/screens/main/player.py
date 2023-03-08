@@ -21,7 +21,14 @@ class Player(pygame.sprite.Sprite):
     """
     speed = 10
 
-    def __init__(self, screen_pos=(500, 500), starting_pos=(500, 500), field_size=(1000, 1000)):
+    def __init__(
+        self,
+        screen_pos=(500, 500),
+        starting_pos=(500, 500),
+        field_size=(1000, 1000),
+        zoom_size=(100, 100),
+        level=None,
+    ):
         """Initialize sprite.
 
         Args
@@ -31,15 +38,27 @@ class Player(pygame.sprite.Sprite):
         """
         super().__init__()
 
-        self.image = resource.player_image()
+        self.image = pygame.Surface((256, 256), flags=pygame.SRCALPHA)
         self.rect = self.image.get_rect()
+        center = 128, 128
 
         self.rect.center = screen_pos
         self.__field_size = field_size
         self.__starting_pos = starting_pos
         self.pos = [*starting_pos]
+        self.zoom_size = zoom_size
 
-        self.level = None
+        self.level = level
+
+        zoom_rect = pygame.Rect((0, 0), zoom_size)
+        zoom_rect.center = center
+        pygame.draw.rect(self.image, (255, 255, 255, 4), zoom_rect)
+        pygame.draw.ellipse(self.image, (0, 0, 255, 32), zoom_rect)
+
+        image = resource.player_image()
+        image_rect = image.get_rect()
+        image_rect.center = center
+        self.image.blit(resource.player_image(), image_rect)
 
     @property
     def field_size(self):
