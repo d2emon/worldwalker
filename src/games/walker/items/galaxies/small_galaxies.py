@@ -14,41 +14,6 @@ class SmallGalaxy(Circular):
     label_color = (0, 0, 0)
 
 
-class Whirlpool(SmallGalaxy):
-    """Item sprite."""
-    name = 'Whirlpool Galaxy'
-    base_size = 7.20
-    color = color(184)
-
-
-class Triangulum(SmallGalaxy):
-    """Item sprite."""
-    name = 'Triangulum Galaxy'
-    base_size = 5.70
-    color = color(176)
-
-
-class Sombrero(SmallGalaxy):
-    """Item sprite."""
-    name = 'Sombrero Galaxy'
-    base_size = 4.60
-    color = color(168)
-
-
-class NGC3310(SmallGalaxy):
-    """Item sprite."""
-    name = 'NGC 3310'
-    base_size = 2.90
-    color = color(160)
-
-
-class LargeMagellanicCloud(SmallGalaxy):
-    """Item sprite."""
-    name = 'Large Magellanic Cloud'
-    base_size = 1.30
-    color = color(152)
-
-
 GALAXIES = [
     SmallGalaxy('Whirlpool Galaxy', size=7.20),
     SmallGalaxy('Triangulum Galaxy', size=5.70),

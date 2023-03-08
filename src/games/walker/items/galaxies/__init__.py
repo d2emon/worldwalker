@@ -1,11 +1,10 @@
-# from .galaxies import GALAXIES as NORMAL_GALAXIES
-# from .small_galaxies import Whirlpool, Triangulum, Sombrero, NGC3310, LargeMagellanicCloud
-from .dwarf_galaxies import Sagittarius, SmallMagellanicCloud, CanisVenatici, Leo2
+from .galaxies import GALAXIES as NORMAL_GALAXIES
+from .small_galaxies import GALAXIES as SMALL_GALAXIES
+from .dwarf_galaxies import GALAXIES as DWARF_GALAXIES
 
 
 GALAXIES = [
-    # *NORMAL_GALAXIES,
-    # IC1101, Toadpole, NGC4889, NGC1232, Pinwheel, Andromeda, Cartwheel, VirgoA, MilkyWay, CanisMajor,
-    # Whirlpool, Triangulum, Sombrero, NGC3310, LargeMagellanicCloud,
-    Sagittarius, SmallMagellanicCloud, CanisVenatici, Leo2,
+    *NORMAL_GALAXIES,
+    *SMALL_GALAXIES,
+    *DWARF_GALAXIES,
 ]

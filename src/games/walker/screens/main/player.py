@@ -38,9 +38,9 @@ class Player(pygame.sprite.Sprite):
         """
         super().__init__()
 
-        self.image = pygame.Surface((256, 256), flags=pygame.SRCALPHA)
+        self.image = pygame.Surface((512, 512), flags=pygame.SRCALPHA)
         self.rect = self.image.get_rect()
-        center = 128, 128
+        center = 256, 256
 
         self.rect.center = screen_pos
         self.__field_size = field_size

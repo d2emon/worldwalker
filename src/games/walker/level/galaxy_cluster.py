@@ -1,13 +1,12 @@
 import random
 from .items import load_items
 from .level import Level
-from ..items.clusters import SuperclusterComplex, Cluster, GalaxyGroup
+from ..items.clusters import Cluster, GalaxyGroup
 from ..items.galaxies.galaxies import Galaxy
 from ..items.galaxies.small_galaxies import SmallGalaxy
+from ..items.galaxies.dwarf_galaxies import DwarfGalaxy
 from ..items.distance import Distance
 from ..items.map_label import MapLabel
-from ..items.space_web import SpaceWeb
-from ..items.supervoids import Supervoid
 
 
 class GalaxyClusterLevel(Level):
@@ -79,6 +78,7 @@ class GalaxyGroupComplexLevel(Level):
     cell = int(megaparsec * 100)
     default_size = [cell * 4] * 2
     galaxies_count = 20
+    zoom_size = 300, 300
 
     @property
     def items_data(self):
@@ -86,7 +86,7 @@ class GalaxyGroupComplexLevel(Level):
 
         # From items database
         yield MapLabel(
-            'Galaxy Group',
+            'Galaxy Groups',
             rect=(0, 0, 200, 100),
             font_size=32,
         )
@@ -102,8 +102,8 @@ class GalaxyGroupComplexLevel(Level):
         )
 
         # Other
-        cluster_factory = GalaxyGroup('Galaxy Group')
-        yield cluster_factory(
+        group_factory = GalaxyGroup('Galaxy Group')
+        yield group_factory(
             self.starting_pos,
             self.scale,
             size=[random.randrange(10, 30) / 10] * 2
@@ -136,30 +136,28 @@ class GalaxyGroupComplexLevel(Level):
 
 
 class GalaxyGroupLevel(Level):
-    distance_to_shapley_supercluster = 6.4
-    cell = int(distance_to_shapley_supercluster * 10)
-    default_size = [cell * 15] * 2
+    distance = 10.0
+    cell = int(distance * 10)
+    default_size = [cell * 30] * 2
     clusters_count = 100
+    galaxies_count = 20
+    zoom_size = 500, 500
 
     @property
     def items_data(self):
         print('scale', self.scale, self.step)
 
-        # Factories
-        cluster_factory = Cluster('Cluster', size=2.0)
-        distance_factory = Distance('Distance to Great Attractor', scale=24, size=1.9, color=(0, 255, 0))
-
         # From items database
         yield MapLabel(
-            'Supercluster Complex',
+            'Galaxy Group',
             rect=(0, 0, 200, 100),
             font_size=32,
         )
-        yield MapLabel(
-            'Distance to the Shapley Superclaster',
-            rect=(0, 50, 200, 100),
-            font_size=16,
-        )
+        # yield MapLabel(
+        #     'Distance to the Shapley Superclaster',
+        #     rect=(0, 50, 200, 100),
+        #     font_size=16,
+        # )
         yield from load_items(
             self.scale,
             self.size,
@@ -167,73 +165,34 @@ class GalaxyGroupLevel(Level):
         )
 
         # Other
-        for _ in range(self.clusters_count):
-            size = random.randrange(15, 30) / 10
-            yield cluster_factory(
+        galaxy_factory = Galaxy('Galaxy')
+        for _ in range(self.galaxies_count):
+            yield galaxy_factory(
                 self.random_point(),
                 self.scale,
-                size=(size, size)
+                size=[random.randrange(10, 50) / 10] * 2
+            )
+
+        small_galaxy_factory = SmallGalaxy('Galaxy')
+        for _ in range(self.galaxies_count):
+            yield small_galaxy_factory(
+                self.random_point(),
+                self.scale,
+                size=[random.randrange(10, 100) / 10] * 2
+            )
+
+        dwarf_galaxy_factory = DwarfGalaxy('Galaxy')
+        for _ in range(self.galaxies_count):
+            yield dwarf_galaxy_factory(
+                self.random_point(),
+                self.scale,
+                size=[random.randrange(10, 100) / 10] * 2
             )
 
         # Distance
-        distance = distance_factory(
-            self.starting_pos,
-            self.scale,
-        )
-        yield distance
-
-
-class SupervoidLevel(Level):
-    distance_to_shapley_supercluster = 6.4
-    cell = int(distance_to_shapley_supercluster * 10)
-    default_size = [cell * 15] * 2
-    clusters_count = 10
-
-    @property
-    def items_data(self):
-        print('scale', self.scale, self.step)
-
-        # Factories
-        void_factory = Supervoid('Supervoid')
-        cluster_factory = Cluster('Cluster', size=2.0)
-        distance_factory = Distance('Distance to Great Attractor', scale=24, size=1.9, color=(0, 255, 0))
-
-        # From items database
-        yield MapLabel(
-            'Supervoid',
-            rect=(0, 0, 200, 100),
-            font_size=32,
-        )
-        yield MapLabel(
-            'Distance to the Shapley Superclaster',
-            rect=(0, 50, 200, 100),
-            font_size=16,
-        )
-        yield from load_items(
-            self.scale,
-            self.size,
-            step=self.step,
-        )
-
-        # Other
-        yield void_factory(
-            self.starting_pos,
-            self.scale,
-            size=[random.randrange(60, 80) / 10] * 2
-        )
-
-        for _ in range(self.clusters_count):
-            size = random.randrange(15, 30) / 10
-            yield cluster_factory(
-                self.random_point(),
-                self.scale,
-                size=(size, size)
-            )
-
-        # Distance
-        distance_factory = Distance('Distance to Great Attractor', scale=24, size=1.9, color=(0, 255, 0))
-        distance = distance_factory(
-            self.starting_pos,
-            self.scale,
-        )
-        yield distance
+        # distance_factory = Distance('Distance to Great Attractor', scale=24, size=1.9, color=(0, 255, 0))
+        # distance = distance_factory(
+        #     self.starting_pos,
+        #     self.scale,
+        # )
+        # yield distance
